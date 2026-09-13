@@ -1,6 +1,7 @@
 'use client'
 import { Search, ShoppingCart, User, ArrowRight, ShieldCheck, Truck, PackageCheck, Wrench } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const categories = [
   ['ACDB','AC distribution boxes'],['DCDB','DC combiner boxes'],['MCB / MCCB','Protection devices'],['SPD','Surge protection'],['Solar Cable','DC wire & cable'],['Earthing Kit','Complete earthing kits'],['MC4','Connectors'],['Fuse','Fuse & holders'],['Enclosures','IP-rated boxes'],['Terminal Blocks','Connection systems'],['Cable Glands','Cable entry'],['BOS','Solar accessories']
@@ -16,9 +17,9 @@ export default function Home(){
   return <>
     <div className="topbar"><div className="container"><span>Powering India’s Solar Installations.</span><span>Bulk Orders • GST Billing • Project Supply</span></div></div>
     <header className="header"><div className="container nav">
-      <a className="logo" href="#"><div className="logoMark"><span>NI</span></div><div className="logoText"><b>NEW INDIA SOLAR</b><small>COMPONENTS PVT LTD</small></div></a>
+      <Link className="logo officialLogo" href="/"><Image src="/new-india-solar-logo.webp" alt="New India Solar Components Pvt Ltd" width={190} height={104} priority/></Link>
       <nav className="navlinks"><a href="#products">Products</a><a href="#customize">Customize ACDB/DCDB</a><a href="#bulk">Bulk Order</a><a href="#">Downloads</a><a href="#">About</a><a href="#">Contact</a></nav>
-      <div className="navActions"><button className="iconBtn" aria-label="Search"><Search size={18}/></button><button className="iconBtn" aria-label="Account"><User size={18}/></button><button className="iconBtn" aria-label="Cart"><ShoppingCart size={18}/></button></div>
+      <div className="navActions"><button className="iconBtn" aria-label="Search"><Search size={18}/></button><Link className="iconBtn" aria-label="Account" href="/login"><User size={18}/></Link><Link className="iconBtn" aria-label="Cart" href="/cart"><ShoppingCart size={18}/></Link></div>
     </div></header>
 
     <main>
@@ -38,6 +39,6 @@ export default function Home(){
       <section className="section" id="bulk"><div className="container"><div className="bulk"><div><h2>Buying for an EPC project or in bulk?</h2><p>Upload your BOM or submit quantities for ACDB, DCDB, MCB, SPD, cable, earthing and other BOS components. We’ll keep the direct store simple while supporting larger project requirements.</p></div><Link className="btn btnPrimary" href="/bulk-order">Submit Bulk Requirement →</Link></div></div></section>
     </main>
 
-    <footer className="footer"><div className="container"><div className="footerGrid"><div><div className="logo"><div className="logoMark" style={{borderColor:'#fff'}}><span>NI</span></div><div className="logoText"><b style={{color:'#fff'}}>NEW INDIA SOLAR</b><small>COMPONENTS PVT LTD</small></div></div><p style={{maxWidth:420,lineHeight:1.6}}>ACDB, DCDB and solar BOS components for installers, EPC companies, dealers and solar projects across India.</p></div><div><h4>Shop</h4><a>ACDB</a><a>DCDB</a><a>MCB / MCCB</a><a>SPD</a><a>Solar Cable</a></div><div><h4>Customize</h4><a>Build ACDB</a><a>Build DCDB</a><a>Bulk Order</a><a>Downloads</a></div><div><h4>Company</h4><a>About Us</a><a>Contact</a><a>Terms</a><a>Privacy</a></div></div><div className="copyright">© 2026 New India Solar Components Pvt Ltd. All rights reserved.</div></div></footer>
+    <footer className="footer"><div className="container"><div className="footerGrid"><div><div className="footerLogo"><Image src="/new-india-solar-logo.webp" alt="New India Solar Components Pvt Ltd" width={210} height={115}/></div><p style={{maxWidth:420,lineHeight:1.6}}>ACDB, DCDB and solar BOS components for installers, EPC companies, dealers and solar projects across India.</p></div><div><h4>Shop</h4><a>ACDB</a><a>DCDB</a><a>MCB / MCCB</a><a>SPD</a><a>Solar Cable</a></div><div><h4>Customize</h4><a>Build ACDB</a><a>Build DCDB</a><a>Bulk Order</a><a>Downloads</a></div><div><h4>Company</h4><a>About Us</a><a>Contact</a><a>Terms</a><a>Privacy</a></div></div><div className="copyright">© 2026 New India Solar Components Pvt Ltd. All rights reserved.</div></div></footer>
   </>
 }
