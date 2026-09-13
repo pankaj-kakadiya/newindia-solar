@@ -1,4 +1,5 @@
 import './globals.css'
+import './brand.css'
 import type { Metadata } from 'next'
 import { CartProvider } from '../components/CartProvider'
 import CartLink from '../components/CartLink'
