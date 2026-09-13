@@ -1,0 +1,13 @@
+import './globals.css'
+import type { Metadata } from 'next'
+import { CartProvider } from '../components/CartProvider'
+import CartLink from '../components/CartLink'
+
+export const metadata: Metadata = {
+  title: 'New India Solar | ACDB, DCDB & Solar Components',
+  description: 'Shop ACDB, DCDB, MCB, SPD, solar cable, earthing kits and customize ACDB/DCDB boxes for solar installations.'
+}
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body><CartProvider>{children}<CartLink/></CartProvider></body></html>
+}

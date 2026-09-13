@@ -1,0 +1,1 @@
+'use client';import Link from 'next/link';import {ShoppingCart} from 'lucide-react';import {useCart} from './CartProvider';export default function CartLink(){const {count}=useCart();return <Link href="/cart" className="floatingCart"><ShoppingCart size={19}/><span>{count}</span></Link>}
