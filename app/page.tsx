@@ -1,35 +1,107 @@
-'use client'
-
+import type {Metadata} from 'next'
 import Link from 'next/link'
-import { ArrowRight, Boxes, Cable, CheckCircle2, FileText, PackageCheck, Settings2, ShieldCheck, ShoppingBag, Truck, Wrench } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import {ArrowRight, Boxes, Cable, CheckCircle2, CircleGauge, FileText, Gauge, Layers3, PackageCheck, PlugZap, SearchCheck, Settings2, ShieldCheck, ShoppingCart, Sparkles, Truck, Wrench, Zap} from 'lucide-react'
 import StoreHeader from '../components/StoreHeader'
 import StoreFooter from '../components/StoreFooter'
 
+export const metadata:Metadata={
+  title:'New India Solar | ACDB, DCDB & Solar BOS Components',
+  description:'Buy ACDB, DCDB and solar BOS components, configure custom distribution boxes, and submit project RFQs for EPC and installer requirements across India.',
+  alternates:{canonical:'/'},
+  openGraph:{title:'New India Solar Components Pvt Ltd',description:'Solar components built for reliable installations.',type:'website'}
+}
+
 const categories=[
-  ['ACDB','AC protection and distribution boxes','ACDB'],['DCDB','DC combiner and protection boxes','DCDB'],['MCB / MCCB','Protection devices for AC systems','MCB'],['SPD','AC and DC surge protection','SPD'],['Solar Cable','Solar DC cable and internal wiring','Solar Cable'],['Earthing Kit','Complete solar earthing solutions','Earthing'],['MC4','Solar connectors and accessories','MC4'],['Fuse System','DC fuse and fuse holders','Fuse'],['Enclosures','IP-rated PC and industrial boxes','Enclosure'],['Terminal Blocks','Internal connection systems','Terminal'],['Cable Glands','Sealed cable entry accessories','Cable Gland'],['BOS Accessories','Balance-of-system project components','BOS']
+  {name:'ACDB',desc:'AC protection & distribution',q:'ACDB',Icon:Zap},
+  {name:'DCDB',desc:'DC combiner & protection',q:'DCDB',Icon:ShieldCheck},
+  {name:'MCB / MCCB',desc:'AC & DC circuit protection',q:'MCB',Icon:CircleGauge},
+  {name:'SPD',desc:'Surge protection devices',q:'SPD',Icon:PlugZap},
+  {name:'Solar Cable',desc:'DC cable & internal wiring',q:'Solar Cable',Icon:Cable},
+  {name:'Earthing Kit',desc:'Solar earthing solutions',q:'Earthing',Icon:Layers3},
+  {name:'MC4',desc:'PV connectors & accessories',q:'MC4',Icon:Settings2},
+  {name:'DC Fuse',desc:'Fuse links & fuse holders',q:'Fuse',Icon:Gauge},
+  {name:'Enclosures',desc:'IP-rated industrial boxes',q:'Enclosure',Icon:Boxes},
+  {name:'Terminal Blocks',desc:'Internal connection systems',q:'Terminal',Icon:Wrench},
+  {name:'Cable Glands',desc:'Sealed cable entry systems',q:'Cable Gland',Icon:PackageCheck},
+  {name:'BOS Accessories',desc:'Project-ready solar BOS',q:'BOS',Icon:Sparkles}
 ]
 
 export default function Home(){
-  const [featured,setFeatured]=useState<any[]>([])
-  useEffect(()=>{supabase.from('products').select('id,name,slug,short_description,categories(name),product_variants(id,title,selling_price,stock_qty,unit)').eq('status','active').limit(4).then(({data})=>setFeatured(data||[]))},[])
   return <>
     <StoreHeader/>
-    <main>
-      <section className="nisHero"><div className="container nisHeroGrid"><div><span className="nisKicker"><i/>SOLAR BOS • ACDB • DCDB • PROTECTION</span><h1>Reliable solar components. <span>Built for installation.</span></h1><p className="nisHeroLead">Source ready products, configure ACDB and DCDB boxes, or submit a complete project requirement — all from one industrial solar components platform.</p><div className="nisHeroActions"><Link className="nisPrimaryBtn" href="/shop">Shop Components <ArrowRight size={18}/></Link><Link className="nisSecondaryBtn" href="/customize/dcdb">Build ACDB / DCDB</Link><Link className="nisGhostBtn" href="/bulk-order">Project RFQ</Link></div><div className="nisHeroMeta"><span><CheckCircle2 size={16}/> GST-ready ordering</span><span><CheckCircle2 size={16}/> Configurable ACDB/DCDB</span><span><CheckCircle2 size={16}/> EPC & dealer supply</span></div></div><div className="nisHeroPanel"><div className="nisPanelTop"><div><small>CONFIGURE & ORDER</small><h3>Your distribution box, your BOM.</h3></div><span className="nisLiveBadge">Live Builder</span></div><div className="nisBoxStage"><div className="nisBoxCard"><div className="nisBoxCardHead"><b>ACDB</b><span>AC Protection</span></div><div className="nisMiniRail"><i>MCB</i><i>SPD</i><i>RYB</i><i>N/E</i></div></div><div className="nisBoxCard"><div className="nisBoxCardHead"><b>DCDB</b><span>DC Protection</span></div><div className="nisMiniRail"><i>DC MCB</i><i>SPD</i><i>FUSE</i><i>TERM</i></div></div></div><div className="nisPanelBottom"><div className="nisPanelStat"><b>Component-based</b><span>Dynamic pricing structure</span></div><div className="nisPanelStat"><b>BOM snapshot</b><span>Frozen with every order</span></div><div className="nisPanelStat"><b>Project ready</b><span>Direct or bulk buying</span></div></div></div></div></section>
+    <main id="main-content" className="homeV2">
+      <section className="hvHero" aria-labelledby="home-hero-title">
+        <div className="container hvHeroGrid">
+          <div className="hvHeroCopy">
+            <span className="hvEyebrow"><i/> Solar BOS infrastructure for EPCs & installers</span>
+            <h1 id="home-hero-title">Solar components built to <em>move projects faster.</em></h1>
+            <p>Source ACDB, DCDB and BOS components, configure project-specific boxes, or send a bulk requirement from one procurement-ready platform.</p>
+            <div className="hvActions">
+              <Link className="hvBtn hvBtnPrimary" href="/shop">Shop Components <ArrowRight size={18}/></Link>
+              <Link className="hvBtn hvBtnLight" href="/customize/dcdb">Build ACDB / DCDB</Link>
+              <Link className="hvBtn hvBtnGhost" href="/bulk-order">Project RFQ</Link>
+            </div>
+            <div className="hvProof" aria-label="Ordering benefits">
+              <span><CheckCircle2/> GST-ready ordering</span>
+              <span><CheckCircle2/> Configurable ACDB / DCDB</span>
+              <span><CheckCircle2/> Direct + bulk buying</span>
+            </div>
+          </div>
 
-      <section className="nisTrustBand"><div className="container nisTrustGrid"><div className="nisTrustCard"><ShieldCheck size={22}/><b>Protection Focused</b><span>AC & DC protection components</span></div><div className="nisTrustCard"><Wrench size={22}/><b>Custom Assembly</b><span>Project-wise box configuration</span></div><div className="nisTrustCard"><PackageCheck size={22}/><b>Bulk Supply</b><span>For EPCs, dealers and installers</span></div><div className="nisTrustCard"><Truck size={22}/><b>Pan-India Dispatch</b><span>Business ordering and billing</span></div></div></section>
+          <div className="hvHeroVisual" aria-label="New India Solar procurement workflow preview">
+            <div className="hvVisualHead"><div><small>NEW INDIA SOLAR</small><b>Project Procurement</b></div><span>LIVE</span></div>
+            <div className="hvVisualMetric"><div><small>Choose your flow</small><strong>Product → Configure → Order</strong></div><CircleGauge/></div>
+            <div className="hvVisualCards">
+              <Link href="/shop?q=ACDB" prefetch={false}><span><Zap/></span><div><b>ACDB</b><small>Ready products</small></div><ArrowRight/></Link>
+              <Link href="/customize/dcdb" prefetch={false}><span><Settings2/></span><div><b>Custom DCDB</b><small>Build your BOM</small></div><ArrowRight/></Link>
+              <Link href="/bulk-order" prefetch={false}><span><FileText/></span><div><b>Bulk RFQ</b><small>Project pricing</small></div><ArrowRight/></Link>
+            </div>
+            <div className="hvVisualBottom"><span><ShieldCheck/> Tested. Packed. Guaranteed.</span><span>newindiasolar.com</span></div>
+          </div>
+        </div>
+      </section>
 
-      <section className="nisSection"><div className="container"><div className="nisSectionHead"><div><span>PRODUCT RANGE</span><h2>Everything around solar AC/DC protection.</h2><p>Browse the component families used across residential, commercial and industrial solar installations.</p></div><Link className="nisTextLink" href="/shop">Explore all products →</Link></div><div className="nisCategoryGrid">{categories.map(([name,desc,q],i)=><Link key={name} href={`/shop?q=${encodeURIComponent(q)}`} className="nisCategoryCard"><div><div className="nisCategoryIcon">{String(i+1).padStart(2,'0')}</div><h3>{name}</h3><p>{desc}</p></div><strong>Explore →</strong></Link>)}</div></div></section>
+      <section className="hvTrust" aria-label="Business capabilities"><div className="container hvTrustGrid">
+        <div><ShieldCheck/><span><b>Protection Focused</b><small>AC & DC solar components</small></span></div>
+        <div><Settings2/><span><b>Custom Configuration</b><small>Component-based box builder</small></span></div>
+        <div><PackageCheck/><span><b>Project Supply</b><small>Direct and bulk requirements</small></span></div>
+        <div><Truck/><span><b>Pan-India Dispatch</b><small>Business ordering workflow</small></span></div>
+      </div></section>
 
-      <section className="nisSection nisSectionSoft"><div className="container"><div className="nisSectionHead"><div><span>CUSTOM CONFIGURATION</span><h2>Build the box your site actually needs.</h2><p>Select protection, enclosure and accessories instead of being restricted to a fixed catalogue box.</p></div></div><div className="nisBuilderGrid"><article className="nisBuilderCard dark"><small>CUSTOM ACDB</small><h3>Build Your ACDB</h3><p>Configure system size, phase, enclosure, MCB/MCCB, SPD, indicators, busbar, terminals, wire and glands.</p><div className="nisBuilderSteps"><span>01 System</span><span>02 Protection</span><span>03 Accessories</span><span>04 Price</span></div><Link className="nisPrimaryBtn" href="/customize/acdb">Start ACDB Builder <ArrowRight size={17}/></Link></article><article className="nisBuilderCard green"><small>CUSTOM DCDB</small><h3>Build Your DCDB</h3><p>Configure string count, voltage, enclosure, DC MCB, SPD, fuse system, terminal blocks, cable and accessories.</p><div className="nisBuilderSteps"><span>01 Strings</span><span>02 Protection</span><span>03 Wiring</span><span>04 Price</span></div><Link className="nisPrimaryBtn" href="/customize/dcdb">Start DCDB Builder <ArrowRight size={17}/></Link></article></div></div></section>
+      <section className="hvSection hvCategories" aria-labelledby="categories-title"><div className="container">
+        <div className="hvSectionHead"><div><span>PRODUCT RANGE</span><h2 id="categories-title">Everything around solar protection & BOS.</h2><p>Browse the core component families used across residential, commercial and industrial solar installations.</p></div><Link href="/shop">View all products <ArrowRight size={17}/></Link></div>
+        <div className="hvCategoryGrid">{categories.map(({name,desc,q,Icon})=><Link key={name} prefetch={false} href={`/shop?q=${encodeURIComponent(q)}`} className="hvCategoryCard"><span className="hvCategoryIcon"><Icon/></span><div><h3>{name}</h3><p>{desc}</p></div><ArrowRight className="hvCategoryArrow"/></Link>)}</div>
+      </div></section>
 
-      <section className="nisSection"><div className="container"><div className="nisSectionHead"><div><span>HOW IT WORKS</span><h2>From requirement to order in four steps.</h2></div></div><div className="nisHowGrid"><div className="nisHowCard"><span>01</span><h3>Choose</h3><p>Shop a ready product or start with the ACDB/DCDB configurator.</p></div><div className="nisHowCard"><span>02</span><h3>Configure</h3><p>Select protection devices, enclosure and project-specific accessories.</p></div><div className="nisHowCard"><span>03</span><h3>Review</h3><p>See the configured price, product variant or BOM before checkout.</p></div><div className="nisHowCard"><span>04</span><h3>Order / RFQ</h3><p>Buy online for standard quantities or submit a bulk project requirement.</p></div></div></div></section>
+      <section className="hvSection hvBuildSection" aria-labelledby="builder-title"><div className="container">
+        <div className="hvSectionHead compact"><div><span>CUSTOM CONFIGURATION</span><h2 id="builder-title">Build the box your site actually needs.</h2><p>Select the protection, enclosure and accessories required for the installation instead of working around a fixed catalogue box.</p></div></div>
+        <div className="hvBuilderGrid">
+          <article className="hvBuilderCard hvBuilderDark"><div className="hvBuilderTop"><span>ACDB BUILDER</span><i>AC</i></div><h3>Configure your ACDB.</h3><p>Choose system size, phase, MCB/MCCB, SPD, indicators, busbar, terminals, internal wiring and enclosure.</p><div className="hvStepRow"><span>01 System</span><span>02 Protection</span><span>03 Accessories</span><span>04 Review</span></div><Link className="hvBtn hvBtnPrimary" href="/customize/acdb">Start ACDB Builder <ArrowRight size={17}/></Link></article>
+          <article className="hvBuilderCard hvBuilderGreen"><div className="hvBuilderTop"><span>DCDB BUILDER</span><i>DC</i></div><h3>Configure your DCDB.</h3><p>Choose string count, voltage, DC MCB, SPD, fuse system, terminals, solar cable, glands and enclosure.</p><div className="hvStepRow"><span>01 Strings</span><span>02 Protection</span><span>03 Wiring</span><span>04 Review</span></div><Link className="hvBtn hvBtnPrimary" href="/customize/dcdb">Start DCDB Builder <ArrowRight size={17}/></Link></article>
+        </div>
+      </div></section>
 
-      {featured.length>0&&<section className="nisSection nisSectionSoft"><div className="container"><div className="nisSectionHead"><div><span>LIVE CATALOGUE</span><h2>Popular solar component options.</h2><p>Current prices are demo/reference values for system testing until the approved rate card is loaded.</p></div><Link className="nisTextLink" href="/shop">Shop all →</Link></div><div className="nisProductGrid">{featured.map(p=>{const v=p.product_variants?.[0];const price=Number(v?.selling_price||0);return <article className="nisProductCard" key={p.id}><Link href={`/product/${p.slug}`} className="nisProductVisual"/><div className="nisProductInfo"><small>{p.categories?.name||'Solar Component'}</small><h3>{p.name}</h3><p>{p.short_description||'New India Solar component for solar installation projects.'}</p><div className="nisProductPrice">{price?`₹${price.toLocaleString('en-IN')}`:'Price on request'} <span>{v?.unit||''}</span></div>{v?.stock_qty>0&&<div className="nisStock"><CheckCircle2 size={13}/> Demo stock available</div>}<Link className="nisPrimaryBtn" href={`/product/${p.slug}`}>View Product</Link></div></article>})}</div></div></section>}
+      <section className="hvSection hvBuyWays" aria-labelledby="buyways-title"><div className="container">
+        <div className="hvSectionHead"><div><span>BUY THE WAY YOUR PROJECT NEEDS</span><h2 id="buyways-title">One platform. Three buying flows.</h2><p>Move from a single component requirement to a configured assembly or a complete project enquiry without changing systems.</p></div></div>
+        <div className="hvBuyGrid">
+          <article><span>01</span><ShoppingCart/><h3>Direct Purchase</h3><p>Choose ready catalogue products, select quantity and place a GST-ready order.</p><Link href="/shop">Shop products <ArrowRight/></Link></article>
+          <article><span>02</span><Settings2/><h3>Custom Build</h3><p>Configure ACDB/DCDB component by component and save the final BOM with your order.</p><Link href="/customize/dcdb">Open builder <ArrowRight/></Link></article>
+          <article><span>03</span><FileText/><h3>Bulk / Project RFQ</h3><p>Share quantity, location and project requirement for volume and project-specific pricing.</p><Link href="/bulk-order">Send requirement <ArrowRight/></Link></article>
+        </div>
+      </div></section>
 
-      <section className="nisSection" id="why-us"><div className="container nisWhy"><div className="nisWhyVisual"><div><span className="nisKicker"><i/>NEW INDIA SOLAR</span><h3>Built around the installer’s actual workflow.</h3><p>Direct products, configurable boxes, bulk RFQs and production-ready order data are designed to work together instead of as separate systems.</p></div><div className="nisWhyMatrix"><div>ACDB / DCDB</div><div>Solar BOS</div><div>GST Billing</div><div>Project RFQ</div></div></div><div className="nisWhyList"><div className="nisWhyItem"><i><Settings2 size={20}/></i><div><h4>Dynamic component configuration</h4><p>ACDB/DCDB selections are linked to component and enclosure masters, making the system ready for real commercial pricing.</p></div></div><div className="nisWhyItem"><i><FileText size={20}/></i><div><h4>Permanent BOM snapshots</h4><p>Purchased custom configurations can retain the selected BOM and prices for historical production records.</p></div></div><div className="nisWhyItem"><i><ShoppingBag size={20}/></i><div><h4>Direct + bulk buying</h4><p>Use checkout for standard purchasing and the RFQ pipeline for large project requirements.</p></div></div><div className="nisWhyItem"><i><Boxes size={20}/></i><div><h4>One operational backend</h4><p>Products, stock, components, orders, RFQs and production views are managed from the same Supabase-backed system.</p></div></div></div></div></section>
+      <section className="hvSection hvWhy" id="why-us" aria-labelledby="why-title"><div className="container hvWhyGrid">
+        <div className="hvWhyIntro"><span>WHY NEW INDIA SOLAR</span><h2 id="why-title">Built around the installer’s real procurement workflow.</h2><p>Products, custom configurations, bulk RFQs and order records work together, reducing the gaps between selection, pricing and production.</p><Link className="hvBtn hvBtnDark" href="/shop">Explore the catalogue <ArrowRight size={17}/></Link></div>
+        <div className="hvWhyCards">
+          <article className="wide"><SearchCheck/><div><h3>Clear component selection</h3><p>Choose protection and BOS components with structured specifications instead of relying on unstructured messages.</p></div></article>
+          <article><Settings2/><div><h3>Dynamic configuration</h3><p>Build ACDB/DCDB from enclosure and component options.</p></div></article>
+          <article><FileText/><div><h3>BOM snapshots</h3><p>Custom orders retain selected component and pricing data.</p></div></article>
+          <article><ShieldCheck/><div><h3>Business-ready ordering</h3><p>GST details, project buying and bulk enquiry flows in one place.</p></div></article>
+          <article><Truck/><div><h3>Operations connected</h3><p>Orders, RFQs, stock and production views use the same backend.</p></div></article>
+        </div>
+      </div></section>
+
+      <section className="hvFinal"><div className="container hvFinalInner"><div><span>READY FOR YOUR NEXT INSTALLATION?</span><h2>Start with a component, a custom box, or a complete project requirement.</h2></div><div><Link className="hvBtn hvBtnLight" href="/shop">Shop Components</Link><Link className="hvBtn hvBtnPrimary" href="/bulk-order">Request Project Pricing <ArrowRight size={17}/></Link></div></div></section>
     </main>
     <StoreFooter/>
   </>
