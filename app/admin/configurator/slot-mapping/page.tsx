@@ -41,7 +41,23 @@ export default function SlotMapping(){
  async function remove(id:string){await supabase.from('configurator_visual_slots').delete().eq('id',id);setForm({...blank,option_key:optionKeys[0]||'component'});loadSlots()}
  function stagePct(clientX:number,clientY:number){const r=stageRef.current?.getBoundingClientRect();if(!r)return{x:0,y:0};return{x:clamp(((clientX-r.left)/r.width)*100,0,100),y:clamp(((clientY-r.top)/r.height)*100,0,100)}}
  function startMove(e:PointerEvent,s:any,mode:'move'|'resize'){e.preventDefault();e.stopPropagation();(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);dragRef.current={id:s.id,mode,start:stagePct(e.clientX,e.clientY),orig:{x:num(s.x_pct),y:num(s.y_pct),w:num(s.width_pct),h:num(s.height_pct)}};edit(s)}
- function movePointer(e:PointerEvent){const d=dragRef.current;if(!d)return;const p=stagePct(e.clientX,e.clientY),dx=p.x-d.start.x,dy=p.y-d.start.y;setSlots(old=>old.map(s=>{if(s.id!==d.id)return s;if(d.mode==='move'){const x=clamp(d.orig.x+dx,0,100-d.orig.w),y=clamp(d.orig.y+dy,0,100-d.orig.h);const next={...s,x_pct:+x.toFixed(2),y_pct:+y.toFixed(2)};setForm((f:any)=>f.id===s.id?{...f,x_pct:next.x_pct,y_pct:next.y_pct}:f);return next}const w=clamp(d.orig.w+dx,4,100-d.orig.x),h=clamp(d.orig.h+dy,4,100-d.orig.y);const next={...s,width_pct:+w.toFixed(2),height_pct:+h.toFixed(2)};setForm((f:any)=>f.id===s.id?{...f,width_pct:next.width_pct,height_pct:next.height_pct}:f);return next}})}
+ function movePointer(e:PointerEvent){
+  const d=dragRef.current;if(!d)return
+  const p=stagePct(e.clientX,e.clientY),dx=p.x-d.start.x,dy=p.y-d.start.y
+  setSlots(old=>old.map(s=>{
+   if(s.id!==d.id)return s
+   if(d.mode==='move'){
+    const x=clamp(d.orig.x+dx,0,100-d.orig.w),y=clamp(d.orig.y+dy,0,100-d.orig.h)
+    const next={...s,x_pct:+x.toFixed(2),y_pct:+y.toFixed(2)}
+    setForm((f:any)=>f.id===s.id?{...f,x_pct:next.x_pct,y_pct:next.y_pct}:f)
+    return next
+   }
+   const w=clamp(d.orig.w+dx,4,100-d.orig.x),h=clamp(d.orig.h+dy,4,100-d.orig.y)
+   const next={...s,width_pct:+w.toFixed(2),height_pct:+h.toFixed(2)}
+   setForm((f:any)=>f.id===s.id?{...f,width_pct:next.width_pct,height_pct:next.height_pct}:f)
+   return next
+  }))
+ }
  async function endPointer(){const d=dragRef.current;if(!d)return;dragRef.current=null;const s=slots.find(x=>x.id===d.id);if(s){const fresh=(form.id===s.id?form:s);await persistSlot(fresh);setMsg('Position saved automatically. Buyer preview is responsive because placement is stored as percentages.');loadSlots()}}
  function dragComponent(e:DragEvent,component:any){e.dataTransfer.setData('application/x-config-component',JSON.stringify({id:component.id,name:component.name,category:component.category,image_url:component.image_url}));e.dataTransfer.effectAllowed='copy'}
  async function dropComponent(e:DragEvent){e.preventDefault();const raw=e.dataTransfer.getData('application/x-config-component');if(!raw)return;const c=JSON.parse(raw);const p=stagePct(e.clientX,e.clientY);const option=componentOption(c.category,tpl?.type||'dcdb');const same=slots.filter(s=>s.option_key===option);const w=option==='terminal'?14:option.includes('cable')||option==='wire'?42:22;const h=option==='terminal'?22:option.includes('cable')||option==='wire'?20:38;const next={...blank,slot_key:`${option}_${same.length+1}`,option_key:option,slot_index:same.length+1,component_category:c.category,x_pct:+clamp(p.x-w/2,0,100-w).toFixed(2),y_pct:+clamp(p.y-h/2,0,100-h).toFixed(2),width_pct:w,height_pct:h,z_index:option.includes('cable')||option==='wire'?30:20+same.length,settings:{preview_component_id:c.id,preview_image_url:c.image_url,preview_name:c.name}};const saved=await persistSlot(next);if(saved){setSlots(old=>[...old,saved]);setForm(saved);setMsg(`${c.name} dropped into ${optionLabel(option)} slot. Drag to position and resize.`)}}
