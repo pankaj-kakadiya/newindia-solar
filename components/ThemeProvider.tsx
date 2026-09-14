@@ -13,8 +13,11 @@ export type StoreTheme={
   customCss:string
 }
 
+const FULL_LOGO='/new-india-solar-full-logo.webp'
+const ICON_LOGO='/new-india-solar-logo.webp'
+
 export const defaultTheme:StoreTheme={
-  branding:{companyName:'New India Solar Components Pvt Ltd',tagline:'Powering India’s Solar Installations.',promise:'Tested. Packed. Guaranteed.',logoUrl:'/new-india-solar-logo.webp',headerLogoUrl:'/new-india-solar-logo.webp',footerLogoUrl:'/new-india-solar-logo.webp',mobileLogoUrl:'/new-india-solar-logo.webp',faviconUrl:'/new-india-solar-logo.webp',emailLogoUrl:'/new-india-solar-logo.webp',invoiceLogoUrl:'/new-india-solar-logo.webp',logoAlt:'New India Solar Components Pvt Ltd'},
+  branding:{companyName:'New India Solar Components Pvt Ltd',tagline:'Powering India’s Solar Installations.',promise:'Tested. Packed. Guaranteed.',logoUrl:FULL_LOGO,headerLogoUrl:FULL_LOGO,footerLogoUrl:FULL_LOGO,mobileLogoUrl:FULL_LOGO,faviconUrl:ICON_LOGO,emailLogoUrl:FULL_LOGO,invoiceLogoUrl:FULL_LOGO,logoAlt:'New India Solar Components Pvt Ltd'},
   colors:{navy:'#0D1B2A',navy2:'#10283D',primary:'#1D9B54',primary2:'#2EAA4F',gold:'#FFB703',orange:'#F77F00',text:'#10202F',muted:'#687684',border:'#E2E8ED',surface:'#F5F8F6',background:'#FFFFFF',topbarBg:'#07131F',topbarText:'#D5E1EA',headerBg:'#FFFFFF',heroStart:'#091522',heroEnd:'#123223',footerBg:'#08131E',footerText:'#AEBBC5',success:'#1D9B54',danger:'#B54747'},
   typography:{bodyFont:'Inter, Arial, sans-serif',headingFont:'Poppins, Inter, Arial, sans-serif',baseSize:16,bodyWeight:400,headingWeight:800,letterSpacing:0},
   layout:{containerWidth:1280,sectionSpacing:74,cardRadius:16,buttonRadius:10,inputRadius:9,headerHeight:78,logoWidth:260,footerLogoWidth:300,mobileLogoWidth:190,shadowOpacity:.11},
