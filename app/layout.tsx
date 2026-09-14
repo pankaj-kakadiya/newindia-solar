@@ -1,6 +1,7 @@
 import './globals.css'
 import './brand.css'
 import './upgrade.css'
+import './upgrade2.css'
 import type { Metadata } from 'next'
 import { CartProvider } from '../components/CartProvider'
 import CartLink from '../components/CartLink'
