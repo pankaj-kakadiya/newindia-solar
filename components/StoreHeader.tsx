@@ -1,49 +1,91 @@
 'use client'
 
 import Link from 'next/link'
-import { Menu, Search, ShoppingCart, User, X, ChevronDown, ArrowUpRight } from 'lucide-react'
-import { FormEvent, KeyboardEvent, useEffect, useMemo, useState } from 'react'
-import { useCart } from './CartProvider'
+import {ArrowRight,ArrowUpRight,Boxes,Cable,ChevronDown,CircleGauge,FileText,Layers,Menu,PackageCheck,PlugZap,Search,Settings2,ShieldCheck,ShoppingCart,Sparkles,User,Wrench,X,Zap} from 'lucide-react'
+import {FormEvent,KeyboardEvent,useEffect,useMemo,useRef,useState} from 'react'
+import {useCart} from './CartProvider'
 import {useStoreTheme} from './ThemeProvider'
 import {supabase} from '../lib/supabase'
+
+const productGroups=[
+  {name:'ACDB',desc:'AC protection & distribution',href:'/shop?q=ACDB',icon:Zap},
+  {name:'DCDB',desc:'DC combiner & protection',href:'/shop?q=DCDB',icon:ShieldCheck},
+  {name:'MCB / MCCB',desc:'Circuit protection devices',href:'/shop?q=MCB',icon:CircleGauge},
+  {name:'SPD',desc:'AC & DC surge protection',href:'/shop?q=SPD',icon:PlugZap},
+  {name:'Solar Cable',desc:'DC cable & internal wiring',href:'/shop?q=Solar%20Cable',icon:Cable},
+  {name:'Earthing Kit',desc:'Project earthing solutions',href:'/shop?q=Earthing',icon:Layers},
+  {name:'MC4 Connectors',desc:'PV connectors & accessories',href:'/shop?q=MC4',icon:Settings2},
+  {name:'DC Fuse',desc:'Fuse links & holders',href:'/shop?q=Fuse',icon:CircleGauge},
+  {name:'Enclosures',desc:'IP-rated industrial boxes',href:'/shop?q=Enclosure',icon:Boxes},
+  {name:'Terminal Blocks',desc:'Internal connection systems',href:'/shop?q=Terminal',icon:Wrench},
+  {name:'Cable Glands',desc:'Sealed cable entry',href:'/shop?q=Cable%20Gland',icon:PackageCheck},
+  {name:'BOS Accessories',desc:'Balance-of-system parts',href:'/shop?q=BOS',icon:Sparkles},
+]
 
 export default function StoreHeader(){
   const {count}=useCart()
   const {theme}=useStoreTheme()
-  const [open,setOpen]=useState(false)
+  const [mobileOpen,setMobileOpen]=useState(false)
+  const [mobileSection,setMobileSection]=useState<'products'|'customize'|null>('products')
+  const [mega,setMega]=useState<'products'|'customize'|null>(null)
   const [searchOpen,setSearchOpen]=useState(false)
   const [q,setQ]=useState('')
   const [items,setItems]=useState<any[]>([])
   const [active,setActive]=useState(0)
+  const headerRef=useRef<HTMLElement|null>(null)
   const b=theme.branding
   const headerLogo=b.headerLogoUrl||b.logoUrl
   const mobileLogo=b.mobileLogoUrl||headerLogo
   const smartTerms=['ACDB','DCDB','SPD','MCB','MCCB','Solar Cable','MC4 Connector','Earthing Kit','2 In 2 Out DCDB','1000V DC SPD']
-  useEffect(()=>{if(!searchOpen)return;supabase.from('products').select('name,slug,short_description,categories(name,slug),product_variants(selling_price)').eq('status','active').limit(60).then(({data})=>setItems(data||[]));function esc(e:globalThis.KeyboardEvent){if(e.key==='Escape')setSearchOpen(false)}window.addEventListener('keydown',esc);return()=>window.removeEventListener('keydown',esc)},[searchOpen])
+
+  useEffect(()=>{if(!searchOpen)return;supabase.from('products').select('name,slug,short_description,categories(name,slug),product_variants(selling_price)').eq('status','active').limit(60).then(({data})=>setItems(data||[]))},[searchOpen])
+  useEffect(()=>{function key(e:globalThis.KeyboardEvent){if(e.key==='Escape'){setMega(null);setMobileOpen(false);setSearchOpen(false)}}function click(e:MouseEvent){if(mega&&headerRef.current&&!headerRef.current.contains(e.target as Node))setMega(null)}window.addEventListener('keydown',key);window.addEventListener('mousedown',click);return()=>{window.removeEventListener('keydown',key);window.removeEventListener('mousedown',click)}},[mega])
+  useEffect(()=>{document.body.style.overflow=(mobileOpen||searchOpen)?'hidden':'';return()=>{document.body.style.overflow=''}},[mobileOpen,searchOpen])
   const suggestions=useMemo(()=>{const term=q.toLowerCase().trim();const productHits=items.filter((p:any)=>!term||`${p.name} ${p.short_description||''} ${p.categories?.name||''}`.toLowerCase().includes(term)).slice(0,7);const termHits=smartTerms.filter(x=>!term||x.toLowerCase().includes(term)).slice(0,5).map(x=>({term:x}));return [...productHits,...termHits].slice(0,9)},[q,items])
   useEffect(()=>setActive(0),[q,searchOpen])
-  function go(value?:any){const picked=value||suggestions[active];if(picked?.slug){window.location.href=`/product/${picked.slug}`;return}const term=picked?.term||q.trim();if(term)window.location.href=`/shop?q=${encodeURIComponent(term)}`;else window.location.href='/shop'}
+  function closeAll(){setMega(null);setMobileOpen(false)}
+  function go(value?:any){const picked=value||suggestions[active];if(picked?.slug){window.location.href=`/product/${picked.slug}`;return}const term=picked?.term||q.trim();window.location.href=term?`/shop?q=${encodeURIComponent(term)}`:'/shop'}
   function submit(e:FormEvent){e.preventDefault();go()}
   function keys(e:KeyboardEvent<HTMLInputElement>){if(e.key==='ArrowDown'){e.preventDefault();setActive(i=>Math.min(i+1,Math.max(0,suggestions.length-1)))}if(e.key==='ArrowUp'){e.preventDefault();setActive(i=>Math.max(0,i-1))}if(e.key==='Enter'){e.preventDefault();go()}if(e.key==='Escape'){e.preventDefault();setSearchOpen(false)}}
+
   return <>
-    <div className="nisTopbar"><div className="container nisTopbarInner"><span>{b.tagline}</span><div>{theme.header.topbarItems.map(item=><span key={item}>{item}</span>)}</div></div></div>
-    <header className="nisHeader"><div className="container nisNav">
-      <button className="nisMobileBtn" aria-label="Open menu" onClick={()=>setOpen(true)}><Menu size={22}/></button>
-      <Link href="/" className="nisBrand"><img src={headerLogo} alt={b.logoAlt}/></Link>
-      <nav className="nisDesktopNav">
-        <Link href="/shop">Products</Link>
-        <div className="nisNavDrop"><button>Customize <ChevronDown size={14}/></button><div className="nisDropMenu"><Link href="/customize/acdb">Build ACDB</Link><Link href="/customize/dcdb">Build DCDB</Link></div></div>
-        <Link href="/bulk-order">Bulk Order</Link>
-        <Link href="/#why-us">Why New India</Link>
-        <Link href="/#contact">Contact</Link>
-      </nav>
-      <div className="nisNavActions">
-        <button aria-label="Search" onClick={()=>setSearchOpen(true)}><Search size={20}/></button>
-        <Link href="/account" aria-label="Account"><User size={20}/></Link>
-        <Link href="/cart" aria-label="Cart" className="nisCartAction"><ShoppingCart size={20}/>{count>0&&<span>{count>99?'99+':count}</span>}</Link>
+    <div className="nhTopbar"><div className="container nhTopbarInner"><span>{b.tagline}</span><div><span>GST Billing</span><span>Custom ACDB / DCDB</span><span>Pan-India Project Supply</span></div></div></div>
+    <header className="nhHeader" ref={headerRef}>
+      <div className="container nhNav">
+        <button className="nhMobileBtn" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={()=>setMobileOpen(true)}><Menu size={22}/></button>
+        <Link href="/" className="nhBrand" aria-label="New India Solar home"><img src={headerLogo} alt={b.logoAlt}/></Link>
+        <nav className="nhDesktopNav" aria-label="Main navigation">
+          <button className={mega==='products'?'active':''} aria-haspopup="true" aria-expanded={mega==='products'} onClick={()=>setMega(mega==='products'?null:'products')}>Products <ChevronDown size={14}/></button>
+          <button className={mega==='customize'?'active':''} aria-haspopup="true" aria-expanded={mega==='customize'} onClick={()=>setMega(mega==='customize'?null:'customize')}>Customize <ChevronDown size={14}/></button>
+          <Link href="/bulk-order" onClick={closeAll}>Bulk Order</Link>
+          <Link href="/#why-us" onClick={closeAll}>Why New India</Link>
+          <Link href="/#contact" onClick={closeAll}>Contact</Link>
+        </nav>
+        <div className="nhActions">
+          <button aria-label="Search products" onClick={()=>{setMega(null);setSearchOpen(true)}}><Search size={19}/><span>Search</span></button>
+          <Link href="/account" aria-label="Account"><User size={19}/></Link>
+          <Link href="/cart" aria-label={`Cart with ${count} items`} className="nhCart"><ShoppingCart size={19}/>{count>0&&<b>{count>99?'99+':count}</b>}</Link>
+        </div>
       </div>
-    </div></header>
-    {open&&<div className="nisDrawerWrap" onClick={()=>setOpen(false)}><aside className="nisDrawer" onClick={e=>e.stopPropagation()}><div className="nisDrawerHead"><img src={mobileLogo} alt={b.logoAlt}/><button onClick={()=>setOpen(false)} aria-label="Close menu"><X/></button></div><nav><Link href="/shop">Shop All Products</Link><Link href="/customize/acdb">Build ACDB</Link><Link href="/customize/dcdb">Build DCDB</Link><Link href="/bulk-order">Bulk / Project Requirement</Link><Link href="/account">My Account</Link><Link href="/cart">Cart ({count})</Link></nav><div className="nisDrawerFoot">ACDB • DCDB • BOS Components<br/><small>{b.companyName}</small></div></aside></div>}
-    {searchOpen&&<div className="nisSearchOverlay"><div className="nisSearchModal smartSearch"><button className="nisSearchClose" onClick={()=>setSearchOpen(false)}><X/></button><span>SMART SEARCH</span><h2>Search products, categories or ratings.</h2><form onSubmit={submit} role="search"><Search size={21}/><input autoFocus value={q} onKeyDown={keys} onChange={e=>setQ(e.target.value)} placeholder="Try: 2 In 2 Out DCDB, SPD, cable, MCB..." aria-label="Search products"/><button>Search</button></form><div className="smartHint">Use ↑ ↓ to select • Enter to open • Esc to close</div><div className="suggestionList" role="listbox">{suggestions.map((s:any,i:number)=><button key={s.slug||s.term} className={i===active?'active':''} onMouseEnter={()=>setActive(i)} onClick={()=>go(s)} role="option" aria-selected={i===active}><div><b>{s.name||s.term}</b><small>{s.categories?.name||s.short_description||'Search suggestion'}</small></div><span>{s.product_variants?.[0]?.selling_price?`₹${Number(s.product_variants[0].selling_price).toLocaleString('en-IN')}`:<ArrowUpRight size={15}/>}</span></button>)}</div><div className="nisQuickSearch">{smartTerms.slice(0,6).map(t=><button key={t} onClick={()=>go({term:t})}>{t}</button>)}<Link href="/customize/acdb">ACDB Builder</Link><Link href="/customize/dcdb">DCDB Builder</Link></div></div></div>}
+
+      {mega==='products'&&<div className="nhMega" role="region" aria-label="Products menu"><div className="container nhMegaProducts">
+        <div className="nhMegaMain"><div className="nhMegaTitle"><span>PRODUCT CATALOGUE</span><h2>Solar protection & BOS components</h2><Link href="/shop" onClick={closeAll}>View all products <ArrowRight size={15}/></Link></div><div className="nhMegaGrid">{productGroups.map(({name,desc,href,icon:Icon})=><Link key={name} href={href} onClick={closeAll}><i><Icon size={18}/></i><span><b>{name}</b><small>{desc}</small></span><ArrowRight size={14}/></Link>)}</div></div>
+        <aside className="nhMegaAside"><span>PROJECT BUYING</span><h3>Need a complete box or project quote?</h3><p>Move from components to configured ACDB/DCDB or submit your full project requirement.</p><Link href="/customize/dcdb" onClick={closeAll}><Settings2 size={17}/> Build a DCDB</Link><Link href="/bulk-order" onClick={closeAll}><FileText size={17}/> Submit project RFQ</Link><div><ShieldCheck size={16}/><span><b>Tested. Packed. Guaranteed.</b><small>Built for installation workflows.</small></span></div></aside>
+      </div></div>}
+
+      {mega==='customize'&&<div className="nhMega" role="region" aria-label="Customize menu"><div className="container nhMegaCustom">
+        <div className="nhCustomIntro"><span>CUSTOM CONFIGURATION</span><h2>Build the distribution box your site needs.</h2><p>Select enclosure, protection devices, wiring and accessories. Review the configuration before ordering.</p><Link href="/shop" onClick={closeAll}>Or shop ready products <ArrowRight size={15}/></Link></div>
+        <Link className="nhBuildCard dark" href="/customize/acdb" onClick={closeAll}><div><span>ACDB BUILDER</span><i>AC</i></div><h3>Build Your ACDB</h3><p>System size • Phase • MCB/MCCB • SPD • Busbar • Wiring</p><strong>Start builder <ArrowRight size={16}/></strong></Link>
+        <Link className="nhBuildCard green" href="/customize/dcdb" onClick={closeAll}><div><span>DCDB BUILDER</span><i>DC</i></div><h3>Build Your DCDB</h3><p>Strings • Voltage • DC MCB • SPD • Fuse • Cable • Glands</p><strong>Start builder <ArrowRight size={16}/></strong></Link>
+      </div></div>}
+    </header>
+
+    {mobileOpen&&<div className="nhMobileOverlay" onClick={()=>setMobileOpen(false)}><aside className="nhMobileDrawer" onClick={e=>e.stopPropagation()}><div className="nhMobileHead"><img src={mobileLogo} alt={b.logoAlt}/><button aria-label="Close navigation" onClick={()=>setMobileOpen(false)}><X size={21}/></button></div><button className="nhMobileSearch" onClick={()=>{setMobileOpen(false);setSearchOpen(true)}}><Search size={18}/> Search products <span>⌘K</span></button><nav className="nhMobileNav">
+      <button aria-expanded={mobileSection==='products'} onClick={()=>setMobileSection(mobileSection==='products'?null:'products')}>Products <ChevronDown size={16}/></button>{mobileSection==='products'&&<div className="nhMobileSub">{productGroups.map(({name,href})=><Link key={name} href={href} onClick={closeAll}>{name}<ArrowRight size={13}/></Link>)}<Link className="all" href="/shop" onClick={closeAll}>View all products</Link></div>}
+      <button aria-expanded={mobileSection==='customize'} onClick={()=>setMobileSection(mobileSection==='customize'?null:'customize')}>Customize <ChevronDown size={16}/></button>{mobileSection==='customize'&&<div className="nhMobileSub"><Link href="/customize/acdb" onClick={closeAll}>Build ACDB <ArrowRight size={13}/></Link><Link href="/customize/dcdb" onClick={closeAll}>Build DCDB <ArrowRight size={13}/></Link></div>}
+      <Link href="/bulk-order" onClick={closeAll}>Bulk / Project RFQ <ArrowUpRight size={15}/></Link><Link href="/#why-us" onClick={closeAll}>Why New India</Link><Link href="/#contact" onClick={closeAll}>Contact</Link><Link href="/account" onClick={closeAll}>My Account</Link><Link href="/cart" onClick={closeAll}>Cart <span>{count}</span></Link>
+    </nav><div className="nhMobileFoot"><ShieldCheck size={18}/><div><b>New India Solar Components Pvt Ltd</b><span>Powering India’s Solar Installations.</span></div></div></aside></div>}
+
+    {searchOpen&&<div className="nisSearchOverlay" onMouseDown={e=>{if(e.target===e.currentTarget)setSearchOpen(false)}}><div className="nisSearchModal smartSearch"><button className="nisSearchClose" onClick={()=>setSearchOpen(false)} aria-label="Close search"><X/></button><span>SMART SEARCH</span><h2>Search products, categories or ratings.</h2><form onSubmit={submit} role="search"><Search size={21}/><input autoFocus value={q} onKeyDown={keys} onChange={e=>setQ(e.target.value)} placeholder="Try: 2 In 2 Out DCDB, SPD, cable, MCB..." aria-label="Search products"/><button>Search</button></form><div className="smartHint">Use ↑ ↓ to select • Enter to open • Esc to close</div><div className="suggestionList" role="listbox">{suggestions.map((s:any,i:number)=><button key={s.slug||s.term} className={i===active?'active':''} onMouseEnter={()=>setActive(i)} onClick={()=>go(s)} role="option" aria-selected={i===active}><div><b>{s.name||s.term}</b><small>{s.categories?.name||s.short_description||'Search suggestion'}</small></div><span>{s.product_variants?.[0]?.selling_price?`₹${Number(s.product_variants[0].selling_price).toLocaleString('en-IN')}`:<ArrowUpRight size={15}/>}</span></button>)}</div><div className="nisQuickSearch">{smartTerms.slice(0,6).map(t=><button key={t} onClick={()=>go({term:t})}>{t}</button>)}<Link href="/customize/acdb">ACDB Builder</Link><Link href="/customize/dcdb">DCDB Builder</Link></div></div></div>}
   </>
 }
