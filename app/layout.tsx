@@ -7,6 +7,7 @@ import './upgrade4.css'
 import './upgrade5.css'
 import type { Metadata } from 'next'
 import { CartProvider } from '../components/CartProvider'
+import ThemeProvider from '../components/ThemeProvider'
 import CartLink from '../components/CartLink'
 
 export const metadata: Metadata = {
@@ -15,5 +16,5 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><CartProvider>{children}<CartLink/></CartProvider></body></html>
+  return <html lang="en"><body><ThemeProvider><CartProvider>{children}<CartLink/></CartProvider></ThemeProvider></body></html>
 }
