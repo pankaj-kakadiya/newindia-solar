@@ -18,10 +18,10 @@ import './product-image-fit.css'
 import './configurator-v2.css'
 import './configurator-admin.css'
 import './configurator-editor-v2.css'
+import './production-fixes.css'
 import type { Metadata } from 'next'
 import { CartProvider } from '../components/CartProvider'
 import ThemeProvider from '../components/ThemeProvider'
-import CartLink from '../components/CartLink'
 
 export const metadata: Metadata = {
   title: 'New India Solar | ACDB, DCDB & Solar Components',
@@ -29,5 +29,5 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><ThemeProvider><CartProvider>{children}<CartLink/></CartProvider></ThemeProvider></body></html>
+  return <html lang="en"><body><ThemeProvider><CartProvider>{children}</CartProvider></ThemeProvider></body></html>
 }
