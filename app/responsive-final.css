@@ -1,0 +1,262 @@
+/* Final responsive hardening — storefront + admin
+   Loaded last so legacy page styles cannot re-introduce overflow bugs. */
+
+html,body{max-width:100%;overflow-x:hidden}
+img,svg,video,canvas{max-width:100%}
+button,input,select,textarea{max-width:100%}
+.container{width:100%;max-width:var(--theme-container-width,1280px);margin-left:auto;margin-right:auto}
+
+/* Header */
+.nhNav,.nhDesktopNav,.nhActions,.nhBrand{min-width:0}
+.nhBrand img{max-width:100%;object-fit:contain}
+.nhMegaProducts,.nhMegaCustom,.nhMegaMain,.nhMegaGrid,.nhMegaAside{min-width:0}
+.nhMegaGrid>a span{min-width:0}
+.nhMegaGrid small{overflow-wrap:anywhere}
+
+/* Footer */
+.nisFooter .container,.nisFooterGrid,.nisFooterBrand,.nisFooterGrid>div{min-width:0}
+.nisFooterLogo{display:inline-flex;align-items:center;justify-content:flex-start;max-width:100%;background:transparent!important;padding:0!important}
+.nisFooterLogo img{display:block!important;width:min(var(--theme-footer-logo-width,300px),100%)!important;max-width:100%!important;height:auto!important;max-height:96px!important;object-fit:contain!important;filter:none!important;opacity:1!important;background:#fff;border-radius:12px;padding:8px 10px}
+.nisFooterBrand p,.nisFooterSmall,.nisFooter a,.nisFooterGrid>div>span{overflow-wrap:anywhere}
+
+/* Shop */
+.shopHeroUX,.shopSearchPanel,.shopToolbar,.productGrid,.uxProductGrid,.uxProductCard,.uxProductCard .cardBody{min-width:0}
+.productImg{position:relative;overflow:hidden}
+.productBadge{position:absolute!important;left:12px!important;top:12px!important;right:auto!important;bottom:auto!important;z-index:3!important;max-width:calc(100% - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shopSort{min-width:0}
+.shopSort select{min-width:0;max-width:100%}
+.filterTabs{min-width:0}
+
+/* Product detail */
+.pdHero,.pdGalleryColumn,.pdGallery,.pdImageStage,.pdBuy,.pdPriceCard,.pdTaxLine,.pdInfo,.pdOverview,.pdRelatedGrid{min-width:0}
+.pdImageStage>img{max-width:100%;max-height:100%}
+.pdBuy h1,.pdLead,.pdSpecGrid b,.pdDownloads b,.pdRelatedGrid h3{overflow-wrap:anywhere}
+.pdTabs{-webkit-overflow-scrolling:touch}
+
+/* Cart / checkout / RFQ */
+.cartLayout,.cartItemsPanel,.cartRow,.cartInfo,.summary,.checkoutForm,.checkoutMain,.checkoutSection,.checkoutSummary,.rfqForm,.bulkPageGrid,.bulkAssist{min-width:0}
+.cartInfo b,.cartInfo span,.checkoutLine span,.checkoutLine b{overflow-wrap:anywhere}
+.checkoutLine>span{min-width:0}
+
+/* Account / auth */
+.accountGrid,.accountCard,.accountSide,.orderList article,.loginGrid,.loginPitch,.premiumAuth,.authCard{min-width:0}
+
+/* Customizer */
+.cvLayout,.cvPreviewPanel,.cvConfigPanel,.cvSummary,.cvStep,.cvChoice,.customizeHero,.customizeCards,.customizeProject{min-width:0}
+.cvChoiceBody b,.cvChoiceBody small,.cvBom b{overflow-wrap:anywhere}
+
+/* Admin */
+.adminWrap,.adminMain,.adminTopbar,.adminContent,.adminPanel,.adminCard,.statCard{min-width:0}
+.adminContent{width:100%;overflow-x:hidden}
+.adminTopbar>div{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adminTableWrap,.cleanProductTable{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.productAdminPro,.productDrawerPro,.productListPanel,.productStats,.productAdminHero,.proGrid,.imageStudio,.variantStudio,.listToolbar{min-width:0}
+.themeAdmin,.themeLayout,.themeControls,.themePanel,.themePresetSection,.themePreview,.themeLogoCard{min-width:0}
+.cfgAdmin,.cfgEditor,.cfgPanel,.cfgComponentEditor,.cfgTemplateEditor,.cfgAssetGrid,.cfgTemplateGrid,.cfgSlotLayout,.cfgDndLayout,.cfgVisualEditor,.cfgComponentPalette,.cfgSlotForm,.cfgSelectors,.cfgRuleForm{min-width:0}
+.cfgModal{max-width:calc(100vw - 28px)}
+
+/* Prevent legacy floating-cart artefacts if cached component/CSS is encountered. */
+.floatingCart{display:none!important}
+
+@media(max-width:1180px){
+  .shopHeroUX{grid-template-columns:1fr!important}
+  .shopSearchPanel{width:100%}
+  .pdHero{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+  .pdServiceGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nisFooterGrid{grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr))!important}
+  .nisFooterGrid>div:last-child{grid-column:1/-1}
+  .cfgAdminStats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cfgAdminCards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cfgDndLayout{grid-template-columns:250px minmax(0,1fr)!important}
+  .cfgDndLayout>.cfgSlotForm{grid-column:2}
+}
+
+@media(max-width:980px){
+  .pdHero{grid-template-columns:1fr!important}
+  .pdGalleryColumn{max-width:760px;width:100%;margin:0 auto}
+  .pdOverview{grid-template-columns:1fr 1fr!important}
+  .pdOverview>div:first-child{grid-column:1/-1}
+  .pdWhyGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .pdRelatedGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .cartLayout,.checkoutForm,.bulkPageGrid{grid-template-columns:1fr!important}
+  .summary,.checkoutSummary,.bulkAssist{position:static!important}
+  .checkoutSummary{order:2}
+  .cfgDndLayout{grid-template-columns:1fr!important}
+  .cfgComponentPalette{position:static!important;max-height:none!important}
+  .cfgDndLayout>.cfgSlotForm{grid-column:auto}
+  .cfgSlotLayout{grid-template-columns:1fr!important}
+  .cfgAdminStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .themeLayout{grid-template-columns:1fr!important}
+  .themePreview{position:static!important;top:auto!important}
+}
+
+@media(max-width:900px){
+  .container{padding-left:18px!important;padding-right:18px!important}
+  .nhNav{padding-left:18px!important;padding-right:18px!important}
+  .nhBrand{justify-content:center}
+  .nhBrand img{width:min(164px,42vw)!important}
+  .nhActions{flex:0 0 auto}
+  .nisFooterCta{align-items:flex-start!important;flex-direction:column!important}
+  .nisFooterCta .nisPrimaryBtn{width:100%;justify-content:center}
+  .nisFooterGrid{grid-template-columns:1fr 1fr!important;gap:28px!important}
+  .nisFooterGrid>div:last-child{grid-column:auto}
+  .shopToolbar{align-items:stretch!important;flex-direction:column!important}
+  .shopSort{width:100%;justify-content:space-between}
+  .shopSort select{flex:1}
+  .stickyShopTools{position:static!important}
+  .productGrid,.uxProductGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .accountGrid{grid-template-columns:1fr!important}
+  .accountSide{position:static!important}
+  .loginGrid{grid-template-columns:1fr!important;gap:28px!important}
+  .loginPitch{min-height:auto!important}
+  .cvLayout{grid-template-columns:1fr!important}
+  .cvPreviewPanel,.cvSummary{position:static!important;grid-column:auto!important;grid-row:auto!important}
+  .customizeHero{grid-template-columns:1fr!important}
+  .customizeCards{grid-template-columns:1fr!important}
+  .productAdminHero,.drawerTop,.themeAdminHead{align-items:flex-start!important;flex-direction:column!important}
+  .productHeroActions,.drawerTop>div:last-child,.themeHeadActions{width:100%}
+  .proGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .imageStudio{grid-template-columns:1fr!important}
+  .listToolbar{grid-template-columns:1fr 1fr!important}
+  .cfgComponentEditor,.cfgTemplateEditor{grid-template-columns:1fr!important}
+  .cfgRuleForm,.cfgSelectors{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media(max-width:760px){
+  body{font-size:15px!important}
+  .container{padding-left:14px!important;padding-right:14px!important}
+  .nhNav{padding-left:12px!important;padding-right:12px!important}
+  .nhBrand img{width:min(150px,40vw)!important}
+  .nhMobileDrawer{width:min(94vw,410px)!important}
+  .nhMobileSub{grid-template-columns:1fr 1fr}
+  .nisSearchOverlay{padding:12px!important;align-items:flex-start!important}
+  .nisSearchModal{width:100%!important;margin-top:8px!important;padding:20px 16px!important;border-radius:20px!important}
+  .nisFooter{padding-bottom:calc(18px + env(safe-area-inset-bottom))!important}
+  .nisFooterCta{margin-left:0!important;margin-right:0!important;border-radius:18px!important;padding:24px!important}
+  .nisFooterGrid{grid-template-columns:1fr!important;gap:24px!important;padding:36px 0 26px!important}
+  .nisFooterLogo img{width:min(260px,100%)!important}
+  .nisFooterBottom{flex-direction:column!important;gap:7px!important;align-items:flex-start}
+
+  .shopPage,.uxShop{padding-left:14px!important;padding-right:14px!important;padding-top:16px!important}
+  .shopHeroUX{padding:20px!important;border-radius:20px!important;gap:18px!important}
+  .shopHeroUX h1{font-size:clamp(30px,10vw,38px)!important;line-height:1.04!important}
+  .shopHeroUX p{font-size:14px!important;line-height:1.55!important}
+  .shopSearchPanel{padding:12px!important;border-radius:17px!important}
+  .smartShopSearch{min-width:0;width:100%}
+  .quickChips{overflow-x:auto;flex-wrap:nowrap!important;padding-bottom:3px;-webkit-overflow-scrolling:touch}
+  .quickChips button{white-space:nowrap;flex:0 0 auto}
+  .productGrid,.uxProductGrid{grid-template-columns:1fr!important;gap:12px!important}
+  .uxProductCard{grid-template-columns:112px minmax(0,1fr)!important}
+  .uxProductCard .productImg{min-height:148px!important}
+  .uxProductCard .cardBody{min-width:0}
+  .uxProductCard .productCardActions{grid-column:1/-1!important}
+
+  .pdPage .container{padding-left:14px!important;padding-right:14px!important}
+  .pdHero{gap:22px!important;padding-bottom:18px!important}
+  .pdGallery{padding:8px!important;border-radius:15px!important}
+  .pdImageStage{border-radius:11px!important}
+  .pdImageStage>img{padding:10px!important}
+  .pdBuy h1{font-size:clamp(28px,9vw,36px)!important;line-height:1.05!important}
+  .pdTopline{align-items:flex-start!important;flex-direction:column!important}
+  .pdPriceCard{grid-template-columns:1fr!important}
+  .pdPriceMain>strong{font-size:32px!important}
+  .pdTaxLine{grid-template-columns:1fr auto 1fr!important}
+  .pdTaxLine i:nth-of-type(2),.pdTaxLine>div:nth-last-child(1){display:none}
+  .pdBuyRow{grid-template-columns:1fr!important}
+  .pdQty{width:100%!important}
+  .pdSecondaryActions{grid-template-columns:1fr!important}
+  .pdServiceGrid{grid-template-columns:1fr 1fr!important}
+  .pdOverview,.pdSpecGrid,.pdBoxList,.pdDownloads{grid-template-columns:1fr!important}
+  .pdSpecGrid>div{border-bottom:1px solid #edf2ef!important}
+  .pdWhyGrid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .pdRelatedGrid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .pdSectionHead.row{align-items:flex-start!important;flex-direction:column!important}
+
+  .cartPage,.checkoutPage,.formPage,.accountPage{padding-left:14px!important;padding-right:14px!important}
+  .cartRow{grid-template-columns:64px minmax(0,1fr)!important;gap:10px!important;padding:14px 0!important}
+  .cartRow .qty,.cartRow strong{grid-column:2!important;text-align:left!important}
+  .cartInfo button{min-height:36px}
+  .cartItemsPanel{padding:0 12px!important}
+  .summary,.checkoutSection,.checkoutSummary{border-radius:16px!important}
+  .checkoutIntro h1{font-size:34px!important}
+  .checkoutForm{gap:20px!important}
+  .checkoutAlert{align-items:flex-start!important;grid-template-columns:22px 1fr!important}
+  .checkoutAlert>a{grid-column:1/-1;width:100%;justify-content:center}
+  .two,.three{grid-template-columns:1fr!important}
+  .rfqForm{grid-template-columns:1fr!important}
+  .bulkAssist{border-radius:18px!important}
+
+  .accountHead{align-items:flex-start!important;flex-direction:column!important}
+  .orderList article{grid-template-columns:1fr auto!important}
+  .loginPage{padding:24px 0 44px!important}
+  .loginPitch{padding:24px!important;border-radius:20px!important}
+  .premiumAuth,.authCard{padding:20px!important;border-radius:18px!important}
+
+  .cvPage{padding-left:12px!important;padding-right:12px!important;padding-bottom:94px!important}
+  .cvHead{flex-direction:column!important}
+  .cvHead>div:last-child{width:100%;display:grid!important;grid-template-columns:1fr 1fr}
+  .cvChoices{grid-template-columns:1fr!important}
+  .cvPreviewPanel,.cvSummary,.cvStep{border-radius:15px!important}
+  .cvChoice{grid-template-columns:56px minmax(0,1fr)!important}
+  .customizeLanding{padding-left:12px!important;padding-right:12px!important}
+  .customizeHero{padding:20px!important;border-radius:18px!important}
+  .customizeHero h1{font-size:34px!important}
+  .customizeSteps{grid-template-columns:1fr!important}
+  .customizeProject{align-items:flex-start!important;flex-direction:column!important}
+  .customizeProject a{width:100%;text-align:center}
+
+  .adminMain{margin-left:0!important;width:100%!important}
+  .adminSidebar{width:min(86vw,280px)!important}
+  .adminTopbar{min-height:58px!important;padding:8px 12px!important;gap:8px!important}
+  .adminTopbar>div{flex:1;font-size:12px}
+  .adminTopbar>div small{display:none!important}
+  .adminTopbar>button:last-child{font-size:0!important;min-width:40px!important;width:40px!important;height:40px!important;padding:0!important;display:grid!important;place-items:center!important}
+  .adminContent{padding:14px 10px 28px!important}
+  .adminContent h1{font-size:28px!important}
+  .productStats{grid-template-columns:1fr 1fr!important}
+  .productAdminHero,.productDrawerPro,.productListPanel{border-radius:16px!important}
+  .proGrid{grid-template-columns:1fr!important;padding:12px!important}
+  .proGrid .wide,.proGrid .full{grid-column:auto!important}
+  .imageStudio,.variantStudio{padding:12px!important}
+  .imageStudioGrid{grid-template-columns:1fr!important}
+  .variantCardPro{grid-template-columns:1fr 1fr!important}
+  .listToolbar{grid-template-columns:1fr!important;padding:10px!important}
+  .drawerTabs{padding:9px 12px!important}
+  .cleanProductTable table{min-width:820px!important}
+  .themePresets,.themeFormGrid,.themeColorGrid,.themeLogoGrid{grid-template-columns:1fr!important}
+  .themePanel,.themePresetSection{padding:14px!important;border-radius:14px!important}
+  .themeLogoCard{grid-template-columns:1fr!important}
+  .themeBottomBar{left:0!important;padding:9px 10px!important}
+  .themeBottomBar span{display:none!important}
+  .themeBottomBar .themeSave{width:100%!important;justify-content:center!important}
+  .cfgAdmin .adminPageHead{flex-direction:column!important}
+  .cfgAdminStats,.cfgAdminCards{grid-template-columns:1fr!important}
+  .cfgToolbar,.cfgSelectors,.cfgRuleForm{grid-template-columns:1fr!important}
+  .cfgAssetGrid,.cfgTemplateGrid{grid-template-columns:1fr!important}
+  .cfgSlotNumbers{grid-template-columns:1fr 1fr!important}
+  .cfgModal{padding:16px!important;border-radius:16px!important}
+  .cfgModalPrice{grid-template-columns:1fr 1fr!important}
+  .cfgBomTable>div{grid-template-columns:90px minmax(0,1fr) 54px 70px!important;overflow-wrap:anywhere}
+}
+
+@media(max-width:480px){
+  .nhBrand img{width:min(132px,38vw)!important}
+  .nhMobileBtn,.nhActions>a,.nhActions>button{width:36px!important;height:36px!important;min-width:36px!important}
+  .nhMobileSub{grid-template-columns:1fr!important}
+  .nisFooterCta{padding:20px!important}
+  .nisFooterCta h2{font-size:24px!important}
+  .uxProductCard{grid-template-columns:102px minmax(0,1fr)!important}
+  .uxProductCard .productImg{min-height:138px!important}
+  .uxProductCard h3{font-size:15px!important}
+  .pdServiceGrid,.pdWhyGrid,.pdRelatedGrid{grid-template-columns:1fr!important}
+  .pdGalleryBadges{justify-content:flex-start!important;gap:6px!important}
+  .pdGalleryBadges span{padding:7px 9px!important}
+  .productStats{grid-template-columns:1fr!important}
+  .variantCardPro{grid-template-columns:1fr!important}
+  .cfgSlotNumbers,.cfgModalPrice{grid-template-columns:1fr!important}
+  .cvHead>div:last-child{grid-template-columns:1fr!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
