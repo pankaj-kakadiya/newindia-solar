@@ -1,0 +1,66 @@
+/* Production storefront visual fixes */
+
+/* Product badges must stay inside each product image instead of escaping to the viewport. */
+.uxProductCard .productImg,
+.productCard .productImg{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+.productBadge{
+  z-index:3;
+  max-width:calc(100% - 24px);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Keep the catalogue toolbar and Featured sort control visually contained. */
+.stickyShopTools{
+  overflow:visible;
+}
+.shopSort{
+  position:relative;
+  z-index:1;
+  flex:0 0 auto;
+}
+.shopSort select{
+  min-width:150px;
+  cursor:pointer;
+}
+
+/* Footer logo: the uploaded theme logo is a colour JPEG on white.
+   The old invert filter turned the whole image white, creating a blank block. */
+.nisFooterLogo{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:flex-start;
+  max-width:100%;
+  margin:0 0 16px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:hidden;
+}
+.nisFooterLogo img,
+.nisFooterBrand img{
+  filter:none!important;
+  opacity:1!important;
+  display:block!important;
+  height:auto!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  border-radius:10px;
+}
+
+/* Legacy floating cart is intentionally disabled; the header cart is the single cart entry point. */
+.floatingCart{
+  display:none!important;
+}
+
+@media (max-width:760px){
+  .shopSort{width:100%;}
+  .shopSort select{min-width:0;width:100%;}
+  .nisFooterLogo{max-width:min(100%,230px);}
+}
