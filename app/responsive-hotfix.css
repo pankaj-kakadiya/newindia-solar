@@ -1,0 +1,40 @@
+/* Final narrow-screen fixes discovered during full responsive audit. */
+@media(max-width:760px){
+  /* Preserve Base + GST + Total on product pricing; hide math symbols only. */
+  .pdTaxLine{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    align-items:stretch!important;
+  }
+  .pdTaxLine>i{display:none!important}
+  .pdTaxLine>div{
+    display:block!important;
+    min-width:0;
+    padding:9px 8px;
+    border-radius:10px;
+    background:#f7faf8;
+  }
+  .pdTaxLine small{white-space:normal;line-height:1.25}
+  .pdTaxLine b{font-size:13px!important;overflow-wrap:anywhere}
+
+  /* Checkout alert remains readable without creating horizontal overflow. */
+  .checkoutAlert{
+    grid-template-columns:26px minmax(0,1fr)!important;
+    align-items:start!important;
+  }
+  .checkoutAlert>a{
+    grid-column:2!important;
+    width:max-content!important;
+    max-width:100%;
+  }
+
+  /* Long admin labels / filenames must wrap rather than force the canvas wider. */
+  .adminContent,.cfgAdmin,.productAdminPro,.themeAdmin{overflow-wrap:anywhere}
+  .cfgPaletteItems section,.cfgEditorHead>div,.drawerTop>div,.productCell>div{min-width:0}
+}
+
+@media(max-width:420px){
+  .pdTaxLine{grid-template-columns:1fr!important}
+  .pdTaxLine>div{padding:9px 10px}
+  .checkoutAlert>a{grid-column:1/-1!important;width:100%!important;justify-content:center}
+}
