@@ -11,6 +11,7 @@ export type AdminAccess={
 
 export const hrefModule:Record<string,string>={
   '/admin':'dashboard',
+  '/admin/notifications':'notifications',
   '/admin/reports':'reports',
   '/admin/orders':'orders',
   '/admin/rfqs':'rfqs',
