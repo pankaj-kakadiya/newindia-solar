@@ -3,17 +3,18 @@
 import {useEffect,useMemo,useState} from 'react'
 import {ArrowDown,ArrowUp,Check,Download,ExternalLink,FileText,Globe2,Image as ImageIcon,LayoutTemplate,Link2,Plus,RefreshCw,Save,Search,Trash2,Upload} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {normalizeHomeSections} from '../../../lib/homepage-sections'
 
 type Tab='home'|'site'|'pages'|'navigation'|'downloads'|'seo'
 const clone=(v:any)=>JSON.parse(JSON.stringify(v||{}))
 const slugify=(s:string)=>s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
 const safeName=(s:string)=>s.toLowerCase().replace(/[^a-z0-9.]+/g,'-').replace(/-+/g,'-')
-const sectionNames:any={trust:'Trust Strip',collections:'Featured Collections',builder:'ACDB / DCDB Builder',buyways:'Buying Flows',why:'Why New India',final:'Final CTA'}
+const sectionNames:any={trust:'Trust Strip',products:'Featured Products',project:'EPC / Project Buying',downloads:'Catalogue & Downloads',collections:'Featured Collections',builder:'ACDB / DCDB Builder',buyways:'Buying Flows',why:'Why New India',final:'Final CTA'}
 
 export default function ContentAdmin(){
  const [tab,setTab]=useState<Tab>('home'),[settings,setSettings]=useState<any>({site:{},home:{},footer:{},seo:{}}),[nav,setNav]=useState<any[]>([]),[pages,setPages]=useState<any[]>([]),[downloads,setDownloads]=useState<any[]>([]),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[uploading,setUploading]=useState(''),[msg,setMsg]=useState(''),[q,setQ]=useState('')
  const [pageDraft,setPageDraft]=useState<any>(null),[navDraft,setNavDraft]=useState<any>({area:'header',label:'',href:'',sort_order:10,is_active:true,is_external:false}),[downloadDraft,setDownloadDraft]=useState<any>({title:'',description:'',file_url:'',file_type:'',category:'',sort_order:10,is_active:true})
- async function load(){setLoading(true);const [s,n,p,d]=await Promise.all([supabase.from('cms_settings').select('*'),supabase.from('cms_navigation_items').select('*').order('area').order('sort_order'),supabase.from('cms_pages').select('*').order('sort_order').order('updated_at',{ascending:false}),supabase.from('cms_downloads').select('*').order('sort_order').order('updated_at',{ascending:false})]);const x:any={site:{},home:{},footer:{},seo:{}};for(const r of s.data||[])x[r.key]=r.value||{};setSettings(x);setNav(n.data||[]);setPages(p.data||[]);setDownloads(d.data||[]);setLoading(false)}
+ async function load(){setLoading(true);const [s,n,p,d]=await Promise.all([supabase.from('cms_settings').select('*'),supabase.from('cms_navigation_items').select('*').order('area').order('sort_order'),supabase.from('cms_pages').select('*').order('sort_order').order('updated_at',{ascending:false}),supabase.from('cms_downloads').select('*').order('sort_order').order('updated_at',{ascending:false})]);const x:any={site:{},home:{},footer:{},seo:{}};for(const r of s.data||[])x[r.key]=r.value||{};x.home.section_order=normalizeHomeSections(x.home.section_order);setSettings(x);setNav(n.data||[]);setPages(p.data||[]);setDownloads(d.data||[]);setLoading(false)}
  useEffect(()=>{load()},[])
  async function saveSetting(key:string){setSaving(true);setMsg('');const {data:{user}}=await supabase.auth.getUser();const {error}=await supabase.from('cms_settings').upsert({key,value:settings[key],updated_by:user?.id||null},{onConflict:'key'});setSaving(false);setMsg(error?error.message:`${key[0].toUpperCase()+key.slice(1)} content published.`)}
  async function upload(bucketPath:string,file?:File|null){if(!file)return'';setUploading(bucketPath);const path=`${bucketPath}/${Date.now()}-${safeName(file.name)}`;const {error}=await supabase.storage.from('cms-assets').upload(path,file,{upsert:true});if(error){setMsg(error.message);setUploading('');return''}const {data}=supabase.storage.from('cms-assets').getPublicUrl(path);setUploading('');return data.publicUrl}

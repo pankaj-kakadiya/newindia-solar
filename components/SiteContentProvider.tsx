@@ -2,6 +2,7 @@
 
 import {createContext,useContext,useEffect,useMemo,useState} from 'react'
 import {supabase} from '../lib/supabase'
+import {normalizeHomeSections} from '../lib/homepage-sections'
 
 export type CmsNavItem={id:string;area:string;label:string;href:string;sort_order:number;is_active:boolean;is_external:boolean}
 export type CmsFooterPage={id:string;slug:string;title:string;sort_order:number}
@@ -31,6 +32,7 @@ export function SiteContentProvider({children}:{children:React.ReactNode}){
    supabase.from('cms_pages').select('id,slug,title,sort_order').eq('status','published').eq('show_in_footer',true).order('sort_order')
   ])
   const next:any={...defaults};for(const r of s.data||[])next[r.key]={...(defaults as any)[r.key],...(r.value||{})}
+  next.home={...defaults.home,...next.home,hero:{...defaults.home.hero,...next.home.hero},visibility:{...defaults.home.visibility,...next.home.visibility},section_order:normalizeHomeSections(next.home.section_order)}
   setContent(next);if((n.data||[]).length)setNavigation(n.data as CmsNavItem[]);setFooterPages((p.data||[]) as CmsFooterPage[]);setLoading(false)
  }
  useEffect(()=>{load()},[])
