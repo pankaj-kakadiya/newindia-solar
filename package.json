@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "release:check": "npm run build",
-    "release:staging": "npm run release:check && npx vercel@latest deploy --yes"
+    "release:staging": "npm run release:check && npx vercel@latest deploy --yes",
+    "test:builder": "node --test tests/configurator-assets.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

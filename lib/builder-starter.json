@@ -1,0 +1,2906 @@
+{
+  "ACDB": {
+    "template": {
+      "id": "c0c98f0c-807c-4767-aa60-857df285d183",
+      "name": "Build Your Own ACDB",
+      "slug": "custom-acdb",
+      "type": "acdb",
+      "rules": {},
+      "version": 1,
+      "is_active": true,
+      "created_at": "2026-09-13T23:09:56.306385+00:00",
+      "updated_at": "2026-09-15T12:02:24.924434+00:00",
+      "description": "Configure a New India Solar ACDB using compatible enclosure, MCB/MCCB, SPD, terminals, wire, glands and accessories.",
+      "default_gst_rate": 18,
+      "preview_settings": {
+        "asset_pack": "components-v1",
+        "commerce_mode": "quote",
+        "layout": "locked-1in1out"
+      },
+      "base_assembly_charge": 0
+    },
+    "groups": [
+      {
+        "id": "f935d3d4-6320-4063-90be-17d2a9f5b0c0",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "enclosure",
+        "label": "Enclosure",
+        "required": true,
+        "option_type": "enclosure",
+        "sort_order": 1,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "ea147ecd-ce63-5355-8925-a668eabdaf1f",
+            "option_id": "f935d3d4-6320-4063-90be-17d2a9f5b0c0",
+            "value": "enclosure-empty",
+            "label": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+            "component_id": null,
+            "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "fff7f039-bc58-46a9-8ea9-ed958861888f",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "protection",
+        "label": "Circuit breaker",
+        "required": true,
+        "option_type": "component",
+        "sort_order": 2,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "bff39ef7-75d4-523c-9a76-d688aecb7084",
+            "option_id": "fff7f039-bc58-46a9-8ea9-ed958861888f",
+            "value": "ac-mcb-grey-c32",
+            "label": "Lauritz Knudsen C32 AC \u2014 double pole",
+            "component_id": "c4da1cb4-0200-5324-84ec-4d1967d9989b",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "475b3172-3212-5f90-b427-3ffdb31d09c5",
+            "option_id": "fff7f039-bc58-46a9-8ea9-ed958861888f",
+            "value": "ac-mcb-siemens-c32",
+            "label": "SIEMENS C32 AC",
+            "component_id": "810e52e7-c699-5a3b-a828-080e5d61e0fd",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          },
+          {
+            "id": "7b0d0c4f-98dc-5305-b167-e85075c503cb",
+            "option_id": "fff7f039-bc58-46a9-8ea9-ed958861888f",
+            "value": "ac-mcb-empower-c32a",
+            "label": "EMPOWER EM60-C32A AC",
+            "component_id": "b37b7e19-ee53-5968-b3d3-15befa1eb4d2",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 2,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "spd",
+        "label": "Surge protection",
+        "required": true,
+        "option_type": "component",
+        "sort_order": 3,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "57282410-1bb8-57ea-841d-839420ed5bcc",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-oreit",
+            "label": "OREIT OT-SPD-40",
+            "component_id": "cbb8c864-505e-5a42-9b74-36eec4cd7f62",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "278a8aea-82c7-57ba-be46-e79a41cbedc4",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-schutz",
+            "label": "SCHUTZ SCH-40L + SCH-40NPE",
+            "component_id": "f2ce051b-9f41-5e71-92b3-1f61b04d8345",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          },
+          {
+            "id": "c4626a2e-9299-5458-a5db-a43122634ac1",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-empower",
+            "label": "EMPOWER EM-SPD-40",
+            "component_id": "ebeeb743-9e0a-5a85-9359-c1e6bb8cce9d",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 2,
+            "is_active": true
+          },
+          {
+            "id": "8bc7150b-ff46-58dd-b728-23751746f226",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-finder",
+            "label": "Finder AC SPD",
+            "component_id": "6a348f55-97d2-5e83-95c0-87220d9039a4",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 3,
+            "is_active": true
+          },
+          {
+            "id": "3180aabd-3099-5f4b-91a4-5a5bba59d848",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-sighter",
+            "label": "SIGHTER S2032040",
+            "component_id": "12ad227e-b119-518b-92aa-1ea15aa117c6",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 4,
+            "is_active": true
+          },
+          {
+            "id": "e8760bc9-8a47-54c9-ad72-e8e6d40be579",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-winsurge",
+            "label": "WinSurge WS320-40 + WS255-40",
+            "component_id": "9b33b309-9c5c-563f-93bf-ae272e5feaa6",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 5,
+            "is_active": true
+          },
+          {
+            "id": "362d724e-47f9-592a-b9d2-7d4d29a92ea5",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-fonix",
+            "label": "FONIX FN-SPD-40",
+            "component_id": "3ecc0f97-4734-5856-b306-0ed2badfa247",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 6,
+            "is_active": true
+          },
+          {
+            "id": "15d22313-1eca-54c1-a26a-e8c266693def",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-itally",
+            "label": "ITALLY AC SPD-320V",
+            "component_id": "f244c1ac-3d70-5dcb-ba7c-d7f6fae12971",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 7,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "617f8184-59c8-4c7a-ac1b-2347fa4859ae",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "terminal",
+        "label": "Terminal blocks",
+        "required": false,
+        "option_type": "component",
+        "sort_order": 4,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "b1fedef9-f6ad-5272-b38f-8c4e6bc3feac",
+            "option_id": "617f8184-59c8-4c7a-ac1b-2347fa4859ae",
+            "value": "terminal-block-pair",
+            "label": "Grey terminal block pair",
+            "component_id": "c9145afa-a702-5023-83c7-190ad1d5087f",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "wire",
+        "label": "Wire layout",
+        "required": false,
+        "option_type": "multi",
+        "sort_order": 5,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "8ee53d57-64f9-5128-b4ff-c4b84aeabbc6",
+            "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
+            "value": "wire-red-left",
+            "label": "Red wire \u2014 left short arch",
+            "component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "11640a98-a996-5711-a966-c087ec1ce7ad",
+            "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
+            "value": "wire-grey-left",
+            "label": "Grey wire \u2014 left short arch",
+            "component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          },
+          {
+            "id": "89a359a3-baf1-55d3-9a31-2a7c630618bc",
+            "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
+            "value": "wire-red-right",
+            "label": "Red wire \u2014 right tall arch",
+            "component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 2,
+            "is_active": true
+          },
+          {
+            "id": "3ad42654-ea9a-5195-864d-b7aadb60434e",
+            "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
+            "value": "wire-grey-right",
+            "label": "Grey wire \u2014 right tall arch",
+            "component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 3,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "1a88974f-d1b9-403e-a30f-05a2e3cb1dc0",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "cable_gland",
+        "label": "Cable glands",
+        "required": false,
+        "option_type": "component",
+        "sort_order": 6,
+        "allow_quantity": true,
+        "min_quantity": 1,
+        "max_quantity": 2,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "13566738-006b-5e41-b623-7be7e62d0854",
+            "option_id": "1a88974f-d1b9-403e-a30f-05a2e3cb1dc0",
+            "value": "cable-gland",
+            "label": "Grey and black cable gland",
+            "component_id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 2
+            },
+            "sort_order": 0,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "f89b35c8-55ad-46ab-a17e-731081ed8486",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "option_key": "extras",
+        "label": "Rail and labels",
+        "required": false,
+        "option_type": "multi",
+        "sort_order": 7,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "366f8242-b17e-59df-aace-e129f58a2156",
+            "option_id": "f89b35c8-55ad-46ab-a17e-731081ed8486",
+            "value": "din-rail",
+            "label": "Horizontal DIN rail",
+            "component_id": "0dd83f31-35cf-5228-86c1-4deb307af43e",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "2c66a1d7-09a0-5183-b2d1-62d3c49dc1b3",
+            "option_id": "f89b35c8-55ad-46ab-a17e-731081ed8486",
+            "value": "labels-acdb",
+            "label": "ACDB sticker row",
+            "component_id": "6fd868f2-c5de-5c9a-9b40-cf536c30f047",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          }
+        ]
+      }
+    ],
+    "components": {
+      "cbb8c864-505e-5a42-9b74-36eec4cd7f62": {
+        "id": "cbb8c864-505e-5a42-9b74-36eec4cd7f62",
+        "name": "OREIT OT-SPD-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-OREIT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-oreit.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-oreit",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f2ce051b-9f41-5e71-92b3-1f61b04d8345": {
+        "id": "f2ce051b-9f41-5e71-92b3-1f61b04d8345",
+        "name": "SCHUTZ SCH-40L + SCH-40NPE",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-SCHUTZ",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-schutz.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-schutz",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "ebeeb743-9e0a-5a85-9359-c1e6bb8cce9d": {
+        "id": "ebeeb743-9e0a-5a85-9359-c1e6bb8cce9d",
+        "name": "EMPOWER EM-SPD-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-EMPOWER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-empower.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-empower",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "6a348f55-97d2-5e83-95c0-87220d9039a4": {
+        "id": "6a348f55-97d2-5e83-95c0-87220d9039a4",
+        "name": "Finder AC SPD",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-FINDER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-finder.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-finder",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "12ad227e-b119-518b-92aa-1ea15aa117c6": {
+        "id": "12ad227e-b119-518b-92aa-1ea15aa117c6",
+        "name": "SIGHTER S2032040",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-SIGHTER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-sighter.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-sighter",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "9b33b309-9c5c-563f-93bf-ae272e5feaa6": {
+        "id": "9b33b309-9c5c-563f-93bf-ae272e5feaa6",
+        "name": "WinSurge WS320-40 + WS255-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-WINSURGE",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-winsurge.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-winsurge",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "3ecc0f97-4734-5856-b306-0ed2badfa247": {
+        "id": "3ecc0f97-4734-5856-b306-0ed2badfa247",
+        "name": "FONIX FN-SPD-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-FONIX",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-fonix.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-fonix",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f244c1ac-3d70-5dcb-ba7c-d7f6fae12971": {
+        "id": "f244c1ac-3d70-5dcb-ba7c-d7f6fae12971",
+        "name": "ITALLY AC SPD-320V",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-ITALLY",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-itally.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-itally",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "4ad7109f-85e8-5924-b7d8-7cfaf1ae794d": {
+        "id": "4ad7109f-85e8-5924-b7d8-7cfaf1ae794d",
+        "name": "Finder DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-FINDER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-finder.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-finder",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f61db723-ba6c-50c6-a703-48dcf66cb0a8": {
+        "id": "f61db723-ba6c-50c6-a703-48dcf66cb0a8",
+        "name": "EMPOWER DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-EMPOWER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-empower.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-empower",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "fc234d9f-a8fe-5bb4-8502-2405a1277d10": {
+        "id": "fc234d9f-a8fe-5bb4-8502-2405a1277d10",
+        "name": "SIGHTER DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-SIGHTER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-sighter.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-sighter",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "c2463474-4a49-5ab2-8d40-2986e89b2f8c": {
+        "id": "c2463474-4a49-5ab2-8d40-2986e89b2f8c",
+        "name": "ORBIT DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-ORBIT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-orbit.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-orbit",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "0c84958b-3d3e-5f5c-af7d-fc811dcec49a": {
+        "id": "0c84958b-3d3e-5f5c-af7d-fc811dcec49a",
+        "name": "FONIX DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-FONIX",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-fonix.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-fonix",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "5c9ee78b-aafd-580d-af50-e55f818ab9dd": {
+        "id": "5c9ee78b-aafd-580d-af50-e55f818ab9dd",
+        "name": "SCHUTZ DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-SCHUTZ",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-schutz.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-schutz",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "0d70bec6-4959-5707-8c0a-f582246900dd": {
+        "id": "0d70bec6-4959-5707-8c0a-f582246900dd",
+        "name": "ITALLY DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-ITALLY",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-itally.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-itally",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f5d55ef7-7908-5f88-b2fe-0be630369d88": {
+        "id": "f5d55ef7-7908-5f88-b2fe-0be630369d88",
+        "name": "WinSurge DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-WINSURGE",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-winsurge.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-winsurge",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "c4da1cb4-0200-5324-84ec-4d1967d9989b": {
+        "id": "c4da1cb4-0200-5324-84ec-4d1967d9989b",
+        "name": "Lauritz Knudsen C32 AC \u2014 double pole",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-GREY-C32",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-grey-c32.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-grey-c32",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "810e52e7-c699-5a3b-a828-080e5d61e0fd": {
+        "id": "810e52e7-c699-5a3b-a828-080e5d61e0fd",
+        "name": "SIEMENS C32 AC",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-SIEMENS-C32",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-siemens-c32.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-siemens-c32",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "b37b7e19-ee53-5968-b3d3-15befa1eb4d2": {
+        "id": "b37b7e19-ee53-5968-b3d3-15befa1eb4d2",
+        "name": "EMPOWER EM60-C32A AC",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-EMPOWER-C32A",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-empower-c32a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-empower-c32a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "3e670db1-9645-55e2-9f3e-2a0cdff32627": {
+        "id": "3e670db1-9645-55e2-9f3e-2a0cdff32627",
+        "name": "EMPOWER EM60-C32A DC",
+        "category": "DC MCB",
+        "sku": "NIS-VIS-DC-MCB-EMPOWER-C32A",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-mcb-empower-c32a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "dc-mcb-empower-c32a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "4877e853-e309-51b2-802d-f2bdda76816b": {
+        "id": "4877e853-e309-51b2-802d-f2bdda76816b",
+        "name": "SIEMENS 32A DC",
+        "category": "DC MCB",
+        "sku": "NIS-VIS-DC-MCB-SIEMENS-32A",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-mcb-siemens-32a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "dc-mcb-siemens-32a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "e2befa74-435c-5b32-ace5-9b1bac7c2a8f": {
+        "id": "e2befa74-435c-5b32-ace5-9b1bac7c2a8f",
+        "name": "Lauritz Knudsen BJ2032DC",
+        "category": "DC MCB",
+        "sku": "NIS-VIS-DC-MCB-LAURITZ-KNUDSEN-C32",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-mcb-lauritz-knudsen-c32.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "dc-mcb-lauritz-knudsen-c32",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "0dd83f31-35cf-5228-86c1-4deb307af43e": {
+        "id": "0dd83f31-35cf-5228-86c1-4deb307af43e",
+        "name": "Horizontal DIN rail",
+        "category": "Accessory",
+        "sku": "NIS-VIS-DIN-RAIL",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/din-rail.png",
+        "visual_role": "rail",
+        "visual_settings": {
+          "asset_id": "din-rail",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "c9145afa-a702-5023-83c7-190ad1d5087f": {
+        "id": "c9145afa-a702-5023-83c7-190ad1d5087f",
+        "name": "Grey terminal block pair",
+        "category": "Terminal Block",
+        "sku": "NIS-VIS-TERMINAL-BLOCK-PAIR",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/terminal-block-pair.png",
+        "visual_role": "terminal",
+        "visual_settings": {
+          "asset_id": "terminal-block-pair",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "3efdfc81-92b1-528a-a82b-10b8bb87921e": {
+        "id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+        "name": "Grey and black cable gland",
+        "category": "Cable Gland",
+        "sku": "NIS-VIS-CABLE-GLAND",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/cable-gland.png",
+        "visual_role": "gland",
+        "visual_settings": {
+          "asset_id": "cable-gland",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "79a48e14-1d94-5853-afab-cc82ae935239": {
+        "id": "79a48e14-1d94-5853-afab-cc82ae935239",
+        "name": "Red wire \u2014 left short arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-RED-LEFT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-red-left.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-red-left",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "4d0ed45d-d27b-5b99-a4a8-cf4880b84385": {
+        "id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
+        "name": "Grey wire \u2014 left short arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-GREY-LEFT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-grey-left.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-grey-left",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "dde95cac-082c-52fb-a175-0cc0056e928e": {
+        "id": "dde95cac-082c-52fb-a175-0cc0056e928e",
+        "name": "Red wire \u2014 right tall arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-RED-RIGHT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-red-right.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-red-right",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "5fbcf9b3-9490-5b15-b274-43319272bb0f": {
+        "id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
+        "name": "Grey wire \u2014 right tall arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-GREY-RIGHT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-grey-right.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-grey-right",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "6fd868f2-c5de-5c9a-9b40-cf536c30f047": {
+        "id": "6fd868f2-c5de-5c9a-9b40-cf536c30f047",
+        "name": "ACDB sticker row",
+        "category": "Accessory",
+        "sku": "NIS-VIS-LABELS-ACDB",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/labels-acdb.png",
+        "visual_role": "labels",
+        "visual_settings": {
+          "asset_id": "labels-acdb",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "d12c074b-00d3-58cf-bcfb-bf4153912546": {
+        "id": "d12c074b-00d3-58cf-bcfb-bf4153912546",
+        "name": "DCDB sticker row",
+        "category": "Accessory",
+        "sku": "NIS-VIS-LABELS-DCDB",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/labels-dcdb.png",
+        "visual_role": "labels",
+        "visual_settings": {
+          "asset_id": "labels-dcdb",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      }
+    },
+    "enclosures": {
+      "171b055e-52ad-56c3-91ae-10f654e6d5b3": {
+        "id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "name": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+        "sku": "NIS-VIS-ENCLOSURE-180",
+        "dimensions_mm": "180 H \u00d7 130 W \u00d7 100 D",
+        "material": null,
+        "ip_rating": null,
+        "module_capacity": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "image_url": "/configurator/components-v1/enclosure-empty.png",
+        "inside_image_url": "/configurator/components-v1/enclosure-empty.png",
+        "visual_settings": {
+          "asset_id": "enclosure-empty",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "supported_types": [
+          "acdb",
+          "dcdb"
+        ],
+        "specifications": {
+          "dimensions_source": "User supplied; fit to be confirmed"
+        }
+      }
+    },
+    "slots": [
+      {
+        "id": "9f553c33-85ec-5513-b478-fb1403a68210",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_rail",
+        "option_key": "extras",
+        "slot_index": 1,
+        "x_pct": 20.71823,
+        "y_pct": 41.85083,
+        "width_pct": 58.19521,
+        "height_pct": 11.74033,
+        "rotation_deg": 0,
+        "z_index": 10,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "din-rail",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "0dd83f31-35cf-5228-86c1-4deb307af43e",
+          "preview_image_url": "/configurator/components-v1/din-rail.png",
+          "preview_name": "Horizontal DIN rail",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "76ea28a3-99cf-5e5c-9f28-23efd4b1d967",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_spd",
+        "option_key": "spd",
+        "slot_index": 2,
+        "x_pct": 22.74401,
+        "y_pct": 32.80387,
+        "width_pct": 20.25783,
+        "height_pct": 30.87017,
+        "rotation_deg": 0,
+        "z_index": 30,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": null,
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": null,
+          "preview_image_url": null,
+          "preview_name": "spd",
+          "match_asset": false
+        }
+      },
+      {
+        "id": "85344e4a-4703-5393-a251-feacbf79ec96",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_mcb",
+        "option_key": "protection",
+        "slot_index": 3,
+        "x_pct": 44.84346,
+        "y_pct": 33.6326,
+        "width_pct": 18.87661,
+        "height_pct": 30.04144,
+        "rotation_deg": 0,
+        "z_index": 30,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": null,
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": null,
+          "preview_image_url": null,
+          "preview_name": "protection",
+          "match_asset": false
+        }
+      },
+      {
+        "id": "e5436c5f-974c-502b-b1f6-1b595e2377fe",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_terminal",
+        "option_key": "terminal",
+        "slot_index": 4,
+        "x_pct": 64.91713,
+        "y_pct": 40.53867,
+        "width_pct": 11.51013,
+        "height_pct": 14.64088,
+        "rotation_deg": 0,
+        "z_index": 30,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "terminal-block-pair",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "c9145afa-a702-5023-83c7-190ad1d5087f",
+          "preview_image_url": "/configurator/components-v1/terminal-block-pair.png",
+          "preview_name": "Grey terminal block pair",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "c43bff6b-3db8-5387-bc11-5ac544fa7909",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_labels",
+        "option_key": "extras",
+        "slot_index": 5,
+        "x_pct": 21.8232,
+        "y_pct": 66.16022,
+        "width_pct": 56.35359,
+        "height_pct": 10.15193,
+        "rotation_deg": 0,
+        "z_index": 40,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "labels-acdb",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "6fd868f2-c5de-5c9a-9b40-cf536c30f047",
+          "preview_image_url": "/configurator/components-v1/labels-acdb.png",
+          "preview_name": "ACDB sticker row",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "2ccb375b-1cd1-568c-bc69-c21f5471c3ae",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_glandLeft",
+        "option_key": "cable_gland",
+        "slot_index": 6,
+        "x_pct": 28.26888,
+        "y_pct": 81.28453,
+        "width_pct": 13.90424,
+        "height_pct": 12.63812,
+        "rotation_deg": 0,
+        "z_index": 40,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "cable-gland",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+          "preview_image_url": "/configurator/components-v1/cable-gland.png",
+          "preview_name": "Grey and black cable gland",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "35c50f09-0263-5b0f-9e17-7e15ffa6c4ca",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_glandRight",
+        "option_key": "cable_gland",
+        "slot_index": 7,
+        "x_pct": 57.82689,
+        "y_pct": 81.28453,
+        "width_pct": 13.90424,
+        "height_pct": 12.63812,
+        "rotation_deg": 0,
+        "z_index": 40,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "cable-gland",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+          "preview_image_url": "/configurator/components-v1/cable-gland.png",
+          "preview_name": "Grey and black cable gland",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "2944f1f4-b3e5-592f-b4f8-b5a9b6302597",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireRedLeft",
+        "option_key": "wire",
+        "slot_index": 8,
+        "x_pct": 26.79558,
+        "y_pct": 24.51657,
+        "width_pct": 23.57274,
+        "height_pct": 9.59945,
+        "rotation_deg": 0,
+        "z_index": 20,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-red-left",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
+          "preview_image_url": "/configurator/components-v1/wire-red-left.png",
+          "preview_name": "Red wire \u2014 left short arch",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "405b29af-4d3e-5d3b-8955-f5bafa948d69",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireGreyLeft",
+        "option_key": "wire",
+        "slot_index": 9,
+        "x_pct": 36.74033,
+        "y_pct": 24.51657,
+        "width_pct": 22.09945,
+        "height_pct": 9.59945,
+        "rotation_deg": 0,
+        "z_index": 21,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-grey-left",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
+          "preview_image_url": "/configurator/components-v1/wire-grey-left.png",
+          "preview_name": "Grey wire \u2014 left short arch",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "f85d4810-ff32-5b6d-8f84-c0fb86204ed7",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireRedRight",
+        "option_key": "wire",
+        "slot_index": 10,
+        "x_pct": 48.61878,
+        "y_pct": 24.24033,
+        "width_pct": 20.71823,
+        "height_pct": 17.19613,
+        "rotation_deg": 0,
+        "z_index": 22,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-red-right",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
+          "preview_image_url": "/configurator/components-v1/wire-red-right.png",
+          "preview_name": "Red wire \u2014 right tall arch",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "f0a6fe02-da3e-5d65-95ab-5032321a093c",
+        "template_id": "c0c98f0c-807c-4767-aa60-857df285d183",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireGreyRight",
+        "option_key": "wire",
+        "slot_index": 11,
+        "x_pct": 57.36648,
+        "y_pct": 24.44751,
+        "width_pct": 17.77164,
+        "height_pct": 16.98895,
+        "rotation_deg": 0,
+        "z_index": 19,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-grey-right",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
+          "preview_image_url": "/configurator/components-v1/wire-grey-right.png",
+          "preview_name": "Grey wire \u2014 right tall arch",
+          "match_asset": true
+        }
+      }
+    ]
+  },
+  "DCDB": {
+    "template": {
+      "id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+      "name": "Build Your Own DCDB",
+      "slug": "custom-dcdb",
+      "type": "dcdb",
+      "rules": {},
+      "version": 1,
+      "is_active": true,
+      "created_at": "2026-09-13T23:09:56.306385+00:00",
+      "updated_at": "2026-09-15T12:02:24.924434+00:00",
+      "description": "Configure a New India Solar DCDB using compatible enclosure, DC MCB/isolator, SPD, fuse protection, terminals, solar cable, glands and accessories.",
+      "default_gst_rate": 18,
+      "preview_settings": {
+        "asset_pack": "components-v1",
+        "commerce_mode": "quote",
+        "layout": "locked-1in1out"
+      },
+      "base_assembly_charge": 0
+    },
+    "groups": [
+      {
+        "id": "8798c80c-c6bc-4f9f-9849-35ce71acb3bb",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "enclosure",
+        "label": "Enclosure",
+        "required": true,
+        "option_type": "enclosure",
+        "sort_order": 1,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "a95f1e7f-78aa-5844-a8d7-36ea9191ad79",
+            "option_id": "8798c80c-c6bc-4f9f-9849-35ce71acb3bb",
+            "value": "enclosure-empty",
+            "label": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+            "component_id": null,
+            "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "4f56c6d8-a7bb-4762-b96a-fbe890e1051e",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "dc_mcb",
+        "label": "Circuit breaker",
+        "required": true,
+        "option_type": "component",
+        "sort_order": 2,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "4667b364-ce2d-55a3-baa4-c36fa4fa1d3e",
+            "option_id": "4f56c6d8-a7bb-4762-b96a-fbe890e1051e",
+            "value": "dc-mcb-empower-c32a",
+            "label": "EMPOWER EM60-C32A DC",
+            "component_id": "3e670db1-9645-55e2-9f3e-2a0cdff32627",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "11569d29-7fc5-5a47-93d6-b02e742b89a0",
+            "option_id": "4f56c6d8-a7bb-4762-b96a-fbe890e1051e",
+            "value": "dc-mcb-siemens-32a",
+            "label": "SIEMENS 32A DC",
+            "component_id": "4877e853-e309-51b2-802d-f2bdda76816b",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          },
+          {
+            "id": "474fc442-9006-5161-b43f-fd9fd8404666",
+            "option_id": "4f56c6d8-a7bb-4762-b96a-fbe890e1051e",
+            "value": "dc-mcb-lauritz-knudsen-c32",
+            "label": "Lauritz Knudsen BJ2032DC",
+            "component_id": "e2befa74-435c-5b32-ace5-9b1bac7c2a8f",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 2,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "spd",
+        "label": "Surge protection",
+        "required": true,
+        "option_type": "component",
+        "sort_order": 3,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "410a4b01-8e3c-58a4-bb93-8c5ba5bbdd0a",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-finder",
+            "label": "Finder DC SPD",
+            "component_id": "4ad7109f-85e8-5924-b7d8-7cfaf1ae794d",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "707011e3-dc37-5321-a7a1-3a3b41160dd4",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-empower",
+            "label": "EMPOWER DC SPD",
+            "component_id": "f61db723-ba6c-50c6-a703-48dcf66cb0a8",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          },
+          {
+            "id": "f1d0412e-88ae-544b-a591-9be0f7520f48",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-sighter",
+            "label": "SIGHTER DC SPD",
+            "component_id": "fc234d9f-a8fe-5bb4-8502-2405a1277d10",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 2,
+            "is_active": true
+          },
+          {
+            "id": "fb127f94-4b4d-5764-a55d-309e464ff4a8",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-orbit",
+            "label": "ORBIT DC SPD",
+            "component_id": "c2463474-4a49-5ab2-8d40-2986e89b2f8c",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 3,
+            "is_active": true
+          },
+          {
+            "id": "8de7a395-e888-5133-b5bb-67221b43ce5e",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-fonix",
+            "label": "FONIX DC SPD",
+            "component_id": "0c84958b-3d3e-5f5c-af7d-fc811dcec49a",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 4,
+            "is_active": true
+          },
+          {
+            "id": "ba2b7df3-17e8-5688-8270-6b97d4fb1ab0",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-schutz",
+            "label": "SCHUTZ DC SPD",
+            "component_id": "5c9ee78b-aafd-580d-af50-e55f818ab9dd",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 5,
+            "is_active": true
+          },
+          {
+            "id": "705d7453-2deb-5bf8-8c32-d9214de38b46",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-itally",
+            "label": "ITALLY DC SPD",
+            "component_id": "0d70bec6-4959-5707-8c0a-f582246900dd",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 6,
+            "is_active": true
+          },
+          {
+            "id": "e06989a3-9f0f-57f9-8fd4-10963eebdf5c",
+            "option_id": "f4d0a8f7-6006-4878-8839-ddeaa0599eed",
+            "value": "dc-spd-winsurge",
+            "label": "WinSurge DC SPD",
+            "component_id": "f5d55ef7-7908-5f88-b2fe-0be630369d88",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1
+            },
+            "sort_order": 7,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "1fe718d8-2da8-4805-8e97-a981e781e727",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "terminal",
+        "label": "Terminal blocks",
+        "required": false,
+        "option_type": "component",
+        "sort_order": 4,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "3c153ee0-614a-5314-91ad-c43c00fcdb38",
+            "option_id": "1fe718d8-2da8-4805-8e97-a981e781e727",
+            "value": "terminal-block-pair",
+            "label": "Grey terminal block pair",
+            "component_id": "c9145afa-a702-5023-83c7-190ad1d5087f",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "solar_cable",
+        "label": "Wire layout",
+        "required": false,
+        "option_type": "multi",
+        "sort_order": 5,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "f68e9a52-77ee-55b7-b8a6-0573c057fa0f",
+            "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
+            "value": "wire-red-left",
+            "label": "Red wire \u2014 left short arch",
+            "component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "0dedde5d-f828-5db3-a64c-00fbf7289547",
+            "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
+            "value": "wire-grey-left",
+            "label": "Grey wire \u2014 left short arch",
+            "component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          },
+          {
+            "id": "8ab9aecc-955a-5841-8d95-5418f8215a2f",
+            "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
+            "value": "wire-red-right",
+            "label": "Red wire \u2014 right tall arch",
+            "component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 2,
+            "is_active": true
+          },
+          {
+            "id": "f2ac185f-8e4d-5301-ac07-fbbe8f6dbe2c",
+            "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
+            "value": "wire-grey-right",
+            "label": "Grey wire \u2014 right tall arch",
+            "component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 3,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "b2d58ec9-8fb3-44ea-aae4-f62399113650",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "cable_gland",
+        "label": "Cable glands",
+        "required": false,
+        "option_type": "component",
+        "sort_order": 6,
+        "allow_quantity": true,
+        "min_quantity": 1,
+        "max_quantity": 2,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "fd1a6361-ea87-5735-b188-19d38fda13a3",
+            "option_id": "b2d58ec9-8fb3-44ea-aae4-f62399113650",
+            "value": "cable-gland",
+            "label": "Grey and black cable gland",
+            "component_id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 2
+            },
+            "sort_order": 0,
+            "is_active": true
+          }
+        ]
+      },
+      {
+        "id": "08a4ec85-f8a3-4901-a865-b51481dd2e14",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "option_key": "extras",
+        "label": "Rail and labels",
+        "required": false,
+        "option_type": "multi",
+        "sort_order": 7,
+        "allow_quantity": false,
+        "min_quantity": 1,
+        "max_quantity": 1,
+        "settings": {
+          "asset_pack": "components-v1"
+        },
+        "configurator_option_values": [
+          {
+            "id": "a6b8a7c1-2b2f-5255-bd23-6bc734639e1a",
+            "option_id": "08a4ec85-f8a3-4901-a865-b51481dd2e14",
+            "value": "din-rail",
+            "label": "Horizontal DIN rail",
+            "component_id": "0dd83f31-35cf-5228-86c1-4deb307af43e",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 0,
+            "is_active": true
+          },
+          {
+            "id": "2cd86378-ddc3-54f8-b051-e835eff78448",
+            "option_id": "08a4ec85-f8a3-4901-a865-b51481dd2e14",
+            "value": "labels-dcdb",
+            "label": "DCDB sticker row",
+            "component_id": "d12c074b-00d3-58cf-bcfb-bf4153912546",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": true,
+              "default_quantity": 1
+            },
+            "sort_order": 1,
+            "is_active": true
+          }
+        ]
+      }
+    ],
+    "components": {
+      "cbb8c864-505e-5a42-9b74-36eec4cd7f62": {
+        "id": "cbb8c864-505e-5a42-9b74-36eec4cd7f62",
+        "name": "OREIT OT-SPD-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-OREIT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-oreit.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-oreit",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f2ce051b-9f41-5e71-92b3-1f61b04d8345": {
+        "id": "f2ce051b-9f41-5e71-92b3-1f61b04d8345",
+        "name": "SCHUTZ SCH-40L + SCH-40NPE",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-SCHUTZ",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-schutz.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-schutz",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "ebeeb743-9e0a-5a85-9359-c1e6bb8cce9d": {
+        "id": "ebeeb743-9e0a-5a85-9359-c1e6bb8cce9d",
+        "name": "EMPOWER EM-SPD-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-EMPOWER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-empower.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-empower",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "6a348f55-97d2-5e83-95c0-87220d9039a4": {
+        "id": "6a348f55-97d2-5e83-95c0-87220d9039a4",
+        "name": "Finder AC SPD",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-FINDER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-finder.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-finder",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "12ad227e-b119-518b-92aa-1ea15aa117c6": {
+        "id": "12ad227e-b119-518b-92aa-1ea15aa117c6",
+        "name": "SIGHTER S2032040",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-SIGHTER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-sighter.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-sighter",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "9b33b309-9c5c-563f-93bf-ae272e5feaa6": {
+        "id": "9b33b309-9c5c-563f-93bf-ae272e5feaa6",
+        "name": "WinSurge WS320-40 + WS255-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-WINSURGE",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-winsurge.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-winsurge",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "3ecc0f97-4734-5856-b306-0ed2badfa247": {
+        "id": "3ecc0f97-4734-5856-b306-0ed2badfa247",
+        "name": "FONIX FN-SPD-40",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-FONIX",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-fonix.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-fonix",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f244c1ac-3d70-5dcb-ba7c-d7f6fae12971": {
+        "id": "f244c1ac-3d70-5dcb-ba7c-d7f6fae12971",
+        "name": "ITALLY AC SPD-320V",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-ITALLY",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-itally.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-itally",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "4ad7109f-85e8-5924-b7d8-7cfaf1ae794d": {
+        "id": "4ad7109f-85e8-5924-b7d8-7cfaf1ae794d",
+        "name": "Finder DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-FINDER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-finder.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-finder",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f61db723-ba6c-50c6-a703-48dcf66cb0a8": {
+        "id": "f61db723-ba6c-50c6-a703-48dcf66cb0a8",
+        "name": "EMPOWER DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-EMPOWER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-empower.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-empower",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "fc234d9f-a8fe-5bb4-8502-2405a1277d10": {
+        "id": "fc234d9f-a8fe-5bb4-8502-2405a1277d10",
+        "name": "SIGHTER DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-SIGHTER",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-sighter.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-sighter",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "c2463474-4a49-5ab2-8d40-2986e89b2f8c": {
+        "id": "c2463474-4a49-5ab2-8d40-2986e89b2f8c",
+        "name": "ORBIT DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-ORBIT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-orbit.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-orbit",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "0c84958b-3d3e-5f5c-af7d-fc811dcec49a": {
+        "id": "0c84958b-3d3e-5f5c-af7d-fc811dcec49a",
+        "name": "FONIX DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-FONIX",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-fonix.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-fonix",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "5c9ee78b-aafd-580d-af50-e55f818ab9dd": {
+        "id": "5c9ee78b-aafd-580d-af50-e55f818ab9dd",
+        "name": "SCHUTZ DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-SCHUTZ",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-schutz.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-schutz",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "0d70bec6-4959-5707-8c0a-f582246900dd": {
+        "id": "0d70bec6-4959-5707-8c0a-f582246900dd",
+        "name": "ITALLY DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-ITALLY",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-itally.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-itally",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "f5d55ef7-7908-5f88-b2fe-0be630369d88": {
+        "id": "f5d55ef7-7908-5f88-b2fe-0be630369d88",
+        "name": "WinSurge DC SPD",
+        "category": "DC SPD",
+        "sku": "NIS-VIS-DC-SPD-WINSURGE",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-spd-winsurge.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "dc-spd-winsurge",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "c4da1cb4-0200-5324-84ec-4d1967d9989b": {
+        "id": "c4da1cb4-0200-5324-84ec-4d1967d9989b",
+        "name": "Lauritz Knudsen C32 AC \u2014 double pole",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-GREY-C32",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-grey-c32.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-grey-c32",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "810e52e7-c699-5a3b-a828-080e5d61e0fd": {
+        "id": "810e52e7-c699-5a3b-a828-080e5d61e0fd",
+        "name": "SIEMENS C32 AC",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-SIEMENS-C32",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-siemens-c32.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-siemens-c32",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "b37b7e19-ee53-5968-b3d3-15befa1eb4d2": {
+        "id": "b37b7e19-ee53-5968-b3d3-15befa1eb4d2",
+        "name": "EMPOWER EM60-C32A AC",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-EMPOWER-C32A",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-empower-c32a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-empower-c32a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "3e670db1-9645-55e2-9f3e-2a0cdff32627": {
+        "id": "3e670db1-9645-55e2-9f3e-2a0cdff32627",
+        "name": "EMPOWER EM60-C32A DC",
+        "category": "DC MCB",
+        "sku": "NIS-VIS-DC-MCB-EMPOWER-C32A",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-mcb-empower-c32a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "dc-mcb-empower-c32a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "4877e853-e309-51b2-802d-f2bdda76816b": {
+        "id": "4877e853-e309-51b2-802d-f2bdda76816b",
+        "name": "SIEMENS 32A DC",
+        "category": "DC MCB",
+        "sku": "NIS-VIS-DC-MCB-SIEMENS-32A",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-mcb-siemens-32a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "dc-mcb-siemens-32a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "e2befa74-435c-5b32-ace5-9b1bac7c2a8f": {
+        "id": "e2befa74-435c-5b32-ace5-9b1bac7c2a8f",
+        "name": "Lauritz Knudsen BJ2032DC",
+        "category": "DC MCB",
+        "sku": "NIS-VIS-DC-MCB-LAURITZ-KNUDSEN-C32",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/dc-mcb-lauritz-knudsen-c32.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "dc-mcb-lauritz-knudsen-c32",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "0dd83f31-35cf-5228-86c1-4deb307af43e": {
+        "id": "0dd83f31-35cf-5228-86c1-4deb307af43e",
+        "name": "Horizontal DIN rail",
+        "category": "Accessory",
+        "sku": "NIS-VIS-DIN-RAIL",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/din-rail.png",
+        "visual_role": "rail",
+        "visual_settings": {
+          "asset_id": "din-rail",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "c9145afa-a702-5023-83c7-190ad1d5087f": {
+        "id": "c9145afa-a702-5023-83c7-190ad1d5087f",
+        "name": "Grey terminal block pair",
+        "category": "Terminal Block",
+        "sku": "NIS-VIS-TERMINAL-BLOCK-PAIR",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/terminal-block-pair.png",
+        "visual_role": "terminal",
+        "visual_settings": {
+          "asset_id": "terminal-block-pair",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "3efdfc81-92b1-528a-a82b-10b8bb87921e": {
+        "id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+        "name": "Grey and black cable gland",
+        "category": "Cable Gland",
+        "sku": "NIS-VIS-CABLE-GLAND",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/cable-gland.png",
+        "visual_role": "gland",
+        "visual_settings": {
+          "asset_id": "cable-gland",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "79a48e14-1d94-5853-afab-cc82ae935239": {
+        "id": "79a48e14-1d94-5853-afab-cc82ae935239",
+        "name": "Red wire \u2014 left short arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-RED-LEFT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-red-left.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-red-left",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "4d0ed45d-d27b-5b99-a4a8-cf4880b84385": {
+        "id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
+        "name": "Grey wire \u2014 left short arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-GREY-LEFT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-grey-left.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-grey-left",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "dde95cac-082c-52fb-a175-0cc0056e928e": {
+        "id": "dde95cac-082c-52fb-a175-0cc0056e928e",
+        "name": "Red wire \u2014 right tall arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-RED-RIGHT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-red-right.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-red-right",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "5fbcf9b3-9490-5b15-b274-43319272bb0f": {
+        "id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
+        "name": "Grey wire \u2014 right tall arch",
+        "category": "Internal Wire",
+        "sku": "NIS-VIS-WIRE-GREY-RIGHT",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/wire-grey-right.png",
+        "visual_role": "wire",
+        "visual_settings": {
+          "asset_id": "wire-grey-right",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "6fd868f2-c5de-5c9a-9b40-cf536c30f047": {
+        "id": "6fd868f2-c5de-5c9a-9b40-cf536c30f047",
+        "name": "ACDB sticker row",
+        "category": "Accessory",
+        "sku": "NIS-VIS-LABELS-ACDB",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/labels-acdb.png",
+        "visual_role": "labels",
+        "visual_settings": {
+          "asset_id": "labels-acdb",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      },
+      "d12c074b-00d3-58cf-bcfb-bf4153912546": {
+        "id": "d12c074b-00d3-58cf-bcfb-bf4153912546",
+        "name": "DCDB sticker row",
+        "category": "Accessory",
+        "sku": "NIS-VIS-LABELS-DCDB",
+        "model": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/labels-dcdb.png",
+        "visual_role": "labels",
+        "visual_settings": {
+          "asset_id": "labels-dcdb",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "specifications": {
+          "artwork_review_required": true
+        }
+      }
+    },
+    "enclosures": {
+      "171b055e-52ad-56c3-91ae-10f654e6d5b3": {
+        "id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "name": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+        "sku": "NIS-VIS-ENCLOSURE-180",
+        "dimensions_mm": "180 H \u00d7 130 W \u00d7 100 D",
+        "material": null,
+        "ip_rating": null,
+        "module_capacity": null,
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "image_url": "/configurator/components-v1/enclosure-empty.png",
+        "inside_image_url": "/configurator/components-v1/enclosure-empty.png",
+        "visual_settings": {
+          "asset_id": "enclosure-empty",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false
+        },
+        "supported_types": [
+          "acdb",
+          "dcdb"
+        ],
+        "specifications": {
+          "dimensions_source": "User supplied; fit to be confirmed"
+        }
+      }
+    },
+    "slots": [
+      {
+        "id": "4def2f67-1bb0-5633-8ee2-4938a9226821",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_rail",
+        "option_key": "extras",
+        "slot_index": 1,
+        "x_pct": 20.71823,
+        "y_pct": 41.85083,
+        "width_pct": 58.19521,
+        "height_pct": 11.74033,
+        "rotation_deg": 0,
+        "z_index": 10,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "din-rail",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "0dd83f31-35cf-5228-86c1-4deb307af43e",
+          "preview_image_url": "/configurator/components-v1/din-rail.png",
+          "preview_name": "Horizontal DIN rail",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "32d07472-e8dd-5998-a034-dfe9c007fdf4",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_spd",
+        "option_key": "spd",
+        "slot_index": 2,
+        "x_pct": 22.74401,
+        "y_pct": 32.80387,
+        "width_pct": 20.25783,
+        "height_pct": 30.87017,
+        "rotation_deg": 0,
+        "z_index": 30,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": null,
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": null,
+          "preview_image_url": null,
+          "preview_name": "spd",
+          "match_asset": false
+        }
+      },
+      {
+        "id": "67389c4d-d369-5d15-b7b3-e3163ef7500b",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_mcb",
+        "option_key": "dc_mcb",
+        "slot_index": 3,
+        "x_pct": 44.84346,
+        "y_pct": 33.6326,
+        "width_pct": 18.87661,
+        "height_pct": 30.04144,
+        "rotation_deg": 0,
+        "z_index": 30,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": null,
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": null,
+          "preview_image_url": null,
+          "preview_name": "dc_mcb",
+          "match_asset": false
+        }
+      },
+      {
+        "id": "f3262702-48b6-5a6f-8721-d7bf01afb136",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_terminal",
+        "option_key": "terminal",
+        "slot_index": 4,
+        "x_pct": 64.91713,
+        "y_pct": 40.53867,
+        "width_pct": 11.51013,
+        "height_pct": 14.64088,
+        "rotation_deg": 0,
+        "z_index": 30,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "terminal-block-pair",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "c9145afa-a702-5023-83c7-190ad1d5087f",
+          "preview_image_url": "/configurator/components-v1/terminal-block-pair.png",
+          "preview_name": "Grey terminal block pair",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "27e31e96-dc08-5f0b-a006-5bb5d83c90f0",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_labels",
+        "option_key": "extras",
+        "slot_index": 5,
+        "x_pct": 21.8232,
+        "y_pct": 66.16022,
+        "width_pct": 56.35359,
+        "height_pct": 10.15193,
+        "rotation_deg": 0,
+        "z_index": 40,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "labels-dcdb",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "d12c074b-00d3-58cf-bcfb-bf4153912546",
+          "preview_image_url": "/configurator/components-v1/labels-dcdb.png",
+          "preview_name": "DCDB sticker row",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "537a213b-37e2-57f1-8516-19dbb9dc34bd",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_glandLeft",
+        "option_key": "cable_gland",
+        "slot_index": 6,
+        "x_pct": 28.26888,
+        "y_pct": 81.28453,
+        "width_pct": 13.90424,
+        "height_pct": 12.63812,
+        "rotation_deg": 0,
+        "z_index": 40,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "cable-gland",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+          "preview_image_url": "/configurator/components-v1/cable-gland.png",
+          "preview_name": "Grey and black cable gland",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "936a385c-6aa6-5e59-9267-aff21018d32d",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_glandRight",
+        "option_key": "cable_gland",
+        "slot_index": 7,
+        "x_pct": 57.82689,
+        "y_pct": 81.28453,
+        "width_pct": 13.90424,
+        "height_pct": 12.63812,
+        "rotation_deg": 0,
+        "z_index": 40,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "cable-gland",
+          "asset_pack": "components-v1",
+          "fit": "contain",
+          "preview_component_id": "3efdfc81-92b1-528a-a82b-10b8bb87921e",
+          "preview_image_url": "/configurator/components-v1/cable-gland.png",
+          "preview_name": "Grey and black cable gland",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "8c6ba94f-e0d7-56e1-b527-4394bea9b314",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireRedLeft",
+        "option_key": "solar_cable",
+        "slot_index": 8,
+        "x_pct": 26.79558,
+        "y_pct": 24.51657,
+        "width_pct": 23.57274,
+        "height_pct": 9.59945,
+        "rotation_deg": 0,
+        "z_index": 20,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-red-left",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
+          "preview_image_url": "/configurator/components-v1/wire-red-left.png",
+          "preview_name": "Red wire \u2014 left short arch",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "00e0f8a3-139d-53b4-a06d-da9f1a9957b1",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireGreyLeft",
+        "option_key": "solar_cable",
+        "slot_index": 9,
+        "x_pct": 36.74033,
+        "y_pct": 24.51657,
+        "width_pct": 22.09945,
+        "height_pct": 9.59945,
+        "rotation_deg": 0,
+        "z_index": 21,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-grey-left",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
+          "preview_image_url": "/configurator/components-v1/wire-grey-left.png",
+          "preview_name": "Grey wire \u2014 left short arch",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "93a7622e-1d4d-5c9f-9c5a-1f4600ac8475",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireRedRight",
+        "option_key": "solar_cable",
+        "slot_index": 10,
+        "x_pct": 48.61878,
+        "y_pct": 24.24033,
+        "width_pct": 20.71823,
+        "height_pct": 17.19613,
+        "rotation_deg": 0,
+        "z_index": 22,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-red-right",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
+          "preview_image_url": "/configurator/components-v1/wire-red-right.png",
+          "preview_name": "Red wire \u2014 right tall arch",
+          "match_asset": true
+        }
+      },
+      {
+        "id": "e9c0b0ae-f2c5-5c73-b074-3d82f5a11a7f",
+        "template_id": "a4501a4c-2d2f-4c09-8ba9-28978a85a054",
+        "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
+        "slot_key": "nis_v1_wireGreyRight",
+        "option_key": "solar_cable",
+        "slot_index": 11,
+        "x_pct": 57.36648,
+        "y_pct": 24.44751,
+        "width_pct": 17.77164,
+        "height_pct": 16.98895,
+        "rotation_deg": 0,
+        "z_index": 19,
+        "is_active": true,
+        "component_category": null,
+        "settings": {
+          "asset_id": "wire-grey-right",
+          "asset_pack": "components-v1",
+          "fit": "fill",
+          "preview_component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
+          "preview_image_url": "/configurator/components-v1/wire-grey-right.png",
+          "preview_name": "Grey wire \u2014 right tall arch",
+          "match_asset": true
+        }
+      }
+    ]
+  }
+}
