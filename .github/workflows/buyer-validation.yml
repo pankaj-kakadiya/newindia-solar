@@ -11,6 +11,16 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Capture tracked buyer source checkpoint
+        run: |
+          mkdir -p /tmp/buyer-checkpoint
+          git archive --format=zip --output=/tmp/buyer-checkpoint/source.zip HEAD app components lib tests docs package.json tsconfig.json
+          git rev-parse HEAD > /tmp/buyer-checkpoint/COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buyer-source-checkpoint
+          path: /tmp/buyer-checkpoint/
+          retention-days: 7
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
