@@ -33,15 +33,17 @@ import './procurement-v2.css'
 import './pricing-v2.css'
 import './finance-v2.css'
 import './reports-v2.css'
-import type { Metadata } from 'next'
-import { CartProvider } from '../components/CartProvider'
+import './cms-v2.css'
+import type {Metadata} from 'next'
+import {CartProvider} from '../components/CartProvider'
 import ThemeProvider from '../components/ThemeProvider'
+import {SiteContentProvider} from '../components/SiteContentProvider'
 
-export const metadata: Metadata = {
-  title: 'New India Solar | ACDB, DCDB & Solar Components',
-  description: 'Shop ACDB, DCDB, MCB, SPD, solar cable, earthing kits and customize ACDB/DCDB boxes for solar installations.'
+export const metadata:Metadata={
+ title:'New India Solar | ACDB, DCDB & Solar Components',
+ description:'Shop ACDB, DCDB, MCB, SPD, solar cable, earthing kits and customize ACDB/DCDB boxes for solar installations.'
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><ThemeProvider><CartProvider>{children}</CartProvider></ThemeProvider></body></html>
+export default function RootLayout({children}:{children:React.ReactNode}){
+ return <html lang="en"><body><ThemeProvider><SiteContentProvider><CartProvider>{children}</CartProvider></SiteContentProvider></ThemeProvider></body></html>
 }
