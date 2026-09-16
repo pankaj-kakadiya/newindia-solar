@@ -60,6 +60,10 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    label: 'Procurement',
+    items: [{ href: '/admin/purchasing', label: 'Suppliers & Purchasing', icon: ShoppingCart }],
+  },
+  {
     label: 'Configurator',
     items: [{ href: '/admin/configurator', label: 'ACDB / DCDB Builder', icon: SlidersHorizontal }],
   },
@@ -297,6 +301,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 <div className="adminV2Dropdown adminV2QuickMenu">
                   <Link href="/admin/products">Manage products <span>→</span></Link>
                   <Link href="/admin/components">Manage components <span>→</span></Link>
+                  <Link href="/admin/purchasing">Open purchasing <span>→</span></Link>
                   <Link href="/admin/configurator">Open configurator <span>→</span></Link>
                   <Link href="/admin/orders">Review orders <span>→</span></Link>
                 </div>
