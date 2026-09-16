@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Factory,
   FileText,
+  IndianRupee,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -62,6 +63,10 @@ const navGroups: NavGroup[] = [
   {
     label: 'Procurement',
     items: [{ href: '/admin/purchasing', label: 'Suppliers & Purchasing', icon: ShoppingCart }],
+  },
+  {
+    label: 'Commercial',
+    items: [{ href: '/admin/pricing', label: 'Pricing & Margins', icon: IndianRupee }],
   },
   {
     label: 'Configurator',
@@ -302,6 +307,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   <Link href="/admin/products">Manage products <span>→</span></Link>
                   <Link href="/admin/components">Manage components <span>→</span></Link>
                   <Link href="/admin/purchasing">Open purchasing <span>→</span></Link>
+                  <Link href="/admin/pricing">Pricing & margins <span>→</span></Link>
                   <Link href="/admin/configurator">Open configurator <span>→</span></Link>
                   <Link href="/admin/orders">Review orders <span>→</span></Link>
                 </div>
