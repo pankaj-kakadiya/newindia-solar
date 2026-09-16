@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Bell, Boxes, ChevronDown, ChevronLeft, ChevronRight, Command, ExternalLink,
+  BarChart3, Bell, Boxes, ChevronDown, ChevronLeft, ChevronRight, Command, ExternalLink,
   Factory, FileText, IndianRupee, KeyRound, LayoutDashboard, LogOut, Menu,
   Package, Palette, Search, Settings, ShoppingCart, SlidersHorizontal, Users,
   Warehouse, X,
@@ -16,7 +16,10 @@ type NavItem = { href: string; label: string; icon: React.ComponentType<{ size?:
 type NavGroup = { label: string; items: NavItem[] }
 
 const navGroups: NavGroup[] = [
-  { label: 'Overview', items: [{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard }] },
+  { label: 'Overview', items: [
+    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
+  ]},
   { label: 'Sales', items: [
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart, badge: 'orders' },
     { href: '/admin/rfqs', label: 'Bulk RFQs', icon: FileText, badge: 'rfqs' },
@@ -175,6 +178,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <div className="adminV2DropWrap">
             <button className="adminV2QuickButton" onClick={() => setActionsOpen(v => !v)} aria-expanded={actionsOpen}><span>Quick Actions</span><ChevronDown size={15} /></button>
             {actionsOpen && <div className="adminV2Dropdown adminV2QuickMenu">
+              <Link href="/admin/reports">Reports & analytics <span>→</span></Link>
               <Link href="/admin/products">Manage products <span>→</span></Link>
               <Link href="/admin/components">Manage components <span>→</span></Link>
               <Link href="/admin/purchasing">Open purchasing <span>→</span></Link>
