@@ -2,6 +2,8 @@ import type {Metadata} from 'next'
 import HomePageContent from '../components/HomePageContent'
 import {supabase} from '../lib/supabase'
 
+export const dynamic='force-dynamic'
+
 export async function generateMetadata():Promise<Metadata>{
   const {data}=await supabase.from('cms_settings').select('value').eq('key','seo').maybeSingle()
   const seo:any=data?.value||{}
