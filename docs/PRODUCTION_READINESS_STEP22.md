@@ -32,6 +32,10 @@ Automated checks cover database connectivity, RLS coverage, webhook/payment idem
 - Failed online payment recovery reuses the existing ERP order and retry-safe Razorpay order flow.
 - `/api/health` exposes only non-sensitive application/database health state for post-cutover monitoring.
 
+## Release-candidate verification
+
+Before treating a release candidate as deployable, the latest Git commit must have a successful hosting build, `/admin/readiness` must load through the staging alias, `/api/health` must report a healthy database, and the expected security headers must be visible on the deployed response. A prior successful deployment does not validate newer unbuilt commits.
+
 ## Cutover rollback rule
 
 If a post-cutover smoke test finds a critical issue in login, checkout, payments, database access or admin security, stop new traffic to the release before attempting data repair. Restore routing to the last known-good deployment, preserve payment/webhook logs, reconcile any provider transactions created during the incident window, and only then prepare a corrected release.
