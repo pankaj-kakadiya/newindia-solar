@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import {useEffect,useMemo,useState} from 'react'
-import {AlertTriangle,BellRing,CheckCircle2,Clock3,ExternalLink,Filter,RefreshCw,Search,Tasks,UserPlus,XCircle} from 'lucide-react'
+import {AlertTriangle,BellRing,CheckCircle2,Clock3,ExternalLink,ListTodo,RefreshCw,Search,UserPlus,XCircle} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import type {AdminAccess} from '../../../lib/adminAccess'
 
@@ -45,9 +45,9 @@ export default function NotificationsPage(){
   <div className="notifyHead"><div><span className="adminEyebrow">WORKFLOW CONTROL</span><h1>Notifications & Tasks</h1><p>One queue for sales follow-ups, finance ageing, production delays, stock alerts, purchase exceptions, dispatch readiness and assigned work.</p></div><button onClick={load} className="notifyRefresh"><RefreshCw size={16}/> Refresh</button></div>
   {message&&<div className="notifyMessage"><BellRing size={16}/>{message}</div>}
 
-  <div className="notifyStats"><article><span><BellRing/></span><div><small>Unread</small><strong>{unread}</strong><p>{alerts.length} active alerts</p></div></article><article><span><AlertTriangle/></span><div><small>Critical</small><strong>{critical}</strong><p>Needs immediate action</p></div></article><article><span><Clock3/></span><div><small>Overdue</small><strong>{overdue}</strong><p>Past due time/date</p></div></article><article><span><Tasks/></span><div><small>Open Tasks</small><strong>{myOpen}</strong><p>Assigned or visible to you</p></div></article></div>
+  <div className="notifyStats"><article><span><BellRing/></span><div><small>Unread</small><strong>{unread}</strong><p>{alerts.length} active alerts</p></div></article><article><span><AlertTriangle/></span><div><small>Critical</small><strong>{critical}</strong><p>Needs immediate action</p></div></article><article><span><Clock3/></span><div><small>Overdue</small><strong>{overdue}</strong><p>Past due time/date</p></div></article><article><span><ListTodo/></span><div><small>Open Tasks</small><strong>{myOpen}</strong><p>Assigned or visible to you</p></div></article></div>
 
-  <div className="notifyTabs"><button className={tab==='alerts'?'active':''} onClick={()=>setTab('alerts')}><BellRing size={16}/> Alert Center</button><button className={tab==='tasks'?'active':''} onClick={()=>setTab('tasks')}><Tasks size={16}/> Staff Tasks</button></div>
+  <div className="notifyTabs"><button className={tab==='alerts'?'active':''} onClick={()=>setTab('alerts')}><BellRing size={16}/> Alert Center</button><button className={tab==='tasks'?'active':''} onClick={()=>setTab('tasks')}><ListTodo size={16}/> Staff Tasks</button></div>
 
   {tab==='alerts'&&<section className="notifyPanel">
    <div className="notifyToolbar"><label><Search size={16}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search alerts…"/></label><select value={severity} onChange={e=>setSeverity(e.target.value)}><option value="all">All severity</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="info">Info</option><option value="success">Success</option></select><select value={module} onChange={e=>setModule(e.target.value)}><option value="all">All modules</option>{modules.map(m=><option key={m} value={m}>{moduleLabels[m]||m}</option>)}</select><select value={readFilter} onChange={e=>setReadFilter(e.target.value)}><option value="all">Read + unread</option><option value="unread">Unread only</option><option value="read">Read only</option></select><button onClick={markAll} disabled={busy||!alerts.length}><CheckCircle2 size={15}/> Mark all read</button></div>
