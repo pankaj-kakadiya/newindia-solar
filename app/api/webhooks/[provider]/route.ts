@@ -39,7 +39,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{provide
  const externalId=provider==='razorpay'?String(json?.payload?.payment?.entity?.id||json?.payload?.order?.entity?.id||''):provider==='whatsapp'?String(json?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.id||json?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.id||''):String(request.headers.get('x-event-id')||json?.id||'')
  const safeHeaders={content_type:request.headers.get('content-type'),user_agent:request.headers.get('user-agent'),request_id:request.headers.get('x-request-id')||request.headers.get('x-razorpay-event-id')}
  await db.from('integration_webhook_events').insert({integration_key:cfg.key,provider_event_id:externalId||null,event_type:eventType,signature_valid:valid,processing_status:valid?'received':'failed',payload_hash:hash,safe_headers:safeHeaders,error_message:valid?null:'Invalid webhook signature'})
- await db.from('integration_event_logs').insert({integration_key:cfg.key,direction:'inbound',event_type,status:valid?'received':'failed',external_id:externalId||null,request_metadata:{payload_hash:hash,provider},error_message:valid?null:'Invalid webhook signature'})
+ await db.from('integration_event_logs').insert({integration_key:cfg.key,direction:'inbound',event_type:eventType,status:valid?'received':'failed',external_id:externalId||null,request_metadata:{payload_hash:hash,provider},error_message:valid?null:'Invalid webhook signature'})
  if(!valid)return NextResponse.json({error:'Invalid signature.'},{status:401})
  return NextResponse.json({received:true})
 }
