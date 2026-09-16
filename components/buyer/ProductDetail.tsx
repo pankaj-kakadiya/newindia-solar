@@ -89,7 +89,17 @@ export default function ProductDetail({slug}:{slug:string}){
   function select(v:Variant){if(busy)return;const q=new URLSearchParams(window.location.search);q.set('variant',v.id);window.history.pushState(null,'',`${window.location.pathname}?${q}`);setNotice(null)}
   function move(delta:number){if(images.length)setImageIndex(i=>(Math.min(i,images.length-1)+delta+images.length)%images.length)}
   function galleryKeys(e:KeyboardEvent<HTMLElement>){
-    if(e.defaultPrevented||e.altKey||e.ctrlKey||e.metaKey||(e.target as HTMLElement).closest('input,textarea,select,[contenteditable="true"]'))return
+    if(e.defaultPrevented||e.altKey||e.ctrlKey||e.metaKey)return
+    const modal=zoom.current
+    if(e.key==='Tab'&&modal?.open&&e.currentTarget===modal){
+      const controls=Array.from(modal.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]')).filter(el=>el.tabIndex>=0&&el.getClientRects().length>0&&getComputedStyle(el).visibility!=='hidden')
+      const first=controls[0],last=controls[controls.length-1],active=document.activeElement
+      if(first&&last&&(!modal.contains(active)||(e.shiftKey&&active===first)||(!e.shiftKey&&active===last))){
+        e.preventDefault();(e.shiftKey?last:first).focus({preventScroll:true})
+      }
+      return
+    }
+    if((e.target as HTMLElement).closest('input,textarea,select,[contenteditable="true"]'))return
     const next=galleryKeyIndex(e.key,index,images.length);if(next===null)return;e.preventDefault();setImageIndex(next)
   }
   function startTouch(e:TouchEvent<HTMLElement>){
