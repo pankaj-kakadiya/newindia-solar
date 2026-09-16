@@ -1,4 +1,5 @@
-const csp=[
+const production=process.env.NODE_ENV==='production'
+const cspParts=[
  "default-src 'self'",
  "base-uri 'self'",
  "object-src 'none'",
@@ -12,9 +13,10 @@ const csp=[
  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.razorpay.com https://checkout.razorpay.com https://graph.facebook.com",
  "frame-src 'self' https://*.razorpay.com https://checkout.razorpay.com",
  "worker-src 'self' blob:",
- "manifest-src 'self'",
- "upgrade-insecure-requests"
-].join('; ')
+ "manifest-src 'self'"
+]
+if(production)cspParts.push('upgrade-insecure-requests')
+const csp=cspParts.join('; ')
 
 const securityHeaders=[
  {key:'Content-Security-Policy',value:csp},
@@ -22,7 +24,7 @@ const securityHeaders=[
  {key:'X-Frame-Options',value:'DENY'},
  {key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},
  {key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'},
- {key:'Strict-Transport-Security',value:'max-age=63072000; includeSubDomains; preload'}
+ ...(production?[{key:'Strict-Transport-Security',value:'max-age=63072000; includeSubDomains; preload'}]:[])
 ]
 
 /** @type {import('next').NextConfig} */
