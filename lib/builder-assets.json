@@ -1,0 +1,1200 @@
+{
+  "schemaVersion": "1.0.0",
+  "title": "New India Solar 2D Builder \u2014 visual asset starter kit",
+  "coordinateSpace": {
+    "width": 1086,
+    "height": 1448,
+    "units": "reference pixels"
+  },
+  "requestedEnclosureMm": {
+    "height": 180,
+    "width": 130,
+    "depth": 100,
+    "verified": false
+  },
+  "assetCount": 32,
+  "assets": [
+    {
+      "id": "ac-spd-oreit",
+      "label": "OREIT OT-SPD-40",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-oreit.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        362,
+        48,
+        532,
+        1159
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "1a4ca63a5640cc6a3f73ad4c0615d6731c448596657fcf11ef61c873a10dabb6"
+    },
+    {
+      "id": "ac-spd-schutz",
+      "label": "SCHUTZ SCH-40L + SCH-40NPE",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-schutz.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        386,
+        84,
+        482,
+        1087
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "22bdf63163d6c93634994cbe81380662dfbf9d93d2d2d541ab4106af5cf01e59"
+    },
+    {
+      "id": "ac-spd-empower",
+      "label": "EMPOWER EM-SPD-40",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-empower.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        371,
+        42,
+        512,
+        1158
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "a667d325e5bbeffb9e65ad599635d72b360879d70fe55a3d9ac4b597d277c548"
+    },
+    {
+      "id": "ac-spd-finder",
+      "label": "Finder AC SPD",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-finder.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        362,
+        30,
+        530,
+        1195
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "98e672b8aa93734b7016713089b79c7ac92e783cf0ef3d3d85b15eaff65f5939"
+    },
+    {
+      "id": "ac-spd-sighter",
+      "label": "SIGHTER S2032040",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-sighter.png",
+      "imageSizePx": {
+        "width": 1187,
+        "height": 1325
+      },
+      "sourceRectPx": [
+        338,
+        61,
+        512,
+        1209
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "1bf4ef5f8bbb77bc0a354164d3dd2fd80b991940b651f0cf9528d70acf74c557"
+    },
+    {
+      "id": "ac-spd-winsurge",
+      "label": "WinSurge WS320-40 + WS255-40",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-winsurge.png",
+      "imageSizePx": {
+        "width": 1080,
+        "height": 1456
+      },
+      "sourceRectPx": [
+        266,
+        85,
+        552,
+        1293
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "b5f93004a7052848af375a849ae9fbc103c3431c2117c5becbcbf03b4f645ae0"
+    },
+    {
+      "id": "ac-spd-fonix",
+      "label": "FONIX FN-SPD-40",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-fonix.png",
+      "imageSizePx": {
+        "width": 1145,
+        "height": 1374
+      },
+      "sourceRectPx": [
+        312,
+        73,
+        523,
+        1229
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "2933b9155efae288229681ca21af5b2ee6c99531aae26a6c5388fa0225e9c687"
+    },
+    {
+      "id": "ac-spd-itally",
+      "label": "ITALLY AC SPD-320V",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-itally.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        223,
+        134,
+        578,
+        1296
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "d89d2865510dd73f0ba6ef43bd12e9e766913608daa75513b9cfd2794f769140"
+    },
+    {
+      "id": "dc-spd-finder",
+      "label": "Finder DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-finder.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        246,
+        117,
+        533,
+        1276
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "0a894ea430f16d107bd858b5cc070df85b41fe9f69bb60abeddfbf0e44852262"
+    },
+    {
+      "id": "dc-spd-empower",
+      "label": "EMPOWER DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-empower.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        240,
+        69,
+        545,
+        1339
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "d9485ca64ca18c8ef825dcb7a83620eb42ffea21a862a4d3d136483fa59dfb79"
+    },
+    {
+      "id": "dc-spd-sighter",
+      "label": "SIGHTER DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-sighter.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        228,
+        103,
+        569,
+        1326
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "25b7810e20dd7bfbcda506c7bfcd370b03ee665520821cf39f2bbb950e6abe95"
+    },
+    {
+      "id": "dc-spd-orbit",
+      "label": "ORBIT DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-orbit.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        223,
+        58,
+        578,
+        1417
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "9c240da97dbfbf2765ff7872f8a7da17d0701358d91dafe75fec2bf3bfd1d91e"
+    },
+    {
+      "id": "dc-spd-fonix",
+      "label": "FONIX DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-fonix.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        220,
+        84,
+        585,
+        1377
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "41bde6c824446237f34b5dc7dd65636693bec5a96de15181e166eceadf3bf622"
+    },
+    {
+      "id": "dc-spd-schutz",
+      "label": "SCHUTZ DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-schutz.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        230,
+        118,
+        563,
+        1303
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "9e131c45c042375884365b684eb2c4b8850303167ff96be7344787add4aac130"
+    },
+    {
+      "id": "dc-spd-itally",
+      "label": "ITALLY DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-itally.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        233,
+        127,
+        560,
+        1267
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "2c9c953d0656527186c1064e9682f78af605eef24a9c00bbde906c77883ed6d2"
+    },
+    {
+      "id": "dc-spd-winsurge",
+      "label": "WinSurge DC SPD",
+      "domain": "DC",
+      "category": "spd",
+      "src": "/configurator/components-v1/dc-spd-winsurge.png",
+      "imageSizePx": {
+        "width": 1024,
+        "height": 1536
+      },
+      "sourceRectPx": [
+        232,
+        95,
+        566,
+        1347
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "b2356df40d5836cd1b53dc2105708435f187edfaa3e100af9906ad904fcc9b38"
+    },
+    {
+      "id": "ac-mcb-grey-c32",
+      "label": "Grey C32 AC \u2014 source 01",
+      "domain": "AC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/ac-mcb-grey-c32.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        311,
+        30,
+        633,
+        1194
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "07b34ad0090c9067f02e7fbe7209dfc12598bc1ed7abc8d06fb0c88df75f49bd"
+    },
+    {
+      "id": "ac-mcb-siemens-c32",
+      "label": "SIEMENS C32 AC",
+      "domain": "AC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/ac-mcb-siemens-c32.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        334,
+        57,
+        586,
+        1153
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "f5b4610a9df6338f221fbc3c33d1953c4c79266656fceb7c579bd67acdf2ae72"
+    },
+    {
+      "id": "ac-mcb-empower-c32a",
+      "label": "EMPOWER EM60-C32A AC",
+      "domain": "AC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/ac-mcb-empower-c32a.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        340,
+        79,
+        573,
+        1113
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "4abbd23a7db73b542b9e744f2f9a02c939d3a7fd350b79e0d0fd8a02b427d691"
+    },
+    {
+      "id": "dc-mcb-empower-c32a",
+      "label": "EMPOWER EM60-C32A DC",
+      "domain": "DC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/dc-mcb-empower-c32a.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        308,
+        28,
+        633,
+        1191
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "36017550f47282315f8085759fe295183d2e0d9163cf0db8ede6916d7847696d"
+    },
+    {
+      "id": "dc-mcb-siemens-32a",
+      "label": "SIEMENS 32A DC",
+      "domain": "DC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/dc-mcb-siemens-32a.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        350,
+        57,
+        554,
+        1142
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "0020be66459b02c5c6462cc497353351aeb6245c2041727d4ac5315f00b638a2"
+    },
+    {
+      "id": "dc-mcb-lauritz-knudsen-c32",
+      "label": "Lauritz Knudsen BJ2032DC",
+      "domain": "DC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/dc-mcb-lauritz-knudsen-c32.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        323,
+        50,
+        594,
+        1174
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "8edc677a1ead90fceac97fa54fa6d7f69833ca7624d10884dcf50d11a3733bd1"
+    },
+    {
+      "id": "enclosure-empty",
+      "label": "Locked empty enclosure",
+      "domain": "shared",
+      "category": "enclosure",
+      "src": "/configurator/components-v1/enclosure-empty.png",
+      "imageSizePx": {
+        "width": 1086,
+        "height": 1448
+      },
+      "sourceRectPx": [
+        0,
+        0,
+        1086,
+        1448
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "51714534fd5808b18d447adef28c3f9ba97dadf890899b6f5cddb0f1fb2e75bd"
+    },
+    {
+      "id": "din-rail",
+      "label": "Horizontal DIN rail",
+      "domain": "shared",
+      "category": "rail",
+      "src": "/configurator/components-v1/din-rail.png",
+      "imageSizePx": {
+        "width": 2172,
+        "height": 724
+      },
+      "sourceRectPx": [
+        43,
+        209,
+        2086,
+        295
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "bd7f28a2b285e87f18569878642a32594f36bdcf7495cdce8aaf7364e07f3d6a"
+    },
+    {
+      "id": "terminal-block-pair",
+      "label": "Grey terminal block pair",
+      "domain": "shared",
+      "category": "terminal",
+      "src": "/configurator/components-v1/terminal-block-pair.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        373,
+        156,
+        560,
+        992
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.3,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.72,
+          "y": 0.015
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "a104aefb671029a01e70fd575dea38ce2f45cdc382cbabe85c74c5b875ba4b29"
+    },
+    {
+      "id": "cable-gland",
+      "label": "Grey and black cable gland",
+      "domain": "shared",
+      "category": "gland",
+      "src": "/configurator/components-v1/cable-gland.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        198,
+        161,
+        859,
+        1029
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "ade8e4608270316ee31237cc458f1c707cb88e3d1cc3ddf4bfaca583fd921bac"
+    },
+    {
+      "id": "wire-red-left",
+      "label": "Red wire \u2014 left short arch",
+      "domain": "shared",
+      "category": "wire",
+      "src": "/configurator/components-v1/wire-red-left.png",
+      "imageSizePx": {
+        "width": 1610,
+        "height": 977
+      },
+      "sourceRectPx": [
+        359,
+        210,
+        874,
+        522
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "320652509fd271e05b3689c671479ae225e8c7735adb3fe8eb6188654799a160"
+    },
+    {
+      "id": "wire-grey-left",
+      "label": "Grey wire \u2014 left short arch",
+      "domain": "shared",
+      "category": "wire",
+      "src": "/configurator/components-v1/wire-grey-left.png",
+      "imageSizePx": {
+        "width": 1544,
+        "height": 1019
+      },
+      "sourceRectPx": [
+        363,
+        177,
+        817,
+        656
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "7ccb70eabbc97d9ba7b861e8e1a22173be038abcf33e37f4f5550c5cd6b5b3af"
+    },
+    {
+      "id": "wire-red-right",
+      "label": "Red wire \u2014 right tall arch",
+      "domain": "shared",
+      "category": "wire",
+      "src": "/configurator/components-v1/wire-red-right.png",
+      "imageSizePx": {
+        "width": 1174,
+        "height": 1340
+      },
+      "sourceRectPx": [
+        168,
+        185,
+        878,
+        957
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "a0df49de559de1153a57b229e00dc1eba2bab94f871184070eefd4c2e75371b0"
+    },
+    {
+      "id": "wire-grey-right",
+      "label": "Grey wire \u2014 right tall arch",
+      "domain": "shared",
+      "category": "wire",
+      "src": "/configurator/components-v1/wire-grey-right.png",
+      "imageSizePx": {
+        "width": 1101,
+        "height": 1428
+      },
+      "sourceRectPx": [
+        161,
+        202,
+        780,
+        1024
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "f77ba31a5fd46bc92d737ceab205b1794279b78b7a18b4996c80d9270f1d83be"
+    },
+    {
+      "id": "labels-acdb",
+      "label": "ACDB sticker row",
+      "domain": "AC",
+      "category": "labels",
+      "src": "/configurator/components-v1/labels-acdb.png",
+      "imageSizePx": {
+        "width": 2172,
+        "height": 724
+      },
+      "sourceRectPx": [
+        76,
+        117,
+        2021,
+        466
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "fc26f07131b98ce6e3740a10e15fe611702f4e329f0222636dba551194d9d43a"
+    },
+    {
+      "id": "labels-dcdb",
+      "label": "DCDB sticker row",
+      "domain": "DC",
+      "category": "labels",
+      "src": "/configurator/components-v1/labels-dcdb.png",
+      "imageSizePx": {
+        "width": 2032,
+        "height": 774
+      },
+      "sourceRectPx": [
+        127,
+        161,
+        1778,
+        412
+      ],
+      "visualPortsNormalized": [],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "1c34ba8a2bfcf980e96df292e35e4890f86e6f56e60d8df340267987af1fa5f3"
+    }
+  ],
+  "slots": {
+    "enclosure": {
+      "x": 0,
+      "y": 0,
+      "width": 1086,
+      "height": 1448,
+      "z": 0,
+      "fit": "fill"
+    },
+    "rail": {
+      "x": 225,
+      "y": 606,
+      "width": 632,
+      "height": 170,
+      "z": 10,
+      "fit": "contain"
+    },
+    "spd": {
+      "x": 247,
+      "y": 475,
+      "width": 220,
+      "height": 447,
+      "z": 30,
+      "fit": "contain"
+    },
+    "mcb": {
+      "x": 487,
+      "y": 487,
+      "width": 205,
+      "height": 435,
+      "z": 30,
+      "fit": "contain"
+    },
+    "terminal": {
+      "x": 705,
+      "y": 587,
+      "width": 125,
+      "height": 212,
+      "z": 30,
+      "fit": "contain"
+    },
+    "labels": {
+      "x": 237,
+      "y": 958,
+      "width": 612,
+      "height": 147,
+      "z": 40,
+      "fit": "contain"
+    },
+    "glandLeft": {
+      "x": 307,
+      "y": 1177,
+      "width": 151,
+      "height": 183,
+      "z": 40,
+      "fit": "contain"
+    },
+    "glandRight": {
+      "x": 628,
+      "y": 1177,
+      "width": 151,
+      "height": 183,
+      "z": 40,
+      "fit": "contain"
+    },
+    "wireRedLeft": {
+      "x": 291,
+      "y": 355,
+      "width": 256,
+      "height": 139,
+      "z": 20,
+      "fit": "fill"
+    },
+    "wireGreyLeft": {
+      "x": 399,
+      "y": 355,
+      "width": 240,
+      "height": 139,
+      "z": 21,
+      "fit": "fill"
+    },
+    "wireRedRight": {
+      "x": 528,
+      "y": 351,
+      "width": 225,
+      "height": 249,
+      "z": 22,
+      "fit": "fill"
+    },
+    "wireGreyRight": {
+      "x": 623,
+      "y": 354,
+      "width": 193,
+      "height": 246,
+      "z": 19,
+      "fit": "fill"
+    }
+  },
+  "defaults": {
+    "AC": {
+      "spd": "ac-spd-oreit",
+      "mcb": "ac-mcb-grey-c32",
+      "labels": "labels-acdb"
+    },
+    "DC": {
+      "spd": "dc-spd-finder",
+      "mcb": "dc-mcb-empower-c32a",
+      "labels": "labels-dcdb"
+    }
+  },
+  "notes": [
+    "Source rectangles trim transparent canvas padding at render time; original PNG files retain their generated bytes.",
+    "Port points and slot rectangles are visual starting positions, not manufacturer terminal or CAD dimensions.",
+    "AC/DC categories filter the visual selector. They do not establish electrical compatibility.",
+    "Wire PNGs reproduce catalog styling only; no circuit or polarity correctness is implied.",
+    "Component labels, logos and technical markings are generated approximations requiring product review."
+  ]
+}
