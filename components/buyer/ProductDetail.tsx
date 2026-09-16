@@ -1,5 +1,6 @@
 'use client'
 import {useEffect,useMemo,useRef,useState} from 'react'
+import type {KeyboardEvent,TouchEvent} from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {useRouter,useSearchParams} from 'next/navigation'
@@ -10,11 +11,20 @@ import {BuyerAlert,BuyerButton,BuyerSkeleton} from './BuyerUI'
 import {activeVariants,money,priceFor,productImage,safeAssetUrl} from '../../lib/catalogue'
 import type {Product,Variant} from '../../lib/catalogue'
 import {checkPurchase,finite,linePrice,minimum,PUBLIC_PRODUCT_SELECT,productEnquiry,quantityError,quantityStep,rounded,specEntries,strings} from '../../lib/buyer-commerce'
+import {galleryKeyIndex,gallerySwipe} from '../../lib/gallery-interactions'
+import type {GalleryTouch} from '../../lib/gallery-interactions'
+import './product-gallery-refinements.css'
 
 type Detail=Product & {description:string|null;inclusions:unknown;applications:unknown;product_badges:unknown;warranty_months:number|null;lead_time_days:number|null;hsn_code:string|null;installation_guide_url:string|null}
-function Photo({src,alt,priority=false}:{src?:string;alt:string;priority?:boolean}){
-  const [broken,setBroken]=useState(false);useEffect(()=>setBroken(false),[src])
-  return src&&!broken?<Image src={src} alt={alt} fill unoptimized priority={priority} sizes="(max-width: 800px) 100vw, 50vw" onError={()=>setBroken(true)}/>:<div className="p28ImageEmpty"><ImageIcon size={36}/><span>Image not available</span></div>
+type PhotoProps={src?:string;alt:string;priority?:boolean;retryable?:boolean;sizes?:string}
+// Keying the inner component prevents a failed/late image event from poisoning the next image.
+function Photo(props:PhotoProps){return <PhotoImage key={props.src||'missing-image'} {...props}/>}
+function PhotoImage({src,alt,priority=false,retryable=false,sizes='(max-width: 800px) 100vw, 50vw'}:PhotoProps){
+  const [broken,setBroken]=useState(!src),[loaded,setLoaded]=useState(false),[attempt,setAttempt]=useState(0)
+  return <>{src&&!broken&&<Image key={attempt} src={src} alt={alt} fill unoptimized priority={priority} sizes={sizes} onLoad={()=>setLoaded(true)} onError={()=>setBroken(true)}/>}
+    {!broken&&!loaded&&<span className="p282ImageLoading" role={retryable?'status':undefined} aria-hidden={retryable?undefined:true}>{retryable?'Loading image…':''}</span>}
+    {broken&&<div className={`p28ImageEmpty ${alt?'':'p282DecorativeMissing'}`} role={retryable?'status':undefined} aria-hidden={alt?undefined:true}><ImageIcon size={retryable?36:20}/><span>{src?'Image could not be loaded':'Image not available'}</span>{src&&retryable&&<button type="button" onClick={e=>{const stage=e.currentTarget.closest<HTMLElement>('.p28Photo,.p28ZoomImage');stage?.focus({preventScroll:true});setBroken(false);setLoaded(false);setAttempt(n=>n+1)}}>Retry image</button>}</div>}
+  </>
 }
 export default function ProductDetail({slug}:{slug:string}){
   const params=useSearchParams(),router=useRouter(),cart=useCart()
@@ -22,7 +32,8 @@ export default function ProductDetail({slug}:{slug:string}){
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[attempt,setAttempt]=useState(0)
   const [imageIndex,setImageIndex]=useState(0),[quantity,setQuantity]=useState('1'),[busy,setBusy]=useState<'cart'|'buy'|null>(null)
   const [notice,setNotice]=useState<{text:string;error:boolean}|null>(null),[tab,setTab]=useState('overview'),[zoomOpen,setZoomOpen]=useState(false)
-  const zoom=useRef<HTMLDialogElement>(null),zoomButton=useRef<HTMLButtonElement>(null),variantArea=useRef<HTMLFieldSetElement>(null),touch=useRef<number|null>(null),lock=useRef(false)
+  const zoom=useRef<HTMLDialogElement>(null),zoomButton=useRef<HTMLButtonElement>(null),variantArea=useRef<HTMLFieldSetElement>(null),lock=useRef(false)
+  const touch=useRef<GalleryTouch|null>(null),thumbs=useRef<HTMLDivElement>(null),mobileBar=useRef<HTMLDivElement>(null),backdropPress=useRef(false)
   useEffect(()=>{
     let live=true;const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000)
     setLoading(true);setError('');setProduct(null);setRelated([])
@@ -44,7 +55,22 @@ export default function ProductDetail({slug}:{slug:string}){
   const wanted=params.get('variant')||''
   const variant=variants.find(v=>v.id===wanted)||(!wanted&&variants.length===1?variants[0]:null)
   useEffect(()=>{if(product){setQuantity(String(minimum(product)));setNotice(null)}},[product?.id,product?.min_order_qty,variant?.id])
+  useEffect(()=>{setImageIndex(0);touch.current=null},[product?.id])
   useEffect(()=>{if(!zoomOpen)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous}},[zoomOpen])
+  useEffect(()=>{
+    const strip=thumbs.current,selected=strip?.querySelector<HTMLButtonElement>('[aria-pressed="true"]')
+    if(!strip||!selected)return
+    const left=selected.getBoundingClientRect().left-strip.getBoundingClientRect().left+strip.scrollLeft
+    if(left<strip.scrollLeft||left+selected.offsetWidth>strip.scrollLeft+strip.clientWidth)strip.scrollTo({left:Math.max(0,left-(strip.clientWidth-selected.offsetWidth)/2),behavior:'auto'})
+  },[imageIndex,product?.id])
+  useEffect(()=>{
+    const bar=mobileBar.current;if(loading||!product||!bar)return
+    const body=document.body,root=document.documentElement,oldPadding=body.style.paddingBottom,oldScrollPadding=root.style.scrollPaddingBottom
+    const basePadding=parseFloat(getComputedStyle(body).paddingBottom)||0,baseScrollPadding=parseFloat(getComputedStyle(root).scrollPaddingBottom)||0
+    const update=()=>{const height=Math.ceil(bar.getBoundingClientRect().height);body.style.paddingBottom=height?`${basePadding+height}px`:oldPadding;root.style.scrollPaddingBottom=height?`${baseScrollPadding+height+16}px`:oldScrollPadding}
+    const observer=new ResizeObserver(update);observer.observe(bar);window.addEventListener('resize',update);update()
+    return()=>{observer.disconnect();window.removeEventListener('resize',update);body.style.paddingBottom=oldPadding;root.style.scrollPaddingBottom=oldScrollPadding}
+  },[loading,product?.id])
   if(loading)return <main id="main-content" className="container p28Loading" aria-busy="true"><BuyerSkeleton kind="media"/><div><BuyerSkeleton kind="title"/><BuyerSkeleton/><BuyerSkeleton kind="button"/><p role="status">Loading product…</p></div></main>
   if(error)return <main id="main-content" className="container p28State"><BuyerAlert tone="error">{error}</BuyerAlert><BuyerButton onClick={()=>setAttempt(n=>n+1)}>Retry product</BuyerButton></main>
   if(!product)return <main id="main-content" className="container p28State"><h1>Product not available</h1><p>This product is not currently published.</p><BuyerButton href="/shop">Back to catalogue</BuyerButton></main>
@@ -61,7 +87,22 @@ export default function ProductDetail({slug}:{slug:string}){
   const specifications=specEntries(p.specifications,variant?.attributes)
   const documents=[{name:'Product datasheet',url:safeAssetUrl(p.datasheet_url)},{name:'Installation guide',url:safeAssetUrl(p.installation_guide_url)}].filter(x=>x.url)
   function select(v:Variant){if(busy)return;const q=new URLSearchParams(window.location.search);q.set('variant',v.id);window.history.pushState(null,'',`${window.location.pathname}?${q}`);setNotice(null)}
-  function move(delta:number){if(images.length)setImageIndex((index+delta+images.length)%images.length)}
+  function move(delta:number){if(images.length)setImageIndex(i=>(Math.min(i,images.length-1)+delta+images.length)%images.length)}
+  function galleryKeys(e:KeyboardEvent<HTMLElement>){
+    if(e.defaultPrevented||e.altKey||e.ctrlKey||e.metaKey||(e.target as HTMLElement).closest('input,textarea,select,[contenteditable="true"]'))return
+    const next=galleryKeyIndex(e.key,index,images.length);if(next===null)return;e.preventDefault();setImageIndex(next)
+  }
+  function startTouch(e:TouchEvent<HTMLElement>){
+    if(e.touches.length!==1||(e.target as HTMLElement).closest('button,a,input')){touch.current=null;return}
+    const point=e.touches[0];touch.current={id:point.identifier,x:point.clientX,y:point.clientY,at:e.timeStamp}
+  }
+  function endTouch(e:TouchEvent<HTMLElement>){
+    const start=touch.current;touch.current=null;if(!start||e.touches.length)return
+    const point=Array.from(e.changedTouches).find(t=>t.identifier===start.id)
+    const delta=gallerySwipe(start,point?{id:point.identifier,x:point.clientX,y:point.clientY,at:e.timeStamp}:null)
+    if(delta)move(delta)
+  }
+  const touchHandlers={onTouchStart:startTouch,onTouchMove:(e:TouchEvent<HTMLElement>)=>{if(e.touches.length!==1)touch.current=null},onTouchEnd:endTouch,onTouchCancel:()=>{touch.current=null}}
   function alter(delta:number){const q=finite(quantity)??min;setQuantity(String(Math.max(min,rounded(q+delta*step,6))))}
   async function purchase(destination:'cart'|'buy'){
     if(lock.current||!variant)return
@@ -83,13 +124,13 @@ export default function ProductDetail({slug}:{slug:string}){
   }
   async function share(){try{if(navigator.share){await navigator.share({title:p.name,url:window.location.href});return}await navigator.clipboard.writeText(window.location.href);setNotice({text:'Product link copied with the selected variant.',error:false})}catch(err){if(!(err instanceof Error&&err.name==='AbortError'))setNotice({text:'Copy the page address from your browser to share this product.',error:true})}}
   const tabs=[['overview','Overview'],['specifications','Specifications'],['contents','In the box'],['downloads','Downloads']]
-  return <main id="main-content" className="p28Page"><div className="container">
+  return <main id="main-content" className="p28Page p282Refined"><div className="container">
     <nav className="p28Breadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><ChevronRight size={13}/><Link href="/shop">Components</Link>{p.categories&&<><ChevronRight size={13}/><Link href={`/shop?category=${encodeURIComponent(p.categories.slug)}`}>{p.categories.name}</Link></>}<ChevronRight size={13}/><span aria-current="page">Product details</span></nav>
-    <section className="p28Hero"><div className="p28Gallery"><div className="p28Photo" tabIndex={0} role="group" aria-label="Product gallery. Use left and right arrow keys to browse images." onKeyDown={e=>{if(e.key==='ArrowLeft'){e.preventDefault();move(-1)}if(e.key==='ArrowRight'){e.preventDefault();move(1)}}} onTouchStart={e=>touch.current=e.touches[0].clientX} onTouchEnd={e=>{if(touch.current!==null&&Math.abs(e.changedTouches[0].clientX-touch.current)>50)move(e.changedTouches[0].clientX<touch.current?1:-1);touch.current=null}}>
-      <Photo src={safeAssetUrl(image?.image_url)} alt={image?.alt_text||p.name} priority/>
-      {images.length>1&&<><button className="p28Arrow prev" onClick={()=>move(-1)} aria-label="Previous image"><ChevronLeft/></button><button className="p28Arrow next" onClick={()=>move(1)} aria-label="Next image"><ChevronRight/></button><span className="p28ImageCount" aria-live="polite">{index+1} / {images.length}</span></>}
-      {images.length>0&&<button ref={zoomButton} className="p28Enlarge" onClick={()=>{zoom.current?.showModal();setZoomOpen(true)}} aria-label="Enlarge product image"><ZoomIn size={18}/> Enlarge</button>}
-    </div>{images.length>1&&<div className="p28Thumbnails">{images.map((img,i)=><button key={`${img.image_url}-${i}`} aria-label={`Show product image ${i+1}`} aria-pressed={i===index} className={i===index?'active':''} onClick={()=>setImageIndex(i)}><Photo src={safeAssetUrl(img.image_url)} alt=""/></button>)}</div>}
+    <section className="p28Hero"><div className="p28Gallery"><div className="p28Photo" tabIndex={0} role="group" aria-label="Product gallery. Use arrow keys, Home or End to browse images." onKeyDown={galleryKeys} {...touchHandlers}>
+      <Photo src={safeAssetUrl(image?.image_url)} alt={image?.alt_text||p.name} priority retryable/>
+      {images.length>1&&<><button type="button" className="p28Arrow prev" onClick={()=>move(-1)} aria-label="Previous image"><ChevronLeft/></button><button type="button" className="p28Arrow next" onClick={()=>move(1)} aria-label="Next image"><ChevronRight/></button><span className="p28ImageCount" role="status" aria-live="polite" aria-atomic="true"><span className="p282SrOnly">Image </span>{index+1} / {images.length}</span></>}
+      {images.length>0&&<button type="button" ref={zoomButton} className="p28Enlarge" onClick={()=>{if(!zoom.current?.open){zoom.current?.showModal();setZoomOpen(true)}}} aria-label="Enlarge product image"><ZoomIn size={18}/> Enlarge</button>}
+    </div>{images.length>1&&<div ref={thumbs} className="p28Thumbnails" role="group" aria-label="Product image thumbnails">{images.map((img,i)=><button type="button" key={`${img.image_url}-${i}`} aria-label={`Show product image ${i+1}`} aria-pressed={i===index} className={i===index?'active':''} onClick={()=>setImageIndex(i)}><Photo src={safeAssetUrl(img.image_url)} alt="" sizes="76px"/></button>)}</div>}
     <p className="p28ImageNote">Product photographs are supplied from the catalogue. Confirm variant-specific contents in the specifications.</p>
     </div>
     <div className="p28Purchase"><div className="p28Eyebrow"><span>{p.categories?.name||'Solar component'}{p.brands?.is_active?` · ${p.brands.name}`:''}</span><button onClick={share}><Share2 size={15}/> Share</button></div><h1>{p.name}</h1>{p.short_description&&<p className="p28Lead">{p.short_description}</p>}
@@ -115,7 +156,7 @@ export default function ProductDetail({slug}:{slug:string}){
     {related.length>0&&<section className="p28Related"><header><div><span className="nisEyebrow">MORE IN THIS CATEGORY</span><h2>Related components</h2></div><Link href={`/shop?category=${encodeURIComponent(p.categories?.slug||'')}`}>Browse category <ArrowRight size={16}/></Link></header><div>{related.map(r=>{const ri=productImage(r),prices=activeVariants(r).map(v=>priceFor(r,v)).filter((x):x is NonNullable<typeof x>=>!!x).sort((a,b)=>a.total-b.total);return <article key={r.id}><Link href={`/product/${encodeURIComponent(r.slug)}`} className="p28RelatedImage" prefetch={false}><Photo src={safeAssetUrl(ri?.image_url)} alt={ri?.alt_text||r.name}/></Link><h3><Link href={`/product/${encodeURIComponent(r.slug)}`} prefetch={false}>{r.name}</Link></h3><p>{prices.length?`From ${money(prices[0].total)} incl. GST`:'Price on request'}</p></article>})}</div></section>}
     <div className="p28ProjectCta"><div><h2>Planning a complete installation?</h2><p>Send quantities, preferred ratings and delivery location for project pricing.</p></div><BuyerButton href={enquiry} variant="secondary">Send requirement <ArrowRight size={17}/></BuyerButton></div>
     </div>
-    <div className="p28MobileBar"><div><small>{variant?'Unit price':'Starting price'}</small><b>{starting?money(starting.total):'Enquire'}</b></div>{purchasable?<BuyerButton disabled={!valid||!!busy} onClick={()=>purchase('cart')}><ShoppingCart size={17}/>{busy?'Checking…':'Add to Cart'}</BuyerButton>:!variant&&variants.length>1?<BuyerButton onClick={()=>{variantArea.current?.scrollIntoView({block:'center'});variantArea.current?.querySelector('input')?.focus()}}>Choose option</BuyerButton>:<BuyerButton href={enquiry}>Enquire</BuyerButton>}</div>
-    <dialog ref={zoom} className="p28Zoom" aria-label="Enlarged product image" onClose={()=>{setZoomOpen(false);zoomButton.current?.focus()}} onClick={e=>{if(e.target===e.currentTarget)zoom.current?.close()}}><div><header><span>{p.name}</span><button autoFocus onClick={()=>zoom.current?.close()} aria-label="Close enlarged image"><X/></button></header><div className="p28ZoomImage"><Photo src={safeAssetUrl(image?.image_url)} alt={image?.alt_text||p.name}/></div>{images.length>1&&<footer><button onClick={()=>move(-1)} aria-label="Previous enlarged image"><ChevronLeft/>Previous</button><span>{index+1} / {images.length}</span><button onClick={()=>move(1)} aria-label="Next enlarged image">Next<ChevronRight/></button></footer>}</div></dialog>
+    <div ref={mobileBar} className="p28MobileBar" role="region" aria-label="Mobile purchase controls"><div><small>{variant?'Unit price':'Starting price'}</small><b>{starting?money(starting.total):'Enquire'}</b></div>{purchasable?<BuyerButton disabled={!valid||!!busy} onClick={()=>purchase('cart')}><ShoppingCart size={17}/>{busy?'Checking…':'Add to Cart'}</BuyerButton>:!variant&&variants.length>1?<BuyerButton onClick={()=>{variantArea.current?.scrollIntoView({block:'center'});variantArea.current?.querySelector('input')?.focus()}}>Choose option</BuyerButton>:<BuyerButton href={enquiry}>Enquire</BuyerButton>}</div>
+    <dialog ref={zoom} className="p28Zoom p282Zoom" aria-label="Enlarged product image" aria-modal="true" onKeyDown={galleryKeys} onClose={()=>{setZoomOpen(false);touch.current=null;zoomButton.current?.focus({preventScroll:true})}} onPointerDown={e=>{backdropPress.current=e.target===e.currentTarget}} onClick={e=>{if(backdropPress.current&&e.target===e.currentTarget)zoom.current?.close();backdropPress.current=false}}><div><header><span>{p.name}</span><button type="button" autoFocus onClick={()=>zoom.current?.close()} aria-label="Close enlarged image"><X/></button></header><div className="p28ZoomImage" tabIndex={0} aria-label="Enlarged photo. Use arrow keys, Home or End to browse." {...touchHandlers}><Photo src={safeAssetUrl(image?.image_url)} alt={image?.alt_text||p.name} retryable sizes="95vw"/></div>{images.length>1&&<footer><button type="button" onClick={()=>move(-1)} aria-label="Previous enlarged image"><ChevronLeft/>Previous</button><span role="status" aria-live="polite" aria-atomic="true">{index+1} / {images.length}</span><button type="button" onClick={()=>move(1)} aria-label="Next enlarged image">Next<ChevronRight/></button></footer>}</div></dialog>
   </main>
 }
