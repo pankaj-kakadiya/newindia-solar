@@ -112,7 +112,8 @@ for(const [i,sample] of realPhotos.entries())test(`read-only existing catalogue 
  const width=i===0?1440:390;await page.setViewportSize({width,height:900})
  const product={...makeProduct([{image_url:sample.image,alt_text:sample.name,sort_order:0}]),name:sample.name,product_variants:[],short_description:'Read-only image layout check. Commercial values are omitted in this isolated test.'}
  await install(page,{product,realPhoto:sample.image});await open(page);await readyPhoto(page)
- expect(await page.locator('.p28Photo img').evaluate(img=>img.naturalWidth)).toBeGreaterThan(100)
+ // Loading can replace the img node. Keep the same actual-image requirement and wait on the current node.
+ await expect.poll(()=>page.locator('.p28Photo img').evaluate(img=>img.complete?img.naturalWidth:0),{timeout:15000,message:'The current catalogue image is fully loaded at its real resolution'}).toBeGreaterThan(100)
  expect(await page.locator('.p28Photo img').evaluate(img=>getComputedStyle(img).objectFit)).toBe('contain')
  await page.screenshot({path:`test-results/existing-photo-${width}.png`,fullPage:true})
  await page.locator('.p28Gallery').screenshot({path:`test-results/existing-gallery-${width}.png`})

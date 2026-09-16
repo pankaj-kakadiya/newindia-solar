@@ -33,7 +33,7 @@ test('active-only choices synchronize SKU, specification, price, unit and stock'
 test('invalid deep link allows explicitly choosing the sole active option',async({page})=>{
  await install(page,product({product_variants:[variant(A)]}));await open(page,H)
  await expect(panel(page)).toContainText('The option in this link is unavailable');await expect(panel(page).locator('.p28PriceCard')).not.toContainText('₹118.00')
- await panel(page).getByLabel('32A option',{exact:false}).check();await expect(buy(page)).toBeEnabled();await expect(panel(page).locator('.p28Meta')).toContainText('FIX-32')
+ const option=panel(page).getByLabel('32A option',{exact:false});await option.check();await expect(option).toBeChecked();await expect(option).toBeFocused();await expect(buy(page)).toBeEnabled();await expect(panel(page).locator('.p28Meta')).toContainText('FIX-32')
 })
 test('Back and Forward restore selections and preserve campaign parameters',async({page})=>{
  await install(page);await open(page,A,'&utm_source=dealer');await qty(page).fill('4');await panel(page).getByLabel('63A option',{exact:false}).check();await expect(qty(page)).toHaveValue('1');await expect(page).toHaveURL(/utm_source=dealer/)
@@ -85,7 +85,8 @@ test('inactive option discovered by recheck disappears and cannot reach cart',as
  await buy(page).click();await expect(panel(page)).toContainText('The option in this link is unavailable');await expect(panel(page).getByLabel('32A option',{exact:false})).toHaveCount(0);await panel(page).getByLabel('63A option',{exact:false}).check();await expect(panel(page).locator('.p28Meta')).toContainText('FIX-63');expect(await cartItems(page)).toHaveLength(0)
 })
 test('network recheck failure keeps quantity and does not add anything',async({page})=>{
- const s=await install(page);await open(page);await qty(page).fill('3');s.fail=true;await buy(page).click();await expect(panel(page)).toContainText('Could not verify');await expect(qty(page)).toHaveValue('3');await expect(buy(page)).toBeEnabled();expect(await cartItems(page)).toHaveLength(0)
+ // Supabase can retry 503 responses. Wait through the application's bounded ten-second request window.
+ const s=await install(page);await open(page);await qty(page).fill('3');s.fail=true;await buy(page).click();await expect(panel(page)).toContainText('Could not verify',{timeout:15000});await expect(qty(page)).toHaveValue('3');await expect(buy(page)).toBeEnabled();expect(await cartItems(page)).toHaveLength(0)
 })
 test('a recheck for a departed selection cannot add the old SKU',async({page})=>{
  const s=await install(page);await open(page);await panel(page).getByLabel('63A option',{exact:false}).check();let release;s.hold=new Promise(r=>release=r)
