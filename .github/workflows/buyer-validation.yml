@@ -14,8 +14,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci
+      - name: Install application dependencies
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - name: Pure regression tests
         run: node --experimental-strip-types --test tests/*.test.mjs
       - name: Production build and application types
