@@ -6,7 +6,7 @@
 - Twelve default BOS category cards. Existing CMS collection overrides remain supported.
 - Four active products, ordered by the existing Featured flag and catalogue sort order.
 - Variant-aware starting prices including GST, stock availability, and product-detail links.
-- ACDB/DCDB builder cards, selection workflow, and EPC/dealer quotation guidance.
+- ACDB/DCDB custom-box cards, quotation workflow, and EPC/dealer guidance. The current visual builders have no active templates; homepage custom-box actions lead to the working RFQ flow instead of unavailable builders.
 - Published CMS downloads plus the supplied 26-page Product Explore catalogue as a bundled fallback.
 - Existing homepage CMS order and visibility remain editable; new modules are inserted beside their related sections without overwriting customized ordering.
 - Hero title highlights preserve the entire title; partial CMS updates keep default nested fields.
@@ -35,3 +35,5 @@ Existing broader Supabase advisor warnings are outside this homepage change: pub
 Production build and TypeScript checks; legacy/custom CMS order checks; unsafe asset URL rejection; real public product query; production HTTP homepage render; catalogue page-count and visual inspection.
 
 `main` stays deployment-disabled. Advance `staging-release` once for the completed release, then inspect that exact Vercel deployment. The cloud browser cannot reach workspace localhost; staging is the browser-verification target. No production-domain cutover is part of Step 26.
+
+Staging browser verification confirmed the desktop homepage, four real product images/prices, shop, custom-box landing, RFQ and downloads. No horizontal overflow or broken homepage images were observed. Browser device emulation was not available; a physical mobile check remains part of buyer-side QA.
