@@ -6,9 +6,10 @@ import {ButtonHTMLAttributes,HTMLAttributes,InputHTMLAttributes,ReactNode,Select
 
 type ButtonVariant='primary'|'secondary'|'outline'|'ghost'|'danger'
 type ButtonSize='sm'|'md'|'lg'
+const sizeClass:Record<ButtonSize,string>={sm:'nisBtnSm',md:'',lg:'nisBtnLg'}
 
 export function BuyerButton({href,children,variant='primary',size='md',block=false,className='',...props}:{href?:string;children:ReactNode;variant?:ButtonVariant;size?:ButtonSize;block?:boolean;className?:string}&ButtonHTMLAttributes<HTMLButtonElement>){
- const classes=['nisBtn',`nisBtn${variant[0].toUpperCase()}${variant.slice(1)}`,size!=='md'?`nisBtn${size.toUpperCase()}`:'',block?'nisBtnBlock':'',className].filter(Boolean).join(' ')
+ const classes=['nisBtn',`nisBtn${variant[0].toUpperCase()}${variant.slice(1)}`,sizeClass[size],block?'nisBtnBlock':'',className].filter(Boolean).join(' ')
  if(href)return <Link href={href} className={classes}>{children}</Link>
  return <button {...props} className={classes}>{children}</button>
 }
