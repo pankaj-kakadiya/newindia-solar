@@ -4,6 +4,7 @@ import {createClient} from '@supabase/supabase-js'
 import {serviceClient} from '../../../../../lib/transactionRuntime'
 
 function safeEqual(a:string,b:string){try{const aa=Buffer.from(a,'hex'),bb=Buffer.from(b,'hex');return aa.length===bb.length&&timingSafeEqual(aa,bb)}catch{return false}}
+function basicAuth(keyId:string,keySecret:string){return `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`}
 async function currentUser(request:NextRequest){
  const auth=request.headers.get('authorization')||'',token=auth.toLowerCase().startsWith('bearer ')?auth.slice(7).trim():''
  if(!token)return null
@@ -15,23 +16,43 @@ async function currentUser(request:NextRequest){
 
 export async function POST(request:NextRequest){
  const user=await currentUser(request);if(!user)return NextResponse.json({error:'Authentication required.'},{status:401})
- const db=serviceClient(),secret=process.env.RAZORPAY_KEY_SECRET
- if(!db||!secret)return NextResponse.json({error:'Secure payment verification is not configured.'},{status:503})
+ const db=serviceClient(),keyId=process.env.RAZORPAY_KEY_ID,keySecret=process.env.RAZORPAY_KEY_SECRET
+ if(!db||!keyId||!keySecret)return NextResponse.json({error:'Secure payment verification is not configured.'},{status:503})
  let body:any={};try{body=await request.json()}catch{}
  const orderId=String(body?.razorpay_order_id||''),paymentId=String(body?.razorpay_payment_id||''),signature=String(body?.razorpay_signature||'')
  if(!orderId||!paymentId||!signature)return NextResponse.json({error:'Incomplete Razorpay response.'},{status:400})
- const expected=createHmac('sha256',secret).update(`${orderId}|${paymentId}`).digest('hex')
+ const expected=createHmac('sha256',keySecret).update(`${orderId}|${paymentId}`).digest('hex')
  if(!safeEqual(signature,expected))return NextResponse.json({error:'Payment signature verification failed.'},{status:401})
- const {data:payment}=await db.from('payments').select('id,order_id,amount').eq('provider','razorpay').eq('provider_order_id',orderId).single()
+ const {data:payment}=await db.from('payments').select('id,order_id,amount,status').eq('provider','razorpay').eq('provider_order_id',orderId).single()
  if(!payment)return NextResponse.json({error:'Payment record not found.'},{status:404})
  const {data:order}=await db.from('orders').select('id,user_id,order_number,grand_total').eq('id',payment.order_id).single()
  if(!order||order.user_id!==user.id)return NextResponse.json({error:'Order ownership verification failed.'},{status:403})
- const now=new Date().toISOString()
- await db.from('payments').update({provider_payment_id:paymentId,status:'paid',received_at:now,payment_method:'online',reference_no:paymentId,raw_response:{razorpay_order_id:orderId,razorpay_payment_id:paymentId,signature_verified:true},updated_at:now}).eq('id',payment.id)
+
+ const authHeader=basicAuth(keyId,keySecret)
+ const providerResponse=await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`,{headers:{Authorization:authHeader},cache:'no-store'})
+ const providerPayment=await providerResponse.json().catch(()=>({}))
+ if(!providerResponse.ok)return NextResponse.json({error:providerPayment?.error?.description||'Could not verify payment with Razorpay.'},{status:502})
+ if(String(providerPayment?.order_id||'')!==orderId)return NextResponse.json({error:'Razorpay order mismatch.'},{status:409})
+ const expectedAmount=Math.round(Number(order.grand_total||0)*100),providerAmount=Number(providerPayment?.amount||0)
+ if(providerAmount!==expectedAmount)return NextResponse.json({error:'Razorpay payment amount does not match the order total.'},{status:409})
+
+ const {data:integration}=await db.from('integration_settings').select('public_config').eq('integration_key','payment').single()
+ const captureMode=String(integration?.public_config?.capture_mode||'automatic')
+ let providerStatus=String(providerPayment?.status||'')
+ let captureResponse:any=null
+ if(providerStatus==='authorized'&&captureMode==='automatic'){
+  const capture=await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}/capture`,{method:'POST',headers:{Authorization:authHeader,'Content-Type':'application/json'},body:JSON.stringify({amount:expectedAmount,currency:'INR'})})
+  captureResponse=await capture.json().catch(()=>({}))
+  if(!capture.ok)return NextResponse.json({error:captureResponse?.error?.description||'Payment was authorized but automatic capture failed.'},{status:502})
+  providerStatus=String(captureResponse?.status||providerStatus)
+ }
+
+ const now=new Date().toISOString(),captured=providerStatus==='captured'
+ await db.from('payments').update({provider_payment_id:paymentId,status:captured?'paid':'pending',received_at:captured?now:null,payment_method:'online',reference_no:paymentId,raw_response:{razorpay_order_id:orderId,razorpay_payment_id:paymentId,signature_verified:true,provider_status:providerStatus,capture_mode:captureMode,captured},updated_at:now}).eq('id',payment.id)
  const {data:paidRows}=await db.from('payments').select('amount').eq('order_id',order.id).eq('status','paid')
- const paid=(paidRows||[]).reduce((s:number,x:any)=>s+Number(x.amount||0),0),status=paid>=Number(order.grand_total||0)?'paid':paid>0?'partially_paid':'pending'
- await db.from('orders').update({payment_status:status,updated_at:now}).eq('id',order.id)
+ const paid=(paidRows||[]).reduce((s:number,x:any)=>s+Number(x.amount||0),0),orderStatus=paid>=Number(order.grand_total||0)?'paid':paid>0?'partially_paid':'pending'
+ await db.from('orders').update({payment_status:orderStatus,updated_at:now}).eq('id',order.id)
  await db.from('invoices').update({amount_paid:paid,balance_due:Math.max(0,Number(order.grand_total||0)-paid),updated_at:now}).eq('order_id',order.id).neq('status','void')
- await db.from('integration_event_logs').insert({integration_key:'payment',direction:'inbound',event_type:'payment_verified',status:'processed',external_id:paymentId,reference_type:'order',reference_id:order.id,response_metadata:{provider_order_id:orderId,amount:payment.amount}})
- return NextResponse.json({verified:true,order_number:order.order_number,payment_status:status})
+ await db.from('integration_event_logs').insert({integration_key:'payment',direction:'inbound',event_type:captured?'payment_verified_captured':'payment_verified_pending_capture',status:captured?'processed':'received',external_id:paymentId,reference_type:'order',reference_id:order.id,response_metadata:{provider_order_id:orderId,amount:payment.amount,provider_status:providerStatus,capture_mode:captureMode}})
+ return NextResponse.json({verified:true,captured,provider_status:providerStatus,order_number:order.order_number,payment_status:orderStatus})
 }
