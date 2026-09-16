@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
-import {requireServerAdminPermission} from '../../../../../../lib/serverAdminAuth'
-import {processCommunicationQueue} from '../../../../../../lib/transactionRuntime'
+import {requireServerAdminPermission} from '../../../../../lib/serverAdminAuth'
+import {processCommunicationQueue} from '../../../../../lib/transactionRuntime'
 
 export async function POST(request:NextRequest){
  const auth=await requireServerAdminPermission(request,'transactions','approve')
