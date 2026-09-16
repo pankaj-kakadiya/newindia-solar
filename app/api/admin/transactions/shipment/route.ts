@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
-import {requireServerAdminPermission} from '../../../../../../lib/serverAdminAuth'
-import {serviceClient} from '../../../../../../lib/transactionRuntime'
+import {requireServerAdminPermission} from '../../../../../lib/serverAdminAuth'
+import {serviceClient} from '../../../../../lib/transactionRuntime'
 
 async function shiprocketToken(){
  const email=process.env.SHIPROCKET_EMAIL,password=process.env.SHIPROCKET_PASSWORD
