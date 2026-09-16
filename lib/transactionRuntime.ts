@@ -7,11 +7,19 @@ export function serviceClient(){
  return createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 }
 
+function getValue(payload:Record<string,any>,key:string){
+ const out=String(key).split('.').reduce((v:any,k:string)=>typeof v==='object'&&v!==null?v[k]:undefined,payload)
+ return out==null?'':String(out)
+}
+
 export function renderTemplate(value:string|null|undefined,payload:Record<string,any>){
- return String(value||'').replace(/\{\{\s*([\w.]+)\s*\}\}/g,(_,key)=>{
-  const out=String(key).split('.').reduce((v:string|Record<string,any>|undefined,k:string)=>typeof v==='object'&&v!==null?(v as any)[k]:undefined,payload as any)
-  return out==null?'':String(out)
- })
+ return String(value||'').replace(/\{\{\s*([\w.]+)\s*\}\}/g,(_,key)=>getValue(payload,String(key)))
+}
+
+function variablesFromTemplate(value:string|null|undefined,payload:Record<string,any>){
+ const keys=[...String(value||'').matchAll(/\{\{\s*([\w.]+)\s*\}\}/g)].map(m=>m[1])
+ const ordered=[...new Set(keys)]
+ return ordered.map(key=>({key,value:getValue(payload,key)}))
 }
 
 async function integration(db:any,key:string){
@@ -40,11 +48,11 @@ async function sendWhatsApp(db:any,item:any,template:any){
  if(!token||!phoneId)throw new Error('WhatsApp server credentials are missing.')
  const to=String(item.recipient||'').replace(/\D/g,'')
  if(!to)throw new Error('Customer WhatsApp number is missing.')
- const bodyText=renderTemplate(template.body_template,item.payload)
- const templateName=template.provider_template_name
+ const bodyText=renderTemplate(template.body_template,item.payload),templateName=template.provider_template_name
  let payload:any
  if(templateName){
-  payload={messaging_product:'whatsapp',to,type:'template',template:{name:templateName,language:{code:template.provider_template_language||'en'}}}
+  const vars=variablesFromTemplate(template.body_template,item.payload)
+  payload={messaging_product:'whatsapp',to,type:'template',template:{name:templateName,language:{code:template.provider_template_language||'en'},...(vars.length?{components:[{type:'body',parameters:vars.map(v=>({type:'text',text:v.value||'-'}))}]}:{})}}
  }else if(cfg.public_config?.allow_session_text===true){
   payload={messaging_product:'whatsapp',to,type:'text',text:{body:bodyText}}
  }else throw new Error('Approved Meta template name is required (or explicitly enable session text mode).')
@@ -60,7 +68,8 @@ async function sendSms(db:any,item:any,template:any){
  if(!key)throw new Error('MSG91_AUTH_KEY is missing.')
  if(!flowId)throw new Error('MSG91 Flow/Template ID is not configured for this template.')
  const mobile=String(item.recipient||'').replace(/\D/g,'')
- const response=await fetch('https://control.msg91.com/api/v5/flow/',{method:'POST',headers:{authkey:key,'Content-Type':'application/json'},body:JSON.stringify({template_id:flowId,short_url:'0',recipients:[{mobiles:mobile,message:renderTemplate(template.body_template,item.payload)}]})})
+ const vars=variablesFromTemplate(template.body_template,item.payload).reduce((acc:any,v)=>{acc[v.key]=v.value;return acc},{mobiles:mobile})
+ const response=await fetch('https://control.msg91.com/api/v5/flow/',{method:'POST',headers:{authkey:key,'Content-Type':'application/json'},body:JSON.stringify({template_id:flowId,short_url:'0',recipients:[vars]})})
  const json=await response.json().catch(()=>({}));if(!response.ok||json?.type==='error')throw new Error(json?.message||`MSG91 returned ${response.status}`)
  return String(json?.request_id||json?.requestId||'')
 }
@@ -74,6 +83,7 @@ export async function processCommunicationQueue(limit=20){
   const template=item.communication_templates
   await db.from('communication_outbox').update({status:'processing',attempts:Number(item.attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',item.id)
   try{
+   if(!template?.is_active)throw new Error('Communication template is inactive.')
    let external=''
    if(item.channel==='email')external=await sendEmail(db,item,template)
    else if(item.channel==='whatsapp')external=await sendWhatsApp(db,item,template)
