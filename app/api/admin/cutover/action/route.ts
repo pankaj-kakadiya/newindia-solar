@@ -20,8 +20,8 @@ export async function POST(request:NextRequest){
  const {data:{user}}=await auth.client.auth.getUser();const actor=user?.id||null
  const {data:control}=await db.from('production_cutover_control').select('*').eq('id','primary').single()
  const target=normalizeUrl(control?.production_url||'https://newindiasolar.com')
- async function log(event_type:string,status:string,message:string,extra:any={}){await db.from('production_cutover_events').insert({event_type,phase:extra.phase||control?.phase||null,status,message,evidence:extra,actor})}
- async function gate(){const [{data:latest},{count:pending}]=await Promise.all([db.from('production_readiness_runs').select('*').order('started_at',{ascending:false}).limit(1).maybeSingle(),db.from('launch_checklist_items').select('*',{count:'exact',head:true}).eq('is_required',true).eq('status','pending')]);return{latest,pending:pending||0,clear:Boolean(latest)&&Number(latest?.blocker_count||0)===0&&(pending||0)===0}}
+ async function log(event_type:string,status:string,message:string,extra:any={}){await db!.from('production_cutover_events').insert({event_type,phase:extra.phase||control?.phase||null,status,message,evidence:extra,actor})}
+ async function gate(){const [{data:latest},{count:pending}]=await Promise.all([db!.from('production_readiness_runs').select('*').order('started_at',{ascending:false}).limit(1).maybeSingle(),db!.from('launch_checklist_items').select('*',{count:'exact',head:true}).eq('is_required',true).eq('status','pending')]);return{latest,pending:pending||0,clear:Boolean(latest)&&Number(latest?.blocker_count||0)===0&&(pending||0)===0}}
  if(action==='start'){
   const g=await gate();if(!g.clear)return NextResponse.json({error:`Step 22 gate is not clear. ${g.pending} required checklist item(s) pending and ${Number(g.latest?.blocker_count||0)} blocker(s).`},{status:409})
   const releaseCommit=process.env.VERCEL_GIT_COMMIT_SHA||String(body?.release_commit||'')||null,releaseUrl=process.env.VERCEL_URL?`https://${process.env.VERCEL_URL}`:String(body?.release_deployment_url||'')||null
