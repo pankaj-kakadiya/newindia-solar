@@ -30,6 +30,7 @@ export const hrefModule:Record<string,string>={
   '/admin/content':'content',
   '/admin/theme':'theme',
   '/admin/settings':'settings',
+  '/admin/integrations':'integrations',
   '/admin/access':'security',
 }
 
