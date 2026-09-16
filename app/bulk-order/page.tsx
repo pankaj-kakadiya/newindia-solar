@@ -10,11 +10,16 @@ const choices=['ACDB','DCDB','MCB / MCCB','SPD','Solar Cable','Earthing Kit','MC
 export default function Bulk(){
   const [done,setDone]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[context,setContext]=useState('')
   const [interest,setInterest]=useState('ACDB'),[quantity,setQuantity]=useState(''),[note,setNote]=useState('')
-  const dirty=useRef(false),submitting=useRef(false)
+  const dirty=useRef(false),submitting=useRef(false),builderLoaded=useRef(false)
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search),slug=params.get('product'),draft=params.get('draft')
     const controller=new AbortController();let alive=true
-    if(draft&&/^[a-zA-Z0-9-]{1,80}$/.test(draft)){
+    if(params.get('source')==='builder'){
+      try{const raw=sessionStorage.getItem('nis-builder-rfq'),value=raw?JSON.parse(raw):null,age=Date.now()-Number(value?.createdAt)
+        if(value?.version===1&&['ACDB','DCDB'].includes(value.product)&&typeof value.summary==='string'&&Number.isFinite(age)&&age>=0&&age<86400000){setInterest(value.product);setQuantity('1');setNote(value.summary.slice(0,12000));setContext('Your selected components are included below. Add your contact details to request the quotation.');builderLoaded.current=true}
+        else setContext('This builder draft is unavailable or expired. Please return to the builder to send it again.')
+      }catch{setContext('The builder selection could not be read. Paste your requirement below.')}
+    }else if(draft&&/^[a-zA-Z0-9-]{1,80}$/.test(draft)){
       try{const raw=sessionStorage.getItem(`nis-rfq-${draft}`),value=raw?JSON.parse(raw):null
         if(value?.version===1&&typeof value.details==='string'&&typeof value.name==='string'&&Number(value.expires)>Date.now()){
           setNote(value.details.slice(0,20000));setInterest(value.type==='dcdb'?'DCDB':value.type==='acdb'?'ACDB':'Complete BOS Requirement');setQuantity('1');setContext(`Attached requirement: ${value.name.slice(0,160)}. Review it before submitting.`)
@@ -40,7 +45,7 @@ export default function Bulk(){
   async function submit(e:FormEvent<HTMLFormElement>){
     e.preventDefault();if(submitting.current)return;submitting.current=true;setBusy(true);setError('')
     try{const f=new FormData(e.currentTarget),row={name:f.get('name'),company_name:f.get('company'),mobile:f.get('mobile'),gst_number:f.get('gst'),city:f.get('city'),state:f.get('state'),product_interest:interest,quantity:quantity?Number(quantity):null,expected_purchase:f.get('when'),additional_requirement:note}
-      const {error}=await supabase.from('bulk_rfqs').insert(row);if(error)throw error;setDone(true)
+      const {error}=await supabase.from('bulk_rfqs').insert(row);if(error)throw error;setDone(true);if(builderLoaded.current)try{sessionStorage.removeItem('nis-builder-rfq')}catch{}
     }catch{setError('Your requirement could not be submitted. Your details have been kept; please retry.')}
     finally{submitting.current=false;setBusy(false)}
   }
