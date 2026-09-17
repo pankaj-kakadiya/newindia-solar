@@ -33,6 +33,8 @@ jobs:
           npm install --no-save --package-lock=false @playwright/test@1.55.1
           npx playwright install --with-deps chromium
           npx playwright test --config tests/builder-buyer.config.cjs
+      - name: Read-only deployed preview checks
+        run: node tests/builder-remote-smoke.cjs https://newindia-solar-git-work-builder-buyer-qa-housious.vercel.app preview
       - uses: actions/upload-artifact@v4
         if: always()
         with:
