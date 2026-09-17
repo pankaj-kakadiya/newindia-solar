@@ -14,7 +14,13 @@ const PRODUCT_SELECT='id,name,slug,status,category_id,product_type,short_descrip
 type Side='acdb'|'dcdb'
 type Pick={product:Product;variant:Variant}
 const sideLabel=(side:Side)=>side.toUpperCase()
-function belongs(product:Product,side:Side){return `${product.name} ${product.categories?.name||''} ${product.slug}`.toLowerCase().includes(side)}
+function belongs(product:Product,side:Side){
+ const category=`${product.categories?.name||''} ${product.categories?.slug||''}`.toLowerCase()
+ const categoryAc=category.includes('acdb'),categoryDc=category.includes('dcdb')
+ if(categoryAc!==categoryDc)return side==='acdb'?categoryAc:categoryDc
+ const identity=`${product.name} ${product.slug}`.toLowerCase(),hasAc=identity.includes('acdb'),hasDc=identity.includes('dcdb')
+ return hasAc!==hasDc&&(side==='acdb'?hasAc:hasDc)
+}
 function choices(products:Product[],side:Side){return products.filter(p=>p.product_type==='standard'&&belongs(p,side)).flatMap(product=>activeVariants(product).filter(variant=>!!priceFor(product,variant)&&inStock(product,variant)).map(variant=>({product,variant})))}
 function pickKey(pick:Pick){return `${pick.product.id}:${pick.variant.id}`}
 function ProductVisual({pick}:{pick:Pick}){const image=productImage(pick.product),src=safeAssetUrl(image?.image_url);return <div className="comboVisual">{src?<Image src={src} alt={image?.alt_text||pick.product.name} fill unoptimized sizes="120px"/>:<Package size={38}/>}</div>}
@@ -30,6 +36,7 @@ export default function ComboBuilder(){
  useEffect(()=>{setQty(current=>({acdb:picks.acdb?Math.max(current.acdb,minimumQuantity(picks.acdb.product)):current.acdb,dcdb:picks.dcdb?Math.max(current.dcdb,minimumQuantity(picks.dcdb.product)):current.dcdb}))},[picks])
  const total=(['acdb','dcdb'] as Side[]).reduce((sum,side)=>{const pick=picks[side],price=pick&&priceFor(pick.product,pick.variant);return sum+(price?price.total*qty[side]:0)},0)
  async function addCombo(){if(!picks.acdb||!picks.dcdb||adding)return;setAdding(true);setNotice('');try{
+  if(picks.acdb.product.id===picks.dcdb.product.id||picks.acdb.variant.id===picks.dcdb.variant.id)throw new Error('Choose a distinct ACDB and DCDB product for the combo.')
   const ids=[picks.acdb.product.id,picks.dcdb.product.id]
   const {data,error}=await supabase.from('products').select(PRODUCT_SELECT).in('id',ids).eq('status','active').eq('product_variants.is_active',true).abortSignal(AbortSignal.timeout(12000))
   if(error)throw new Error('Could not verify the latest price and stock. Please try again.')
