@@ -1,0 +1,46 @@
+name: Part 28.4 recovery validation
+on:
+  push:
+    branches: [work/part28-4-recovery]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record exact recoverable source
+        run: |
+          mkdir -p /tmp/recovery-source
+          git archive --format=zip HEAD -o /tmp/recovery-source/source.zip
+          git rev-parse HEAD > /tmp/recovery-source/COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part284-source
+          path: /tmp/recovery-source/
+          retention-days: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Existing builder and recovered cart helper tests
+        run: |
+          npm run test:builder
+          if [ -f tests/builder-buyer.test.cjs ]; then node --test tests/builder-buyer.test.cjs; fi
+          node --experimental-strip-types --test tests/*.test.mjs
+      - run: npm run build
+      - name: Isolated browser suites
+        run: |
+          if [ -f tests/browser.config.cjs ]; then
+            npm install --no-save --package-lock=false @playwright/test@1.55.1
+            npx playwright install --with-deps chromium
+            npx playwright test --config tests/browser.config.cjs
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: part284-browser-results
+          path: test-results/
+          retention-days: 7
