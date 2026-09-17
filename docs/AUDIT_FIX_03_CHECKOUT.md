@@ -18,3 +18,5 @@ Validation:
 - Live database verification does not create real customer orders or payments. Paid gateway and authenticated end-to-end browser ordering remain separate acceptance checks.
 
 Deployment: GitHub main auto-deploys through Hostinger. Verify public/checkout-integrity-release.json on the live domain before calling the frontend release complete.
+
+Production verification completed: website commit df937a2beb337ae71b6d5fdc766b2b1dca5f0516 is live. The release marker and updated checkout summary were verified. The existing 1,000-unit enclosure cart displayed base INR 130,000, GST INR 23,400 and total INR 153,400. No cart changes, orders or payments were made in this check. Anonymous cart-preparation API calls return 401/42501.
