@@ -4,6 +4,7 @@ import Link from 'next/link'
 import {useEffect,useMemo,useState} from 'react'
 import {AlertTriangle,CheckCircle2,Clock3,GitBranch,History,IndianRupee,Play,Plus,RefreshCw,Search,ShieldCheck,XCircle} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
 import {AdminAccess,canAdmin} from '../../../lib/adminAccess'
 
 type Rule={id:string;name:string;description:string|null;module_key:string;trigger_key:string;action_key:'notification'|'task'|'approval';threshold_amount:number|null;sla_minutes:number;target_role:string|null;condition_config:any;action_config:any;is_active:boolean;sort_order:number;updated_at:string}
@@ -36,14 +37,14 @@ export default function WorkflowAutomationPage(){
    supabase.from('workflow_approval_requests').select('*').order('created_at',{ascending:false}).limit(250),
    supabase.from('workflow_approval_decisions').select('*').order('created_at',{ascending:false}).limit(500),
    supabase.from('workflow_automation_runs').select('*').order('created_at',{ascending:false}).limit(250),
-   supabase.from('product_variants').select('id,product_id,sku,title,cost_price,selling_price,mrp,is_active'),
+   loadAdminCosts(supabase,supabase.from('product_variants').select('id,product_id,sku,title,selling_price,mrp,is_active'),'variant','workflows'),
    supabase.from('products').select('id,name,gst_rate'),
-   supabase.from('components').select('id,name,sku,cost_price,selling_price,gst_rate,is_active'),
-   supabase.from('enclosures').select('id,name,sku,cost_price,selling_price,gst_rate,is_active')
+   loadAdminCosts(supabase,supabase.from('components').select('id,name,sku,selling_price,gst_rate,is_active'),'component','workflows'),
+   loadAdminCosts(supabase,supabase.from('enclosures').select('id,name,sku,selling_price,gst_rate,is_active'),'enclosure','workflows')
   ])
-  const err=rr.error||ar.error||dr.error||runr.error;if(err)setMessage(err.message)
+  const costError=vr.error||cr.error||er.error;const err=rr.error||ar.error||dr.error||runr.error||costError;if(err)setMessage(err.message)
   setRules((rr.data||[]) as Rule[]);setApprovals((ar.data||[]) as Approval[]);setDecisions((dr.data||[]) as Decision[]);setRuns((runr.data||[]) as Run[])
-  const pmap=new Map((pr.data||[]).map((p:any)=>[p.id,p]));setPriceItems([
+  const pmap=new Map((pr.data||[]).map((p:any)=>[p.id,p]));setPriceItems(costError?[]:[
    ...(vr.data||[]).filter((x:any)=>x.is_active).map((v:any)=>{const p:any=pmap.get(v.product_id);return{id:v.id,type:'variant' as const,label:`${p?.name||'Product'} — ${v.title||v.sku||'Variant'}`,sku:v.sku||'',cost:Number(v.cost_price||0),selling:Number(v.selling_price||0),mrp:v.mrp==null?null:Number(v.mrp),gst:Number(p?.gst_rate||18)}}),
    ...(cr.data||[]).filter((x:any)=>x.is_active).map((c:any)=>({id:c.id,type:'component' as const,label:c.name||'Component',sku:c.sku||'',cost:Number(c.cost_price||0),selling:Number(c.selling_price||0),mrp:null,gst:Number(c.gst_rate||18)})),
    ...(er.data||[]).filter((x:any)=>x.is_active).map((e:any)=>({id:e.id,type:'enclosure' as const,label:e.name||'Enclosure',sku:e.sku||'',cost:Number(e.cost_price||0),selling:Number(e.selling_price||0),mrp:null,gst:Number(e.gst_rate||18)}))

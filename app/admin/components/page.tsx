@@ -3,6 +3,8 @@
 import {ChangeEvent,FormEvent,useEffect,useMemo,useState} from 'react'
 import {Check,Download,Edit3,ImagePlus,Plus,RefreshCw,Save,Search,Upload,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
+import {COMPONENT_FIELDS} from '../../../lib/catalogue-projections'
 
 const blank={id:'',category:'MCB',brand_id:'',name:'',model:'',sku:'',specifications:'{}',cost_price:'',selling_price:'',gst_rate:18,stock_qty:'',unit:'pcs',image_url:'',is_active:true,visual_role:'component',visual_settings:'{}'}
 const money=(n:any)=>`₹${Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}`
@@ -15,7 +17,7 @@ const csvCell=(v:any)=>`"${String(v??'').replace(/"/g,'""')}"`
 export default function Components(){
  const [rows,setRows]=useState<any[]>([]),[brands,setBrands]=useState<any[]>([]),[usage,setUsage]=useState<Record<string,number>>({}),[form,setForm]=useState<any>(blank),[show,setShow]=useState(false),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[uploading,setUploading]=useState(false),[msg,setMsg]=useState(''),[q,setQ]=useState(''),[category,setCategory]=useState('all'),[state,setState]=useState('all'),[selected,setSelected]=useState<string[]>([]),[bulkActive,setBulkActive]=useState('true')
  useEffect(()=>{load()},[])
- async function load(){setLoading(true);const [c,b,u]=await Promise.all([supabase.from('components').select('*').order('name').limit(1000),supabase.from('brands').select('id,name,slug').eq('is_active',true).order('name'),supabase.from('configurator_option_values').select('component_id,is_active').not('component_id','is',null)]);setRows(c.data||[]);setBrands(b.data||[]);const map:Record<string,number>={};(u.data||[]).filter((x:any)=>x.is_active).forEach((x:any)=>{map[x.component_id]=(map[x.component_id]||0)+1});setUsage(map);setSelected([]);setLoading(false)}
+ async function load(){setLoading(true);const [c,b,u]=await Promise.all([loadAdminCosts(supabase,supabase.from('components').select(`${COMPONENT_FIELDS}`).order('name').limit(1000),'component','components'),supabase.from('brands').select('id,name,slug').eq('is_active',true).order('name'),supabase.from('configurator_option_values').select('component_id,is_active').not('component_id','is',null)]);if(c.error){setMsg(c.error.message);setRows([]);setShow(false);setLoading(false);return}setRows(c.data||[]);setBrands(b.data||[]);const map:Record<string,number>={};(u.data||[]).filter((x:any)=>x.is_active).forEach((x:any)=>{map[x.component_id]=(map[x.component_id]||0)+1});setUsage(map);setSelected([]);setLoading(false)}
  const brandName=(id:string)=>brands.find(b=>b.id===id)?.name||'New India Solar'
  const categories=useMemo(()=>Array.from(new Set(rows.map(r=>r.category).filter(Boolean))).sort(),[rows])
  const filtered=useMemo(()=>rows.filter(r=>{if(category!=='all'&&r.category!==category)return false;if(state==='active'&&!r.is_active)return false;if(state==='inactive'&&r.is_active)return false;if(state==='low'&&Number(r.stock_qty||0)>5)return false;const spec=JSON.stringify(r.specifications||{});return `${r.name} ${r.sku||''} ${r.model||''} ${r.category||''} ${brandName(r.brand_id)} ${spec}`.toLowerCase().includes(q.toLowerCase())}),[rows,q,category,state,brands])

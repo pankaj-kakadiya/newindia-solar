@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react'
 import {Box,Building2,Check,ChevronRight,ClipboardCheck,Download,IndianRupee,PackageCheck,Plus,RefreshCw,Search,ShoppingBag,Truck,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
 
 const money=(n:any)=>`₹${Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}`
 const fmt=(v:any)=>v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'
@@ -22,11 +23,12 @@ export default function Purchasing(){
    supabase.from('suppliers').select('*').order('created_at',{ascending:false}).limit(500),
    supabase.from('purchase_orders').select('*,suppliers(company_name,supplier_code),purchase_order_items(*)').order('created_at',{ascending:false}).limit(500),
    supabase.from('goods_receipts').select('*,suppliers(company_name),purchase_orders(po_number)').order('created_at',{ascending:false}).limit(500),
-   supabase.from('product_variants').select('id,sku,title,cost_price,unit,stock_qty,products(name)').eq('is_active',true).order('sku'),
-   supabase.from('components').select('id,sku,name,cost_price,unit,stock_qty').eq('is_active',true).order('name'),
-   supabase.from('enclosures').select('id,sku,name,cost_price,stock_qty').eq('is_active',true).order('name')
+   loadAdminCosts(supabase,supabase.from('product_variants').select('id,sku,title,unit,stock_qty,products(name)').eq('is_active',true).order('sku'),'variant','purchasing'),
+   loadAdminCosts(supabase,supabase.from('components').select('id,sku,name,unit,stock_qty').eq('is_active',true).order('name'),'component','purchasing'),
+   loadAdminCosts(supabase,supabase.from('enclosures').select('id,sku,name,stock_qty').eq('is_active',true).order('name'),'enclosure','purchasing')
   ])
   setSuppliers(s.data||[]);setOrders(p.data||[]);setReceipts(g.data||[])
+  const costError=v.error||c.error||e.error;if(costError){setMsg(costError.message);setCatalog([]);setLoading(false);return}
   setCatalog([
    ...(v.data||[]).map((x:any)=>({item_type:'variant',item_id:x.id,variant_id:x.id,name:`${x.products?.name||''}${x.title&&x.title!=='Default'?` — ${x.title}`:''}`,sku:x.sku,cost_price:x.cost_price,unit:x.unit||'pcs',stock_qty:x.stock_qty})),
    ...(c.data||[]).map((x:any)=>({item_type:'component',item_id:x.id,component_id:x.id,name:x.name,sku:x.sku,cost_price:x.cost_price,unit:x.unit||'pcs',stock_qty:x.stock_qty})),

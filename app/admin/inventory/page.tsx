@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react'
 import {AlertTriangle,Boxes,Download,PackageCheck,RefreshCw,Search,SlidersHorizontal,Warehouse,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
 
 type Row={id:string;type:'variant'|'component'|'enclosure';name:string;sku:string;stock:number;reserved:number;available:number;threshold:number;unit:string;cost:number;value:number;active:boolean}
 const money=(n:number)=>`₹${Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}`
@@ -11,12 +12,12 @@ export default function Inventory(){
  const [q,setQ]=useState(''),[tab,setTab]=useState('all'),[onlyLow,setOnlyLow]=useState(false),[loading,setLoading]=useState(true),[msg,setMsg]=useState(''),[adjust,setAdjust]=useState<Row|null>(null),[qty,setQty]=useState(''),[movementType,setMovementType]=useState('purchase_in'),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[thresholdEdit,setThresholdEdit]=useState<Row|null>(null),[threshold,setThreshold]=useState('5')
  useEffect(()=>{load()},[])
  async function load(){setLoading(true);setMsg('');const [v,c,e,m,r]=await Promise.all([
-  supabase.from('product_variants').select('id,sku,title,stock_qty,low_stock_threshold,unit,cost_price,is_active,products(name)').order('stock_qty').limit(500),
-  supabase.from('components').select('id,name,sku,stock_qty,low_stock_threshold,unit,cost_price,is_active').order('stock_qty').limit(500),
-  supabase.from('enclosures').select('id,name,sku,stock_qty,low_stock_threshold,cost_price,is_active').order('stock_qty').limit(300),
+  loadAdminCosts(supabase,supabase.from('product_variants').select('id,sku,title,stock_qty,low_stock_threshold,unit,is_active,products(name)').order('stock_qty').limit(500),'variant','inventory'),
+  loadAdminCosts(supabase,supabase.from('components').select('id,name,sku,stock_qty,low_stock_threshold,unit,is_active').order('stock_qty').limit(500),'component','inventory'),
+  loadAdminCosts(supabase,supabase.from('enclosures').select('id,name,sku,stock_qty,low_stock_threshold,is_active').order('stock_qty').limit(300),'enclosure','inventory'),
   supabase.from('inventory_movements').select('*').order('created_at',{ascending:false}).limit(200),
   supabase.from('inventory_reservations').select('*').eq('status','reserved').order('created_at',{ascending:false}).limit(500)
- ]);setVariants(v.data||[]);setComponents(c.data||[]);setEnclosures(e.data||[]);setMovements(m.data||[]);setReservations(r.data||[]);setLoading(false)}
+ ]);const costError=v.error||c.error||e.error;if(costError){setMsg(costError.message);setVariants([]);setComponents([]);setEnclosures([]);setLoading(false);return}setVariants(v.data||[]);setComponents(c.data||[]);setEnclosures(e.data||[]);setMovements(m.data||[]);setReservations(r.data||[]);setLoading(false)}
  const reservedMaps=useMemo(()=>{const v:any={},c:any={},e:any={};for(const r of reservations){const map=r.variant_id?v:r.component_id?c:e;const id=r.variant_id||r.component_id||r.enclosure_id;if(id)map[id]=(map[id]||0)+Number(r.quantity||0)}return{v,c,e}},[reservations])
  const rows=useMemo<Row[]>(()=>[
   ...variants.map(x=>{const stock=Number(x.stock_qty||0),reserved=Number(reservedMaps.v[x.id]||0),cost=Number(x.cost_price||0);return{id:x.id,type:'variant' as const,name:x.products?.name?`${x.products.name}${x.title&&x.title!=='Standard'?` · ${x.title}`:''}`:(x.title||x.sku),sku:x.sku||'—',stock,reserved,available:stock-reserved,threshold:Number(x.low_stock_threshold||0),unit:x.unit||'pcs',cost,value:stock*cost,active:!!x.is_active}}),
