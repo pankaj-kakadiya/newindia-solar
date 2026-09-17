@@ -7,7 +7,10 @@ import {COMPANY} from '../lib/company'
 
 export default function StoreFooter(){
  const {theme}=useStoreTheme(),{footer,navigation,footerPages}=useSiteContent();const b=theme.branding;const footerLogo=b.footerLogoUrl||b.logoUrl
- const products=navigation.filter(n=>n.area==='footer_products').sort((a,b)=>a.sort_order-b.sort_order),buy=navigation.filter(n=>n.area==='footer_buy').sort((a,b)=>a.sort_order-b.sort_order),company=navigation.filter(n=>n.area==='footer_company').sort((a,b)=>a.sort_order-b.sort_order)
+ const normalizeHref=(href:string)=>href.replace(/\/$/,'').toLowerCase()
+ const productHrefs=new Set(['/shop','/shop?q=acdb','/shop?q=dcdb','/shop?q=spd','/shop?q=solar%20cable'])
+ const buyHrefs=new Set(['/combo','/customize','/bulk-order','/account','/login','/cart','/downloads'])
+ const products=navigation.filter(n=>n.area==='footer_products'&&!productHrefs.has(normalizeHref(n.href))).sort((a,b)=>a.sort_order-b.sort_order),buy=navigation.filter(n=>n.area==='footer_buy'&&!buyHrefs.has(normalizeHref(n.href))).sort((a,b)=>a.sort_order-b.sort_order),company=navigation.filter(n=>n.area==='footer_company').sort((a,b)=>a.sort_order-b.sort_order)
  const render=(n:any)=>n.is_external?<a key={n.id} href={n.href} target="_blank" rel="noreferrer">{n.label}<ExternalLink size={12}/></a>:<Link key={n.id} href={n.href}>{n.label}</Link>
  return <footer className="nisFooter" id="contact"><div className="container">
   <div className="nisFooterCta"><div><span>{footer.cta_eyebrow}</span><h2>{footer.cta_title}</h2><p>{footer.cta_body}</p></div><Link className="nisPrimaryBtn" href={footer.cta_href||'/bulk-order'}>{footer.cta_label||'Request Project Pricing'} <ArrowRight size={18}/></Link></div>
