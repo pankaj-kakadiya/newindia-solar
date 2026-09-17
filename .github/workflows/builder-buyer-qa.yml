@@ -1,0 +1,42 @@
+name: Buyer builder QA
+on:
+  push:
+    branches: [work/builder-buyer-qa]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source checkpoint
+        run: |
+          mkdir -p /tmp/builder-source
+          git archive --format=zip HEAD -o /tmp/builder-source/source.zip
+          git rev-parse HEAD > /tmp/builder-source/COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: builder-source
+          path: /tmp/builder-source/
+          retention-days: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run test:builder
+      - run: npm run build
+      - name: Browser tests when present
+        run: |
+          if [ -f tests/builder-buyer.config.cjs ]; then
+            npm install --no-save --package-lock=false @playwright/test@1.55.1
+            npx playwright install --with-deps chromium
+            npx playwright test --config tests/builder-buyer.config.cjs
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: builder-buyer-results
+          path: test-results/
+          retention-days: 7
