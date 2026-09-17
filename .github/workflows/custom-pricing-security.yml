@@ -35,6 +35,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm run test:custom-pricing
-      - run: npm run test:catalogue-costs
+      - run: node --experimental-strip-types --test tests/*.test.mjs tests/*.test.cjs
       - run: npm run build
+
