@@ -10,6 +10,7 @@ import {
   ShieldCheck, ShoppingCart, Tag, Truck, Users, Wrench, Zap
 } from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {BUYER_VARIANT_FIELDS} from '../../../lib/catalogue-projections'
 import {useCart} from '../../../components/CartProvider'
 import StoreHeader from '../../../components/StoreHeader'
 import StoreFooter from '../../../components/StoreFooter'
@@ -34,7 +35,7 @@ export default function Product(){
   useEffect(()=>{
     let alive=true
     ;(async()=>{
-      const {data}=await supabase.from('products').select('*,categories(name,slug),product_images(*),product_variants(*)').eq('slug',slug).eq('status','active').single()
+      const {data}=await supabase.from('products').select(`*,categories(name,slug),product_images(*),product_variants(${BUYER_VARIANT_FIELDS})`).eq('slug',slug).eq('status','active').single()
       if(!alive)return
       setP(data)
       setQty(Math.max(1,Math.ceil(Number(data?.min_order_qty)||1)))

@@ -3,6 +3,8 @@
 import {ChangeEvent,FormEvent,useEffect,useState} from 'react'
 import {Boxes,Check,Edit3,ImagePlus,Plus,Save,Trash2,Upload,X} from 'lucide-react'
 import {supabase} from '../../../../lib/supabase'
+import {loadAdminCosts} from '../../../../lib/admin-catalogue-costs'
+import {ENCLOSURE_FIELDS} from '../../../../lib/catalogue-projections'
 
 const blank={id:'',name:'',sku:'',dimensions_mm:'',material:'Polycarbonate',ip_rating:'IP65',module_capacity:8,cost_price:'',selling_price:'',gst_rate:18,stock_qty:0,image_url:'',inside_image_url:'',closed_image_url:'',specifications:'{}',visual_settings:'{}',supported_types:['acdb','dcdb'],is_active:true}
 const safe=(f:File)=>f.name.toLowerCase().replace(/[^a-z0-9.]+/g,'-').replace(/-+/g,'-')
@@ -11,7 +13,7 @@ const parse=(s:string)=>{try{return s.trim()?JSON.parse(s):{}}catch{return {}}}
 export default function Templates(){
  const [rows,setRows]=useState<any[]>([]),[form,setForm]=useState<any>(blank),[show,setShow]=useState(false),[msg,setMsg]=useState(''),[uploading,setUploading]=useState(''),[saving,setSaving]=useState(false),[slotCounts,setSlotCounts]=useState<Record<string,number>>({})
  useEffect(()=>{load()},[])
- async function load(){const [e,s]=await Promise.all([supabase.from('enclosures').select('*').order('name'),supabase.from('configurator_visual_slots').select('enclosure_id')]);setRows(e.data||[]);const c:Record<string,number>={};for(const x of s.data||[])c[x.enclosure_id]=(c[x.enclosure_id]||0)+1;setSlotCounts(c)}
+ async function load(){const [e,s]=await Promise.all([loadAdminCosts(supabase,supabase.from('enclosures').select(`${ENCLOSURE_FIELDS}`).order('name'),'enclosure','configurator'),supabase.from('configurator_visual_slots').select('enclosure_id')]);if(e.error){setMsg(e.error.message);setRows([]);setShow(false);return}setRows(e.data||[]);const c:Record<string,number>={};for(const x of s.data||[])c[x.enclosure_id]=(c[x.enclosure_id]||0)+1;setSlotCounts(c)}
  function edit(r:any){setForm({...blank,...r,specifications:JSON.stringify(r.specifications||{},null,2),visual_settings:JSON.stringify(r.visual_settings||{},null,2),supported_types:r.supported_types||['acdb','dcdb']});setShow(true);setMsg('')}
  async function upload(e:ChangeEvent<HTMLInputElement>,key:'inside_image_url'|'closed_image_url'){const f=e.target.files?.[0];e.target.value='';if(!f)return;setUploading(key);const path=`enclosures/${key.replace('_image_url','')}/${Date.now()}-${safe(f)}`;const up=await supabase.storage.from('configurator-assets').upload(path,f,{cacheControl:'3600'});if(up.error){setMsg(up.error.message);setUploading('');return}const {data}=supabase.storage.from('configurator-assets').getPublicUrl(path);setForm((x:any)=>({...x,[key]:data.publicUrl,image_url:key==='inside_image_url'?data.publicUrl:x.image_url}));setUploading('');setMsg('Enclosure PNG uploaded. Save enclosure to publish.')}
  function toggleType(t:string){setForm((f:any)=>({...f,supported_types:f.supported_types.includes(t)?f.supported_types.filter((x:string)=>x!==t):[...f.supported_types,t]}))}
