@@ -26,14 +26,13 @@ jobs:
           node-version: '22'
       - run: npm ci
       - run: npm run test:builder
+      - run: node --test tests/builder-buyer.test.cjs
       - run: npm run build
-      - name: Browser tests when present
+      - name: Browser tests
         run: |
-          if [ -f tests/builder-buyer.config.cjs ]; then
-            npm install --no-save --package-lock=false @playwright/test@1.55.1
-            npx playwright install --with-deps chromium
-            npx playwright test --config tests/builder-buyer.config.cjs
-          fi
+          npm install --no-save --package-lock=false @playwright/test@1.55.1
+          npx playwright install --with-deps chromium
+          npx playwright test --config tests/builder-buyer.config.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

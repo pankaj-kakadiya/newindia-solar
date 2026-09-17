@@ -1,111 +1,85 @@
 'use client'
-
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
-import {useEffect,useMemo,useState} from 'react'
-import {Check,CheckCircle2,Download,Loader2,Minus,PackagePlus,Plus,RotateCcw,Save,Settings2,ZoomIn,ZoomOut} from 'lucide-react'
+import {useEffect,useMemo,useRef,useState} from 'react'
+import {CheckCircle2,Download,Expand,Minus,Plus,RotateCcw,Save,X} from 'lucide-react'
 import {supabase} from '../lib/supabase'
-import {buildLayers,imageSource,quoteDraft,requiresQuote,spriteFor} from '../lib/configurator-visuals'
+import {imageSource,spriteFor} from '../lib/configurator-visuals'
 import {exportBuilder} from '../lib/export-builder'
-import starter from '../lib/builder-starter.json'
-import {useCart,VisualSelection} from './CartProvider'
+import {Catalog,Selection,BuilderCode,defaults,fileDownload,indexValues,presetSelection,previewLayers,readDraft,references,selectionIssues,summary,uploadedCatalog} from '../lib/builder-buyer'
 import ComponentSprite from './ComponentSprite'
 import StoreHeader from './StoreHeader'
 import StoreFooter from './StoreFooter'
+import '../app/builder-buyer.css'
 
-type Selected={id:string;qty:number}
-const money=(n:number)=>`₹${n.toLocaleString('en-IN',{maximumFractionDigits:2})}`
-function defaults(groups:any[]):Record<string,Selected[]>{return Object.fromEntries(groups.map(g=>[g.option_key,g.configurator_option_values.filter((v:any)=>v.metadata?.default).map((v:any)=>({id:v.id,qty:Math.min(g.max_quantity,Math.max(g.min_quantity,Number(v.metadata.default_quantity)||1))}))]))}
-
-export default function ConfiguratorBuilder({slug,title,code,assetPreview=false}:{slug:'custom-acdb'|'custom-dcdb';title:string;code:'ACDB'|'DCDB';assetPreview?:boolean}){
-  const {add}=useCart(),router=useRouter()
-  const [template,setTemplate]=useState<any>(null),[groups,setGroups]=useState<any[]>([])
-  const [components,setComponents]=useState<Record<string,any>>({}),[enclosures,setEnclosures]=useState<Record<string,any>>({}),[slots,setSlots]=useState<any[]>([])
-  const [sel,setSel]=useState<Record<string,Selected[]>>({}),[loading,setLoading]=useState(true),[error,setError]=useState(''),[retry,setRetry]=useState(0)
-  const [zoom,setZoom]=useState(1),[message,setMessage]=useState(''),[saving,setSaving]=useState(false),[exporting,setExporting]=useState(false)
-
-  useEffect(()=>{
-    let cancelled=false;const abort=new AbortController();const timer=setTimeout(()=>abort.abort(),25000)
-    setLoading(true);setError('');setTemplate(null);setSel({});setMessage('')
-    async function load(){
-      if(assetPreview){const data=starter[code];setTemplate(data.template);setGroups(data.groups);setComponents(data.components);setEnclosures(data.enclosures);setSlots(data.slots);setSel(defaults(data.groups));setLoading(false);return}
-      try{
-        const tr=await supabase.from('configurator_templates').select('*').eq('slug',slug).eq('is_active',true).abortSignal(abort.signal).maybeSingle()
-        if(tr.error)throw tr.error;if(!tr.data){if(!cancelled)setLoading(false);return}
-        const t=tr.data,assetPack=t.preview_settings?.asset_pack
-        const options=await supabase.from('configurator_options').select('id,option_key,label,option_type,sort_order,required,allow_quantity,min_quantity,max_quantity,settings,configurator_option_values(id,label,value,price_adjustment,component_id,enclosure_id,metadata,sort_order,is_active)').eq('template_id',t.id).order('sort_order').abortSignal(abort.signal)
-        if(options.error)throw options.error
-        const gs=(options.data||[]).filter((g:any)=>!assetPack||g.settings?.asset_pack===assetPack).map((g:any)=>({...g,configurator_option_values:(g.configurator_option_values||[]).filter((v:any)=>v.is_active&&(!assetPack||v.metadata?.asset_pack===assetPack)).sort((a:any,b:any)=>(a.sort_order||0)-(b.sort_order||0))}))
-        const cids=[...new Set(gs.flatMap((g:any)=>g.configurator_option_values.map((v:any)=>v.component_id).filter(Boolean)))] as string[]
-        const eids=[...new Set(gs.flatMap((g:any)=>g.configurator_option_values.map((v:any)=>v.enclosure_id).filter(Boolean)))] as string[]
-        const [cr,er,sr]=await Promise.all([
-          cids.length?supabase.from('components').select('id,category,name,model,sku,selling_price,gst_rate,stock_qty,unit,image_url,visual_role,visual_settings,specifications,brands(name)').in('id',cids).eq('is_active',true).abortSignal(abort.signal):Promise.resolve({data:[],error:null}),
-          eids.length?supabase.from('enclosures').select('id,name,sku,dimensions_mm,material,ip_rating,module_capacity,selling_price,gst_rate,stock_qty,image_url,inside_image_url,closed_image_url,visual_settings,supported_types,specifications').in('id',eids).eq('is_active',true).abortSignal(abort.signal):Promise.resolve({data:[],error:null}),
-          supabase.from('configurator_visual_slots').select('*').eq('template_id',t.id).eq('is_active',true).order('slot_index').abortSignal(abort.signal)
-        ])
-        if(cr.error||er.error||sr.error)throw cr.error||er.error||sr.error
-        if(cancelled)return
-        const cs=Object.fromEntries((cr.data||[]).map((x:any)=>[x.id,x])),es=Object.fromEntries((er.data||[]).map((x:any)=>[x.id,x]))
-        const valid=gs.map((g:any)=>({...g,configurator_option_values:g.configurator_option_values.filter((v:any)=>(!v.component_id||cs[v.component_id])&&(!v.enclosure_id||es[v.enclosure_id]))}))
-        setTemplate(t);setGroups(valid);setComponents(cs);setEnclosures(es);setSlots(sr.data||[]);setSel(defaults(valid))
-      }catch{if(!cancelled)setError('The component catalogue could not be loaded. Please retry.')}finally{if(!cancelled)setLoading(false)}
-    }
-    load().finally(()=>clearTimeout(timer));return()=>{cancelled=true;abort.abort();clearTimeout(timer)}
-  },[slug,code,retry,assetPreview])
-
-  const valueById=useMemo(()=>Object.fromEntries(groups.flatMap(g=>g.configurator_option_values.map((v:any)=>[v.id,{...v,group:g}]))),[groups])
-  const flatSelections=useMemo(()=>Object.entries(sel).flatMap(([option_key,list])=>list.map(s=>({option_key,value_id:s.id,quantity:s.qty}))),[sel])
-  const selectedEnclosureId=sel.enclosure?.[0]?valueById[sel.enclosure[0].id]?.enclosure_id:null
-  const selectedEnclosure=selectedEnclosureId?enclosures[selectedEnclosureId]:null
-  const activeSlots=useMemo(()=>selectedEnclosureId?slots.filter(s=>s.enclosure_id===selectedEnclosureId):[],[slots,selectedEnclosureId])
-  const layers=useMemo(()=>buildLayers(groups,sel,valueById,components,activeSlots),[groups,sel,valueById,components,activeSlots])
-  const linkedItems=flatSelections.map(s=>{const v=valueById[s.value_id];return v?.component_id?components[v.component_id]:v?.enclosure_id?enclosures[v.enclosure_id]:null}).filter(Boolean)
-  const quoteOnly=assetPreview||requiresQuote(template,linkedItems)
-  const pricing=useMemo(()=>{
-    let componentsSubtotal=0
-    for(const item of flatSelections){const v=valueById[item.value_id];if(!v)continue;const linked=v.component_id?components[v.component_id]:v.enclosure_id?enclosures[v.enclosure_id]:null;componentsSubtotal+=(Number(v.price_adjustment||0)+Number(linked?.selling_price||0))*item.quantity}
-    const assembly=Number(template?.base_assembly_charge||0),subtotal=componentsSubtotal+assembly,gstRate=Number(template?.default_gst_rate??18),gst=Math.round(subtotal*gstRate)/100
-    return {componentsSubtotal,assembly,subtotal,gstRate,gst,final:subtotal+gst}
-  },[flatSelections,valueById,components,enclosures,template])
-  const requiredGroups=groups.filter(g=>g.required),completedRequired=requiredGroups.filter(g=>(sel[g.option_key]||[]).length>0).length
-  const ready=requiredGroups.length>0&&completedRequired===requiredGroups.length&&!!selectedEnclosure
-  function choose(g:any,v:any){const multi=g.option_type==='multi';setSel(s=>{const current=s[g.option_key]||[],exists=current.some(x=>x.id===v.id);return {...s,[g.option_key]:multi?(exists?current.filter(x=>x.id!==v.id):[...current,{id:v.id,qty:Number(v.metadata?.default_quantity)||g.min_quantity||1}]):exists&&!g.required?[]:[{id:v.id,qty:Number(v.metadata?.default_quantity)||g.min_quantity||1}]}})}
-  function changeQty(g:any,id:string,delta:number){setSel(s=>({...s,[g.option_key]:(s[g.option_key]||[]).map(x=>x.id===id?{...x,qty:Math.max(g.min_quantity,Math.min(g.max_quantity,x.qty+delta))}:x)}))}
-  function reset(){setSel(defaults(groups));setZoom(1);setMessage('Default layout restored.')}
-  function labelSummary(){return groups.flatMap(g=>{const picks=sel[g.option_key]||[];return picks.length?[`${g.label}: ${picks.map(p=>`${valueById[p.id]?.label||''}${p.qty>1?` ×${p.qty}`:''}`).join(', ')}`]:[]}).join('\n')}
-  function previewSnapshot(){return {version:3,type:code.toLowerCase(),template_id:template?.id,enclosure_id:selectedEnclosureId,selections:flatSelections,layers:layers.map(l=>({component_id:l.component.id,component_name:l.component.name,image_url:imageSource(l.component),asset_id:l.component.visual_settings?.asset_id,...l.slot}))}}
-  function requestQuote(){if(!ready)return;try{sessionStorage.setItem('nis-builder-rfq',JSON.stringify(quoteDraft(code,labelSummary(),flatSelections)));router.push('/bulk-order?source=builder')}catch{setMessage('Your browser could not retain the selection. Download the BOM and include it in your enquiry.')}}
-  function downloadBom(){const blob=new Blob([`${code} — quotation request\n\n${labelSummary()}\n\nVisual configuration. Ratings, fit, price and availability to be confirmed.\n`],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`New-India-Solar-${code}-BOM.txt`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-  function addBuild(){if(!ready||!template||quoteOnly)return;const visualSelections:VisualSelection[]=flatSelections.map(s=>({value_id:s.value_id,quantity:s.quantity,option_key:s.option_key}));add({id:`${code.toLowerCase()}-${Date.now()}`,kind:'custom',name:`Custom ${code}`,variant:labelSummary(),price:pricing.subtotal,qty:1,customType:code.toLowerCase() as 'acdb'|'dcdb',templateId:template.id,selectedValueIds:[...new Set(flatSelections.map(s=>s.value_id))],visualSelections,visualPreview:previewSnapshot()});setMessage(`Custom ${code} added to cart.`)}
-  async function saveBuild(){if(!ready||!template||assetPreview)return;setSaving(true);setMessage('');try{const {data:{user}}=await supabase.auth.getUser();if(!user){setMessage('Sign in first to save this configuration.');return}const {data,error}=await supabase.rpc('save_visual_configuration',{p_template_id:template.id,p_config_name:`Custom ${code}`,p_selections:flatSelections.map(s=>({value_id:s.value_id,quantity:s.quantity})),p_preview_snapshot:previewSnapshot()});if(error)throw error;setMessage(`Saved ${(data as any)?.configuration_code||'configuration'} successfully.`)}catch{setMessage('This configuration could not be saved. Download the BOM or retry.')}finally{setSaving(false)}}
-  async function downloadPreview(){if(!selectedEnclosure)return;setExporting(true);setMessage('');try{await exportBuilder(selectedEnclosure,layers,code)}catch(e){setMessage(e instanceof Error?e.message:'Could not export preview.')}finally{setExporting(false)}}
-
-  if(loading)return <><StoreHeader/><main className="container cvLoading"><Loader2 className="spin"/><h2>Loading {code} builder…</h2></main><StoreFooter/></>
-  if(error||!template)return <><StoreHeader/><main className="container emptyCatalogue"><h1>{error?'Unable to load builder':'Builder is being prepared.'}</h1><p>{error||'Please send your requirements for a quotation.'}</p>{error&&<button className="btn" onClick={()=>setRetry(n=>n+1)}>Retry</button>}<Link className="btn btnPrimary" href="/bulk-order">Request a quotation</Link></main><StoreFooter/></>
-  return <><StoreHeader/><main className="container cvPage cvAssetBuilder">
-    <div className="cvBreadcrumb"><Link href="/">Home</Link><span>›</span><Link href="/customize">Customize</Link><span>›</span><b>{code}</b></div>
-    <div className="cvHead"><div><span className="eyebrow darkEye">BUILD YOUR {code}</span><h1>{title}</h1><p>Choose your components and see them inside the New India Solar enclosure.</p></div><div><button onClick={reset}><RotateCcw size={16}/>Reset</button>{!assetPreview&&<button onClick={saveBuild} disabled={!ready||saving}><Save size={16}/>{saving?'Saving…':'Save build'}</button>}</div></div>
-    {assetPreview&&<p className="cvPreviewNotice">Preview release · selections are available for quotation. No purchase is placed here.</p>}
-    {message&&<div className="cvMessage" role="status"><Check size={16}/>{message}</div>}
-    <div className="cvLayout">
-      <aside className="cvPreviewPanel">
-        <div className="cvPreviewTop"><div><span>YOUR BOX</span><b>{selectedEnclosure?.name||'Select an enclosure'}</b></div><div><button onClick={()=>setZoom(z=>Math.max(.7,z-.1))} aria-label="Zoom out"><ZoomOut size={16}/></button><button onClick={()=>setZoom(z=>Math.min(1.5,z+.1))} aria-label="Zoom in"><ZoomIn size={16}/></button><button onClick={downloadPreview} disabled={!selectedEnclosure||exporting} aria-label="Download PNG preview">{exporting?<Loader2 className="spin" size={16}/>:<Download size={16}/>}</button></div></div>
-        <div className="cvCanvasWrap"><div className="cvCanvas" style={{transform:`scale(${zoom})`}}>
-          {selectedEnclosure?<div className="cvEnclosure"><ComponentSprite key={selectedEnclosure.id} src={imageSource(selectedEnclosure)} alt={selectedEnclosure.name} sprite={spriteFor(selectedEnclosure.visual_settings)}/></div>:<div className="cvEmptyBox"><Settings2/><b>Choose an enclosure</b></div>}
-          {layers.map(l=><div key={l.key} className="cvLayer" data-component={l.component.visual_settings?.asset_id||l.component.id} style={{left:`${l.slot.x_pct}%`,top:`${l.slot.y_pct}%`,width:`${l.slot.width_pct}%`,height:`${l.slot.height_pct}%`,zIndex:l.slot.z_index,transform:`rotate(${l.slot.rotation_deg||0}deg)`}}><ComponentSprite src={imageSource(l.component)} alt={l.component.name} sprite={spriteFor(l.component.visual_settings)} fit={l.slot.settings?.fit}/></div>)}
-        </div></div>
-        <div className="cvPreviewBadges"><span>{code}</span><span>1 in / 1 out layout</span>{selectedEnclosure?.dimensions_mm&&<span>{selectedEnclosure.dimensions_mm} mm</span>}</div>
-        <p className="cvVisualNote">Visual layout only. Final ratings, wiring and fit are confirmed with your quotation.</p>
-        <button className="cvDownload" onClick={downloadPreview} disabled={!selectedEnclosure||exporting}><Download size={16}/>{exporting?'Preparing PNG…':'Download box PNG'}</button>
-      </aside>
-      <section className="cvConfigPanel" aria-label="Component choices">
-        <div className="cvProgress"><div><span>Required selections</span><b>{completedRequired}/{requiredGroups.length}</b></div><i><em style={{width:`${requiredGroups.length?completedRequired/requiredGroups.length*100:0}%`}}/></i></div>
-        {groups.map((g:any,index:number)=><section className="cvStep" key={g.id}><div className="cvStepHead"><span>{String(index+1).padStart(2,'0')}</span><div><h2>{g.label}{g.required?' *':''}</h2><p>{g.option_type==='multi'?'Select the parts to include':g.required?'Choose one':'Optional — select again to remove'}</p></div>{(sel[g.option_key]||[]).length>0&&<CheckCircle2 size={19}/>}</div><div className="cvChoices">{g.configurator_option_values.map((v:any)=>{const chosen=(sel[g.option_key]||[]).find(x=>x.id===v.id),linked=v.component_id?components[v.component_id]:enclosures[v.enclosure_id],src=linked?imageSource(linked):'',addon=Number(v.price_adjustment||0)+Number(linked?.selling_price||0);return <article className={'cvChoice '+(chosen?'active':'')} key={v.id}><button className="cvChoiceSelect" aria-pressed={!!chosen} onClick={()=>choose(g,v)}>{src?<div className="cvChoiceImg"><ComponentSprite src={src} alt={v.label} sprite={spriteFor(linked.visual_settings)}/></div>:<div className="cvChoiceImg placeholder"><PackagePlus/></div>}<div className="cvChoiceBody"><b>{v.label}</b>{linked&&<small>{linked.category||linked.material}</small>}<span>{quoteOnly||addon<=0?'Price on quotation':money(addon)}</span></div>{chosen&&<CheckCircle2 className="cvSelected"/>}</button>{chosen&&g.allow_quantity&&<div className="cvQty"><button aria-label={`Reduce ${v.label} quantity`} disabled={chosen.qty<=g.min_quantity} onClick={()=>changeQty(g,v.id,-1)}><Minus size={13}/></button><b>{chosen.qty}</b><button aria-label={`Increase ${v.label} quantity`} disabled={chosen.qty>=g.max_quantity} onClick={()=>changeQty(g,v.id,1)}><Plus size={13}/></button></div>}</article>})}</div>{!g.configurator_option_values.length&&<p>No options are available in this category yet.</p>}</section>)}
-      </section>
-      <aside className="cvSummary"><div className="cvSummaryTitle"><Settings2 size={17}/><div><span>SELECTED COMPONENTS</span><b>Custom {code}</b></div></div><div className="cvBom">{groups.map(g=>{const picks=sel[g.option_key]||[];return picks.length?<div key={g.id}><span>{g.label}</span><b>{picks.map(p=>`${valueById[p.id]?.label}${p.qty>1?` ×${p.qty}`:''}`).join(', ')}</b></div>:null})}</div>
-        {quoteOnly?<div className="cvQuotePrice"><b>Request your price</b><p>We’ll confirm component availability, the final specification and your quotation.</p></div>:<div className="cvPrice"><div><span>Components</span><b>{money(pricing.componentsSubtotal)}</b></div><div><span>Assembly</span><b>{money(pricing.assembly)}</b></div><div><span>GST @ {pricing.gstRate}%</span><b>{money(pricing.gst)}</b></div><div className="total"><span>Total incl. GST</span><b>{money(pricing.final)}</b></div></div>}
-        <button className="cvAdd" disabled={!ready} onClick={quoteOnly?requestQuote:addBuild}>{!ready?'Complete required options':quoteOnly?'Request quotation':'Add custom build to cart'}</button><button className="cvDownload" disabled={!flatSelections.length} onClick={downloadBom}><Download size={16}/>Download component list</button>
-      </aside>
-    </div>
-  </main><div className="cvMobileBar"><div><span>{quoteOnly?'Your configuration':'Total incl. GST'}</span><b>{quoteOnly?'Price on quotation':money(pricing.final)}</b></div><button disabled={!ready} onClick={quoteOnly?requestQuote:addBuild}>{quoteOnly?'Request quotation':'Add to cart'}</button></div><StoreFooter/></>
+export default function ConfiguratorBuilder({slug,title,code,assetPreview=false}:{slug:'custom-acdb'|'custom-dcdb';title:string;code:BuilderCode;assetPreview?:boolean}){
+ const base=useMemo(()=>uploadedCatalog(code),[code]),router=useRouter()
+ const [data,setData]=useState<Catalog>(base),[selection,setSelection]=useState<Selection>(()=>defaults(base)),[reference,setReference]=useState('')
+ const [source,setSource]=useState('Uploaded visual catalogue'),[checking,setChecking]=useState(!assetPreview),[attempt,setAttempt]=useState(0)
+ const [notice,setNotice]=useState(''),[exporting,setExporting]=useState(false),[draftAvailable,setDraftAvailable]=useState(false),[imageVersion,setImageVersion]=useState(0)
+ const [expanded,setExpanded]=useState(false),[zoom,setZoom]=useState(1)
+ const dirty=useRef(false),dialog=useRef<HTMLDialogElement>(null),expandButton=useRef<HTMLButtonElement>(null),mobileBar=useRef<HTMLDivElement>(null)
+ const storageKey=`nis-builder-draft-v2-${code}`
+ useEffect(()=>{try{setDraftAvailable(!!readDraft(localStorage.getItem(storageKey),data,code))}catch{}},[data,code,storageKey])
+ useEffect(()=>{
+  if(assetPreview){setChecking(false);return}
+  let disposed=false;const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000)
+  setChecking(true)
+  ;(async()=>{
+   const {data:t,error}=await supabase.from('configurator_templates').select('id,name,slug,type,preview_settings,is_active').eq('slug',slug).eq('is_active',true).abortSignal(controller.signal).maybeSingle()
+   if(error)throw error
+   if(!t)return
+   const options=await supabase.from('configurator_options').select('id,option_key,label,option_type,sort_order,required,allow_quantity,min_quantity,max_quantity,settings,configurator_option_values(id,label,value,component_id,enclosure_id,metadata,sort_order,is_active)').eq('template_id',t.id).order('sort_order').abortSignal(controller.signal)
+   if(options.error)throw options.error
+   const pack=t.preview_settings?.asset_pack
+   const groups=(options.data||[]).filter((g:any)=>!pack||g.settings?.asset_pack===pack).map((g:any)=>({...g,configurator_option_values:(g.configurator_option_values||[]).filter((v:any)=>v.is_active===true&&(!pack||v.metadata?.asset_pack===pack)).sort((a:any,b:any)=>(a.sort_order||0)-(b.sort_order||0))}))
+   const cids=[...new Set(groups.flatMap((g:any)=>g.configurator_option_values.map((v:any)=>v.component_id).filter(Boolean)))],eids=[...new Set(groups.flatMap((g:any)=>g.configurator_option_values.map((v:any)=>v.enclosure_id).filter(Boolean)))]
+   if(!cids.length||!eids.length)throw new Error('Incomplete catalogue')
+   const [cs,es,ss]=await Promise.all([
+    supabase.from('components').select('id,name,sku,category,unit,image_url,visual_role,visual_settings,specifications').in('id',cids).eq('is_active',true).abortSignal(controller.signal),
+    supabase.from('enclosures').select('id,name,sku,dimensions_mm,image_url,inside_image_url,visual_settings,supported_types').in('id',eids).eq('is_active',true).abortSignal(controller.signal),
+    supabase.from('configurator_visual_slots').select('*').eq('template_id',t.id).eq('is_active',true).order('slot_index').abortSignal(controller.signal)
+   ])
+   if(cs.error||es.error||ss.error||!es.data?.length)throw new Error('Incomplete catalogue')
+   const catalog:Catalog={template:t,groups,components:Object.fromEntries((cs.data||[]).map(c=>[c.id,c])),enclosures:Object.fromEntries(es.data.map(e=>[e.id,e])),slots:ss.data||[]}
+   if(!disposed&&!dirty.current&&selectionIssues(catalog,defaults(catalog),code).length===0){setData(catalog);setSelection(defaults(catalog));setSource('Published component catalogue')}
+  })().catch(()=>{if(!disposed)setSource('Uploaded visual catalogue · live catalogue needs confirmation')}).finally(()=>{clearTimeout(timer);if(!disposed)setChecking(false)})
+  return()=>{disposed=true;controller.abort();clearTimeout(timer)}
+ },[slug,code,assetPreview,attempt])
+ useEffect(()=>{
+  const body=document.body,html=document.documentElement,oldPadding=body.style.paddingBottom,oldScroll=html.style.scrollPaddingBottom
+  const update=()=>{const h=mobileBar.current?.getBoundingClientRect().height||0;body.style.paddingBottom=h?`${h}px`:oldPadding;html.style.scrollPaddingBottom=h?`${h+12}px`:oldScroll}
+  const observer=new ResizeObserver(update);if(mobileBar.current)observer.observe(mobileBar.current);update()
+  return()=>{observer.disconnect();body.style.paddingBottom=oldPadding;html.style.scrollPaddingBottom=oldScroll}
+ },[])
+ useEffect(()=>{if(!expanded)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old}},[expanded])
+ const values=useMemo(()=>indexValues(data),[data]),layers=useMemo(()=>previewLayers(data,selection),[data,selection])
+ const enclosure=data.enclosures[values[selection.enclosure?.[0]?.id]?.enclosure_id]
+ const issues=useMemo(()=>selectionIssues(data,selection,code),[data,selection,code]),ready=issues.length===0
+ const required=data.groups.filter(g=>g.required),complete=required.filter(g=>selection[g.option_key]?.length).length
+ function change(g:any,v:any){dirty.current=true;setReference('');setNotice('');setSelection(s=>{const current=s[g.option_key]||[],exists=current.some(p=>p.id===v.id),qty=Math.min(Number(g.max_quantity)||1,Math.max(Number(g.min_quantity)||1,Number(v.metadata?.default_quantity)||1));return {...s,[g.option_key]:g.option_type==='multi'?(exists?current.filter(p=>p.id!==v.id):[...current,{id:v.id,qty}]):exists&&!g.required?[]:[{id:v.id,qty}]}})}
+ function quantity(g:any,id:string,delta:number){dirty.current=true;setReference('');setSelection(s=>({...s,[g.option_key]:(s[g.option_key]||[]).map(p=>p.id===id?{...p,qty:Math.max(Number(g.min_quantity)||1,Math.min(Number(g.max_quantity)||1,p.qty+delta))}:p)}))}
+ function applyReference(id:string){const next=presetSelection(data,code,id);if(!next){setNotice('That reference is not available in this component catalogue.');return}dirty.current=true;setSelection(next);setReference(id);setNotice(`Reference ${code}-${id} loaded. This is a visual draft, not electrical approval.`)}
+ function reset(){dirty.current=true;setSelection(defaults(data));setReference('');setZoom(1);setNotice('Default component arrangement restored. Your saved draft is unchanged.')}
+ function save(){if(!ready)return;try{localStorage.setItem(storageKey,JSON.stringify({version:2,code,selection,reference,savedAt:Date.now()}));setDraftAvailable(true);setNotice('Draft saved in this browser. No order or payment has been created.')}catch{setNotice('This browser could not save the draft. Download the component list instead.')}}
+ function restore(){try{const draft=readDraft(localStorage.getItem(storageKey),data,code);if(!draft){setNotice('The saved draft is expired or no longer matches the available components.');return}dirty.current=true;setSelection(draft.selection);setReference(draft.reference);setNotice('Saved draft restored.')}catch{setNotice('Browser storage is unavailable.')}}
+ function enquire(){if(!ready)return;try{const id=crypto.randomUUID(),text=summary(data,selection,code,reference),draft={version:1,product:code,summary:text,selections:selection,createdAt:Date.now()};sessionStorage.setItem(`nis-builder-rfq-${id}`,JSON.stringify(draft));router.push(`/bulk-order?source=builder&draft=${id}`)}catch{setNotice('Could not carry your selection to the enquiry form. Download the component list and paste it into your requirement.')}}
+ function downloadBom(){fileDownload(summary(data,selection,code,reference),`New-India-Solar-${code}-BOM.txt`)}
+ async function download(){if(!ready||!enclosure||exporting)return;setExporting(true);setNotice('');try{await exportBuilder(enclosure,layers,code);setNotice('PNG prepared from your selected components. It is a visual preview, not a wiring drawing.')}catch(e){setNotice(e instanceof Error?e.message:'Preview export failed. Please retry.')}finally{setExporting(false)}}
+ function openPreview(){setZoom(1);dialog.current?.showModal();setExpanded(true)}
+ function stage(modal=false){return <div className="bbStage" data-testid={modal?'expanded-stage':'builder-stage'} style={modal?{width:`calc(min(100%, (94dvh - 144px) * .75) * ${zoom})`,maxWidth:'none'}:undefined}><div className="bbEnclosure">{enclosure&&<ComponentSprite key={`${imageVersion}-${enclosure.id}`} src={imageSource(enclosure)} alt={enclosure.name} sprite={spriteFor(enclosure.visual_settings)}/>}</div>{layers.map(l=><div key={`${imageVersion}-${l.key}`} className="bbLayer" data-asset={l.component.visual_settings?.asset_id} data-slot={l.slot.option_key} style={{left:`${l.slot.x_pct}%`,top:`${l.slot.y_pct}%`,width:`${l.slot.width_pct}%`,height:`${l.slot.height_pct}%`,zIndex:l.slot.z_index,transform:`rotate(${l.slot.rotation_deg||0}deg)`}}><ComponentSprite src={imageSource(l.component)} alt={l.component.name} sprite={spriteFor(l.component.visual_settings)} fit={l.slot.settings?.fit}/></div>)}</div>}
+ return <><StoreHeader/><main id="main-content" className="bbPage container" data-builder-code={code}>
+  <nav className="bbBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span>›</span><Link href="/customize">Custom boxes</Link><span>› {code}</span></nav>
+  <header className="bbHeading"><div><span className="nisEyebrow">VISUAL QUOTATION BUILDER</span><h1>{title}</h1><p>Choose components, review the assembled preview and send your exact selection for a quotation.</p></div><div className="bbActions"><button onClick={reset}><RotateCcw size={16}/>Reset</button><button onClick={save} disabled={!ready}><Save size={16}/>Save draft</button>{draftAvailable&&<button onClick={restore}>Restore draft</button>}</div></header>
+  <div className="bbStatus"><span>{checking?'Checking published catalogue…':source}</span><button onClick={()=>{setAttempt(n=>n+1);setImageVersion(n=>n+1)}} disabled={checking}>Refresh catalogue / images</button></div>
+  {notice&&<p className="bbNotice" role="status">{notice}</p>}
+  <div className="bbLayout"><aside className="bbPreview"><div className="bbPreviewHead"><div><b>Your {code} preview</b><small>SPD left · breaker centre · terminals right</small></div><button ref={expandButton} onClick={openPreview} aria-label="Enlarge box preview"><Expand size={20}/></button></div><div className="bbPreviewImage">{stage()}</div><div className="bbPreviewFoot"><span>1 in / 1 out visual layout</span><button onClick={download} disabled={!ready||exporting}><Download size={16}/>{exporting?'Preparing…':'Download PNG'}</button></div><p className="bbDisclaimer">Visual assembly only. Markings, wiring, physical fit and electrical suitability must be reviewed before manufacture or installation.</p></aside>
+  <section className="bbOptions" aria-label="Component selections"><div className="bbReference"><label htmlFor="builder-reference">Start from an uploaded reference</label><select id="builder-reference" value={reference} onChange={e=>e.target.value?applyReference(e.target.value):setReference('')}><option value="">Custom / default arrangement</option>{references(code).map(r=><option key={r.id} value={r.id}>{code}-{r.id} · {r.spd.split('-spd-')[1]} + {r.mcb.split('-mcb-')[1]}</option>)}{code==='ACDB'&&<option disabled value="14">ACDB-14 excluded — source contains DC components</option>}</select><small>{code==='ACDB'?'20 AC visual references. Reference 14 is excluded; 07 and 16 intentionally repeat the source combination.':'16 complete DC reference images recovered. References 17–20 await the complete ZIP.'}</small></div>
+   <div className="bbProgress" role="status">Required selections: {complete} / {required.length}</div>
+   {data.groups.map((g,index)=><details className="bbGroup" key={g.id} open data-group={g.option_key}><summary><span>{String(index+1).padStart(2,'0')}</span><b>{g.label}{g.required?' *':''}</b><small>{selection[g.option_key]?.length||0} selected</small></summary><p>{g.option_type==='multi'?'Select any visual layers to include.':'Select one component assembly.'}{!g.required?' Optional: select again to remove.':''}</p><div className="bbChoices">{g.configurator_option_values.map((v:any)=>{const item=data.components[v.component_id]||data.enclosures[v.enclosure_id],pick=selection[g.option_key]?.find(s=>s.id===v.id);return <article className={`bbChoice ${pick?'selected':''}`} key={v.id}><button className="bbSelect" aria-pressed={!!pick} onClick={()=>change(g,v)} data-value={v.id} data-asset={item?.visual_settings?.asset_id}><span className="bbThumbnail">{item&&<ComponentSprite key={`${imageVersion}-${item.id}`} src={imageSource(item)} alt={v.label} sprite={spriteFor(item.visual_settings)}/>}</span><span><b>{v.label}</b><small>Price and availability on quotation</small></span>{pick&&<CheckCircle2 size={18}/>}</button>{pick&&g.allow_quantity&&<div className="bbQuantity"><button aria-label={`Reduce ${v.label} quantity`} disabled={pick.qty<=Number(g.min_quantity)} onClick={()=>quantity(g,v.id,-1)}><Minus size={15}/></button><output aria-label={`${v.label} quantity`}>{pick.qty}</output><button aria-label={`Increase ${v.label} quantity`} disabled={pick.qty>=Number(g.max_quantity)} onClick={()=>quantity(g,v.id,1)}><Plus size={15}/></button></div>}</article>})}</div></details>)}
+  </section>
+  <aside className="bbSummary"><h2>Your component list</h2><dl>{data.groups.flatMap(g=>(selection[g.option_key]||[]).map(s=><div key={s.id}><dt>{g.label}</dt><dd>{values[s.id]?.label} <b>× {s.qty}</b></dd></div>))}</dl><p className="bbQuote">Price on quotation</p><p>Component images are available; selling prices and engineering approval are not yet confirmed. This flow creates a requirement, not a purchase.</p>{issues.length>0&&<div className="bbIssues" role="alert">{issues.map(i=><p key={i}>{i}</p>)}</div>}<button className="bbPrimary" disabled={!ready} onClick={enquire}>Request quotation</button><button onClick={downloadBom} disabled={!ready}><Download size={16}/>Download component list</button><small>Wire images represent illustrative routes, not cable lengths. A complete manufacturing BOM is confirmed with your quotation.</small></aside></div>
+  <div className="bbMobileBar" ref={mobileBar}><button className="bbMobileView" onClick={openPreview}><Expand size={17}/><span>View {code}<small>Price on quotation</small></span></button><button className="bbPrimary" disabled={!ready} onClick={enquire}>Request quotation</button></div>
+  <dialog className="bbDialog" ref={dialog} aria-label={`${code} enlarged preview`} aria-modal="true" onClose={()=>{setExpanded(false);expandButton.current?.focus({preventScroll:true})}} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close()}} onKeyDown={e=>{if(e.key!=='Tab')return;const items=Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}><header><b>Your {code} preview</b><button autoFocus onClick={()=>dialog.current?.close()} aria-label="Close preview"><X size={21}/></button></header><div className="bbDialogViewport">{stage(true)}</div><footer><button onClick={()=>setZoom(z=>Math.max(1,Math.round((z-.25)*100)/100))} disabled={zoom<=1} aria-label="Zoom out"><Minus size={18}/></button><span>{Math.round(zoom*100)}%</span><button onClick={()=>setZoom(z=>Math.min(2,Math.round((z+.25)*100)/100))} disabled={zoom>=2} aria-label="Zoom in"><Plus size={18}/></button><button onClick={download} disabled={!ready||exporting}><Download size={17}/>{exporting?'Preparing…':'Download PNG'}</button></footer></dialog>
+ </main><StoreFooter/></>
 }
