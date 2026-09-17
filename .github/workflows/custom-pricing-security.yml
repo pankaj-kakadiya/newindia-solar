@@ -1,0 +1,41 @@
+name: Catalogue and custom pricing security
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tests/*cost*.test.mjs'
+      - 'lib/*catalogue*.ts'
+      - 'app/**'
+      - 'components/**'
+      - 'tests/custom-pricing.test.mjs'
+      - 'tests/fixtures/*.sql'
+      - 'package*.json'
+      - '.github/workflows/custom-pricing-security.yml'
+  push:
+    branches: [main, fix/custom-configuration-pricing, fix/private-catalogue-costs]
+    paths:
+      - 'supabase/**'
+      - 'tests/*cost*.test.mjs'
+      - 'lib/*catalogue*.ts'
+      - 'app/**'
+      - 'components/**'
+      - 'tests/custom-pricing.test.mjs'
+      - 'tests/fixtures/*.sql'
+      - 'package*.json'
+      - '.github/workflows/custom-pricing-security.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  database-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --experimental-strip-types --test tests/*.test.mjs
+      - run: npm run build

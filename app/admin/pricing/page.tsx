@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react'
 import {AlertTriangle,Check,History,IndianRupee,Layers3,Plus,RefreshCw,Save,Search,ShieldCheck,SlidersHorizontal,Trash2,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
 
 type PriceItem={id:string;type:'variant'|'component'|'enclosure';label:string;sku:string;cost:number;selling:number;mrp?:number|null;gst:number;active:boolean}
 type Tab='prices'|'tiers'|'configurator'|'history'
@@ -20,15 +21,16 @@ export default function PricingPage(){
  async function load(){
   setLoading(true);setMsg('')
   const [vr,pr,cr,er,tr,sr,rr,hr]=await Promise.all([
-   supabase.from('product_variants').select('id,product_id,sku,title,cost_price,selling_price,mrp,is_active'),
+   loadAdminCosts(supabase,supabase.from('product_variants').select('id,product_id,sku,title,selling_price,mrp,is_active'),'variant','pricing'),
    supabase.from('products').select('id,name,gst_rate'),
-   supabase.from('components').select('id,name,sku,cost_price,selling_price,gst_rate,is_active'),
-   supabase.from('enclosures').select('id,name,sku,cost_price,selling_price,gst_rate,is_active'),
+   loadAdminCosts(supabase,supabase.from('components').select('id,name,sku,selling_price,gst_rate,is_active'),'component','pricing'),
+   loadAdminCosts(supabase,supabase.from('enclosures').select('id,name,sku,selling_price,gst_rate,is_active'),'enclosure','pricing'),
    supabase.from('configurator_templates').select('id,type,name,slug,base_assembly_charge,default_gst_rate,is_active').order('type'),
    supabase.from('pricing_settings').select('*').eq('id','default').maybeSingle(),
    supabase.from('price_tiers').select('*').order('customer_segment').order('min_qty'),
    supabase.from('pricing_history').select('*').order('created_at',{ascending:false}).limit(250)
   ])
+  const costError=vr.error||cr.error||er.error;if(costError){setMsg(costError.message);setItems([]);setSelected(null);setLoading(false);return}
   const pmap=new Map((pr.data||[]).map((p:any)=>[p.id,p]))
   const combined:PriceItem[]=[
    ...(vr.data||[]).map((v:any)=>{const p:any=pmap.get(v.product_id);return{id:v.id,type:'variant' as const,label:`${p?.name||'Product'} — ${v.title||v.sku||'Variant'}`,sku:v.sku||'',cost:Number(v.cost_price||0),selling:Number(v.selling_price||0),mrp:v.mrp==null?null:Number(v.mrp),gst:Number(p?.gst_rate||18),active:!!v.is_active}}),

@@ -3,6 +3,8 @@
 import {ChangeEvent,FormEvent,useEffect,useMemo,useState} from 'react'
 import {Archive,Check,Copy,Download,Edit3,Eye,ImagePlus,PackagePlus,RefreshCw,Save,Search,Star,Upload,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
+import {VARIANT_FIELDS} from '../../../lib/catalogue-projections'
 
 type Variant={id?:string;sku:string;title:string;mrp:any;selling_price:any;cost_price:any;stock_qty:any;low_stock_threshold:any;unit:string;weight_kg:any;is_active:boolean;attributes:any}
 type Img={id?:string;image_url:string;alt_text:string;sort_order:number}
@@ -20,7 +22,7 @@ const csvCell=(v:any)=>`"${String(v??'').replace(/"/g,'""')}"`
 export default function Products(){
  const [rows,setRows]=useState<any[]>([]),[cats,setCats]=useState<any[]>([]),[brands,setBrands]=useState<any[]>([]),[form,setForm]=useState<any>(blank),[show,setShow]=useState(false),[tab,setTab]=useState('overview'),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[uploading,setUploading]=useState(false),[msg,setMsg]=useState(''),[q,setQ]=useState(''),[cat,setCat]=useState('all'),[status,setStatus]=useState('all'),[stock,setStock]=useState('all'),[selected,setSelected]=useState<string[]>([]),[bulkStatus,setBulkStatus]=useState('active')
  useEffect(()=>{load()},[])
- async function load(){setLoading(true);const [p,c,b]=await Promise.all([supabase.from('products').select('*,categories(name,slug),product_variants(*),product_images(*)').order('sort_order').limit(1000),supabase.from('categories').select('id,name,slug').eq('is_active',true).order('sort_order'),supabase.from('brands').select('id,name,slug').eq('is_active',true).order('name')]);setRows(p.data||[]);setCats(c.data||[]);setBrands(b.data||[]);setSelected([]);setLoading(false)}
+ async function load(){setLoading(true);const [p,c,b]=await Promise.all([loadAdminCosts(supabase,supabase.from('products').select(`*,categories(name,slug),product_variants(${VARIANT_FIELDS}),product_images(*)`).order('sort_order').limit(1000),'variant','products','product_variants'),supabase.from('categories').select('id,name,slug').eq('is_active',true).order('sort_order'),supabase.from('brands').select('id,name,slug').eq('is_active',true).order('name')]);if(p.error){setMsg(p.error.message);setRows([]);setShow(false);setLoading(false);return}setRows(p.data||[]);setCats(c.data||[]);setBrands(b.data||[]);setSelected([]);setLoading(false)}
  const brandName=(id:string)=>brands.find(b=>b.id===id)?.name||'New India Solar'
  const firstImg=(p:any)=>[...(p.product_images||[])].sort((a:any,b:any)=>a.sort_order-b.sort_order)[0]?.image_url
  const firstVar=(p:any)=>(p.product_variants||[]).find((v:any)=>v.is_active)||(p.product_variants||[])[0]||{}

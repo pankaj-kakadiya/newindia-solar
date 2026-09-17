@@ -3,6 +3,8 @@
 import {ChangeEvent,FormEvent,useEffect,useMemo,useState} from 'react'
 import {Check,Edit3,ImagePlus,Plus,Save,Search,Trash2,Upload,X} from 'lucide-react'
 import {supabase} from '../../../../lib/supabase'
+import {loadAdminCosts} from '../../../../lib/admin-catalogue-costs'
+import {COMPONENT_FIELDS} from '../../../../lib/catalogue-projections'
 
 const blank={id:'',category:'DC MCB',brand_id:'',name:'',model:'',sku:'',specifications:'{}',cost_price:'',selling_price:'',gst_rate:18,stock_qty:0,unit:'pcs',image_url:'',visual_role:'component',visual_settings:'{}',is_active:true}
 const categories=['AC MCB','DC MCB','MCCB','AC SPD','DC SPD','Terminal Block','Solar Cable','Internal Wire','Fuse Holder','DC Fuse','Cable Gland','Busbar','Indicator','Earth Terminal','Accessory']
@@ -12,7 +14,7 @@ const parse=(s:string)=>{try{return s.trim()?JSON.parse(s):{}}catch{return {}}}
 export default function ConfiguratorComponents(){
   const [rows,setRows]=useState<any[]>([]),[brands,setBrands]=useState<any[]>([]),[form,setForm]=useState<any>(blank),[show,setShow]=useState(false),[q,setQ]=useState(''),[cat,setCat]=useState('all'),[msg,setMsg]=useState(''),[uploading,setUploading]=useState(false),[saving,setSaving]=useState(false)
   useEffect(()=>{load()},[])
-  async function load(){const [c,b]=await Promise.all([supabase.from('components').select('*,brands(name)').order('category').order('name'),supabase.from('brands').select('id,name').eq('is_active',true).order('name')]);setRows(c.data||[]);setBrands(b.data||[])}
+  async function load(){const [c,b]=await Promise.all([loadAdminCosts(supabase,supabase.from('components').select(`${COMPONENT_FIELDS},brands(name)`).order('category').order('name'),'component','components'),supabase.from('brands').select('id,name').eq('is_active',true).order('name')]);if(c.error){setMsg(c.error.message);setRows([]);setShow(false);return}setRows(c.data||[]);setBrands(b.data||[])}
   const filtered=useMemo(()=>rows.filter(r=>(cat==='all'||r.category===cat)&&`${r.name} ${r.model||''} ${r.sku||''} ${r.brands?.name||''}`.toLowerCase().includes(q.toLowerCase())),[rows,q,cat])
   function edit(r:any){setForm({...blank,...r,specifications:JSON.stringify(r.specifications||{},null,2),visual_settings:JSON.stringify(r.visual_settings||{},null,2)});setShow(true);setMsg('')}
   async function upload(e:ChangeEvent<HTMLInputElement>){const f=e.target.files?.[0];e.target.value='';if(!f)return;if(!f.type.startsWith('image/')){setMsg('Upload PNG, WEBP, JPG or SVG image.');return}setUploading(true);const path=`components/${Date.now()}-${safe(f)}`;const up=await supabase.storage.from('configurator-assets').upload(path,f,{cacheControl:'3600'});if(up.error){setMsg(up.error.message);setUploading(false);return}const {data}=supabase.storage.from('configurator-assets').getPublicUrl(path);setForm((x:any)=>({...x,image_url:data.publicUrl}));setUploading(false);setMsg('Component PNG uploaded. Save component to publish it.')}
