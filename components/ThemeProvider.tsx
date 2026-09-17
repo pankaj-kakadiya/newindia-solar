@@ -19,7 +19,7 @@ const ICON_LOGO='/new-india-solar-logo.webp'
 export const defaultTheme:StoreTheme={
   branding:{companyName:'New India Solar Components Pvt Ltd',tagline:'Powering India’s Solar Installations.',promise:'Tested. Packed. Guaranteed.',logoUrl:FULL_LOGO,headerLogoUrl:FULL_LOGO,footerLogoUrl:FULL_LOGO,mobileLogoUrl:FULL_LOGO,faviconUrl:ICON_LOGO,emailLogoUrl:FULL_LOGO,invoiceLogoUrl:FULL_LOGO,logoAlt:'New India Solar Components Pvt Ltd'},
   colors:{navy:'#0D1B2A',navy2:'#10283D',primary:'#1D9B54',primary2:'#2EAA4F',gold:'#FFB703',orange:'#F77F00',text:'#10202F',muted:'#687684',border:'#E2E8ED',surface:'#F5F8F6',background:'#FFFFFF',topbarBg:'#07131F',topbarText:'#D5E1EA',headerBg:'#FFFFFF',heroStart:'#091522',heroEnd:'#123223',footerBg:'#08131E',footerText:'#AEBBC5',success:'#1D9B54',danger:'#B54747'},
-  typography:{bodyFont:'"Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif',headingFont:'"Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif',baseSize:16,bodyWeight:500,headingWeight:800,letterSpacing:0},
+  typography:{bodyFont:'Inter, Arial, sans-serif',headingFont:'Poppins, Inter, Arial, sans-serif',baseSize:16,bodyWeight:400,headingWeight:800,letterSpacing:0},
   layout:{containerWidth:1280,sectionSpacing:74,cardRadius:16,buttonRadius:10,inputRadius:9,headerHeight:78,logoWidth:260,footerLogoWidth:300,mobileLogoWidth:190,shadowOpacity:.11},
   header:{showTopbar:true,sticky:true,topbarItems:['GST Billing','Project Supply','Pan-India Dispatch']},
   customCss:''
@@ -27,11 +27,6 @@ export const defaultTheme:StoreTheme={
 
 export function mergeTheme(raw:any):StoreTheme{
   const branding={...defaultTheme.branding,...raw?.branding}
-  const typography={...defaultTheme.typography,...raw?.typography}
-  const legacyBody=typography.bodyFont==='Inter, Arial, sans-serif'
-  const legacyHeading=typography.headingFont==='Poppins, Inter, Arial, sans-serif'
-  if(legacyBody){typography.bodyFont=defaultTheme.typography.bodyFont;if(typography.bodyWeight===400)typography.bodyWeight=defaultTheme.typography.bodyWeight}
-  if(legacyHeading)typography.headingFont=defaultTheme.typography.headingFont
   if(!branding.headerLogoUrl)branding.headerLogoUrl=branding.logoUrl
   if(!branding.footerLogoUrl)branding.footerLogoUrl=branding.logoUrl
   if(!branding.mobileLogoUrl)branding.mobileLogoUrl=branding.logoUrl
@@ -43,7 +38,7 @@ export function mergeTheme(raw:any):StoreTheme{
     ...raw,
     branding,
     colors:{...defaultTheme.colors,...raw?.colors},
-    typography,
+    typography:{...defaultTheme.typography,...raw?.typography},
     layout:{...defaultTheme.layout,...raw?.layout},
     header:{...defaultTheme.header,...raw?.header},
     customCss:typeof raw?.customCss==='string'?raw.customCss:''
@@ -59,7 +54,7 @@ function css(theme:StoreTheme){
 --theme-bg:${c.background};--theme-surface:${c.surface};--theme-text:${c.text};--theme-muted:${c.muted};--theme-topbar-bg:${c.topbarBg};--theme-topbar-text:${c.topbarText};--theme-header-bg:${c.headerBg};--theme-footer-bg:${c.footerBg};--theme-footer-text:${c.footerText};
 --theme-card-radius:${l.cardRadius}px;--theme-button-radius:${l.buttonRadius}px;--theme-input-radius:${l.inputRadius}px;--theme-container-width:${l.containerWidth}px;--theme-section-space:${l.sectionSpacing}px;--theme-header-height:${l.headerHeight}px;--theme-logo-width:${l.logoWidth}px;--theme-footer-logo-width:${l.footerLogoWidth}px;--theme-mobile-logo-width:${l.mobileLogoWidth}px;--theme-shadow:0 20px 55px rgba(13,27,42,${l.shadowOpacity});
 }
-body{font-family:${t.bodyFont}!important;font-weight:${t.bodyWeight}!important;background:${c.background}!important;color:${c.text}!important;font-size:${t.baseSize}px;letter-spacing:${t.letterSpacing}px}
+body{font-family:${t.bodyFont}!important;background:${c.background}!important;color:${c.text}!important;font-size:${t.baseSize}px;letter-spacing:${t.letterSpacing}px}
 h1,h2,h3,h4,h5,h6{font-family:${t.headingFont}!important;font-weight:${t.headingWeight}!important}
 .container{max-width:${l.containerWidth}px!important}
 .nisTopbar{background:${c.topbarBg}!important;color:${c.topbarText}!important;${h.showTopbar?'':'display:none!important;'}}
