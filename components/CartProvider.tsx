@@ -9,6 +9,7 @@ export type CartItem={
   variant:string
   price:number
   qty:number
+  minQty?:number
   productVariantId?:string
   customType?:'acdb'|'dcdb'
   templateId?:string

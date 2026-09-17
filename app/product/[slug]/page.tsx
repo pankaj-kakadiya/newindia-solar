@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import QuantityControl from '../../../components/buyer/QuantityControl'
 import {useEffect,useRef,useState} from 'react'
 import {useParams} from 'next/navigation'
 import {
@@ -36,6 +37,7 @@ export default function Product(){
       const {data}=await supabase.from('products').select('*,categories(name,slug),product_images(*),product_variants(*)').eq('slug',slug).eq('status','active').single()
       if(!alive)return
       setP(data)
+      setQty(Math.max(1,Math.ceil(Number(data?.min_order_qty)||1)))
       setVariantId(data?.product_variants?.[0]?.id||'')
       setActiveIndex(0)
       if(data){
@@ -58,6 +60,7 @@ export default function Product(){
   const mrp=Number(v?.mrp||0)
   const mrpIncl=mrp?gstPrice(mrp,gst):0
   const stock=Number(v?.stock_qty||0)
+  const minQty=Math.max(1,Math.ceil(Number(p?.min_order_qty)||1))
   const attrs=v?.attributes||{}
   const specs=p?.specifications||{}
   const imgs=[...(p?.product_images||[])].sort((a:any,b:any)=>a.sort_order-b.sort_order)
@@ -70,7 +73,7 @@ export default function Product(){
   if(loading)return <><StoreHeader/><main className="container productLoading"><div/><div/></main></>
   if(!p)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Product not found.</h1><Link className="btn btnPrimary" href="/shop">Back to Products</Link></main></>
 
-  function addToCart(){if(!v||price<=0||stock<=0)return;add({id:v.id,kind:'standard',productVariantId:v.id,name:p.name,variant:v.title||v.sku,price,qty:Math.min(qty,stock)})}
+  function addToCart(){if(!v||price<=0||qty<minQty||qty>stock||!Number.isSafeInteger(qty))return;add({id:v.id,kind:'standard',productVariantId:v.id,name:p.name,variant:v.title||v.sku,price,qty,minQty})}
   function go(index:number){if(!imgs.length)return;setActiveIndex((index+imgs.length)%imgs.length)}
   function previous(){go(activeIndex-1)}
   function next(){go(activeIndex+1)}
@@ -110,7 +113,7 @@ export default function Product(){
           <aside className="pdValue"><Tag/><div><b>Best value for solar projects</b><span><Check/> Quality components</span><span><Check/> EPC ready</span><span><Check/> Pan-India support</span></div></aside>
         </div>
 
-        {price>0&&stock>0?<div className="pdBuyRow"><div className="pdQty"><button onClick={()=>setQty(Math.max(1,qty-1))} aria-label="Decrease quantity"><Minus/></button><b>{qty}</b><button onClick={()=>setQty(Math.min(stock,qty+1))} aria-label="Increase quantity"><Plus/></button></div><button className="pdAdd" onClick={addToCart}><ShoppingCart/>Add to Cart</button></div>:<Link className="pdAdd full" href="/bulk-order">{price>0?'Check Availability':'Request Price'}</Link>}
+        {price>0&&stock>0?<div className="pdBuyRow"><QuantityControl value={qty} min={minQty} max={stock} label="Product quantity" onChange={setQty}/><button className="pdAdd" disabled={qty<minQty||qty>stock} onClick={addToCart}><ShoppingCart/>Add to Cart</button></div>:<Link className="pdAdd full" href="/bulk-order">{price>0?'Check Availability':'Request Price'}</Link>}
         <div className="pdSecondaryActions"><Link href="/bulk-order"><FileText/>Request a Quote</Link><button onClick={()=>setWish(x=>!x)} className={wish?'active':''}><Heart fill={wish?'currentColor':'none'}/>{wish?'Saved to Wishlist':'Add to Wishlist'}</button></div>
 
         <div className="pdServiceGrid"><div><FileText/><b>GST-ready order</b><span>Business checkout supported</span></div><div><Truck/><b>Pan-India delivery</b><span>Reliable logistics network</span></div><div><Users/><b>Project support</b><span>Bulk RFQ available</span></div><div><Box/><b>Secure packaging</b><span>Safe & reliable</span></div></div>
