@@ -1,43 +1,741 @@
-'use client'
-import {useEffect,useMemo,useState} from 'react'
-import {AlertTriangle,Boxes,Download,PackageCheck,RefreshCw,Search,SlidersHorizontal,Warehouse,X} from 'lucide-react'
-import {supabase} from '../../../lib/supabase'
-import {loadAdminCosts} from '../../../lib/admin-catalogue-costs'
+"use client";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Boxes,
+  Download,
+  FileSpreadsheet,
+  PackageCheck,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  Warehouse,
+  X,
+} from "lucide-react";
+import { supabase } from "../../../lib/supabase";
+import { loadAdminCosts } from "../../../lib/admin-catalogue-costs";
 
-type Row={id:string;type:'variant'|'component'|'enclosure';name:string;sku:string;stock:number;reserved:number;available:number;threshold:number;unit:string;cost:number;value:number;active:boolean}
-const money=(n:number)=>`₹${Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}`
-const csv=(v:any)=>`"${String(v??'').replace(/"/g,'""')}"`
-export default function Inventory(){
- const [variants,setVariants]=useState<any[]>([]),[components,setComponents]=useState<any[]>([]),[enclosures,setEnclosures]=useState<any[]>([]),[movements,setMovements]=useState<any[]>([]),[reservations,setReservations]=useState<any[]>([])
- const [q,setQ]=useState(''),[tab,setTab]=useState('all'),[onlyLow,setOnlyLow]=useState(false),[loading,setLoading]=useState(true),[msg,setMsg]=useState(''),[adjust,setAdjust]=useState<Row|null>(null),[qty,setQty]=useState(''),[movementType,setMovementType]=useState('purchase_in'),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[thresholdEdit,setThresholdEdit]=useState<Row|null>(null),[threshold,setThreshold]=useState('5')
- useEffect(()=>{load()},[])
- async function load(){setLoading(true);setMsg('');const [v,c,e,m,r]=await Promise.all([
-  loadAdminCosts(supabase,supabase.from('product_variants').select('id,sku,title,stock_qty,low_stock_threshold,unit,is_active,products(name)').order('stock_qty').limit(500),'variant','inventory'),
-  loadAdminCosts(supabase,supabase.from('components').select('id,name,sku,stock_qty,low_stock_threshold,unit,is_active').order('stock_qty').limit(500),'component','inventory'),
-  loadAdminCosts(supabase,supabase.from('enclosures').select('id,name,sku,stock_qty,low_stock_threshold,is_active').order('stock_qty').limit(300),'enclosure','inventory'),
-  supabase.from('inventory_movements').select('*').order('created_at',{ascending:false}).limit(200),
-  supabase.from('inventory_reservations').select('*').eq('status','reserved').order('created_at',{ascending:false}).limit(500)
- ]);const costError=v.error||c.error||e.error;if(costError){setMsg(costError.message);setVariants([]);setComponents([]);setEnclosures([]);setLoading(false);return}setVariants(v.data||[]);setComponents(c.data||[]);setEnclosures(e.data||[]);setMovements(m.data||[]);setReservations(r.data||[]);setLoading(false)}
- const reservedMaps=useMemo(()=>{const v:any={},c:any={},e:any={};for(const r of reservations){const map=r.variant_id?v:r.component_id?c:e;const id=r.variant_id||r.component_id||r.enclosure_id;if(id)map[id]=(map[id]||0)+Number(r.quantity||0)}return{v,c,e}},[reservations])
- const rows=useMemo<Row[]>(()=>[
-  ...variants.map(x=>{const stock=Number(x.stock_qty||0),reserved=Number(reservedMaps.v[x.id]||0),cost=Number(x.cost_price||0);return{id:x.id,type:'variant' as const,name:x.products?.name?`${x.products.name}${x.title&&x.title!=='Standard'?` · ${x.title}`:''}`:(x.title||x.sku),sku:x.sku||'—',stock,reserved,available:stock-reserved,threshold:Number(x.low_stock_threshold||0),unit:x.unit||'pcs',cost,value:stock*cost,active:!!x.is_active}}),
-  ...components.map(x=>{const stock=Number(x.stock_qty||0),reserved=Number(reservedMaps.c[x.id]||0),cost=Number(x.cost_price||0);return{id:x.id,type:'component' as const,name:x.name||x.sku,sku:x.sku||'—',stock,reserved,available:stock-reserved,threshold:Number(x.low_stock_threshold||0),unit:x.unit||'pcs',cost,value:stock*cost,active:!!x.is_active}}),
-  ...enclosures.map(x=>{const stock=Number(x.stock_qty||0),reserved=Number(reservedMaps.e[x.id]||0),cost=Number(x.cost_price||0);return{id:x.id,type:'enclosure' as const,name:x.name||x.sku,sku:x.sku||'—',stock,reserved,available:stock-reserved,threshold:Number(x.low_stock_threshold||0),unit:'pcs',cost,value:stock*cost,active:!!x.is_active}})
- ],[variants,components,enclosures,reservedMaps])
- const filtered=useMemo(()=>rows.filter(r=>(tab==='all'||r.type===tab)&&(!onlyLow||r.available<=r.threshold)&&`${r.name} ${r.sku}`.toLowerCase().includes(q.toLowerCase())),[rows,tab,onlyLow,q])
- const stats=useMemo(()=>({skus:rows.length,onHand:rows.reduce((a,b)=>a+b.stock,0),reserved:rows.reduce((a,b)=>a+b.reserved,0),low:rows.filter(r=>r.available<=r.threshold).length,value:rows.reduce((a,b)=>a+b.value,0)}),[rows])
- async function doAdjust(){if(!adjust||!qty||Number(qty)===0)return;setBusy(true);let n=Number(qty);if(movementType==='purchase_in'&&n<0)n=Math.abs(n);const {error}=await supabase.rpc('adjust_inventory_stock',{p_item_type:adjust.type,p_item_id:adjust.id,p_quantity:n,p_movement_type:movementType,p_note:note||null,p_reference_type:'admin',p_reference_id:null});setBusy(false);if(error){setMsg(error.message);return}setMsg(`Stock updated for ${adjust.name}.`);setAdjust(null);setQty('');setNote('');load()}
- async function saveThreshold(){if(!thresholdEdit)return;setBusy(true);const table=thresholdEdit.type==='variant'?'product_variants':thresholdEdit.type==='component'?'components':'enclosures';const {error}=await supabase.from(table).update({low_stock_threshold:Number(threshold||0)}).eq('id',thresholdEdit.id);setBusy(false);if(error){setMsg(error.message);return}setMsg(`Low-stock threshold updated for ${thresholdEdit.name}.`);setThresholdEdit(null);load()}
- function exportCsv(){const body=[['Type','Name','SKU','On Hand','Reserved','Available','Low Stock Threshold','Unit','Cost','Stock Value'],...filtered.map(r=>[r.type,r.name,r.sku,r.stock,r.reserved,r.available,r.threshold,r.unit,r.cost,r.value])].map(row=>row.map(csv).join(',')).join('\n');const url=URL.createObjectURL(new Blob([body],{type:'text/csv'}));const a=document.createElement('a');a.href=url;a.download=`new-india-solar-inventory-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url)}
- return <div className="invV2">
-  <div className="invHero"><div><span className="adminEyebrow">STOCK CONTROL CENTER</span><h1>Inventory</h1><p>Finished goods, components and enclosures with reservations, available stock, valuation and movement history.</p></div><div className="invHeroActions"><button className="adminBtn ghost" onClick={load}><RefreshCw size={16}/>Refresh</button><button className="adminBtn ghost" onClick={exportCsv}><Download size={16}/>Export CSV</button></div></div>
-  {msg&&<div className="invMessage">{msg}</div>}
-  <div className="invStats"><div><Warehouse size={18}/><span>Total SKUs<b>{stats.skus}</b></span></div><div><Boxes size={18}/><span>On Hand<b>{stats.onHand.toLocaleString('en-IN')}</b></span></div><div><PackageCheck size={18}/><span>Reserved<b>{stats.reserved.toLocaleString('en-IN')}</b></span></div><div className={stats.low?'warn':''}><AlertTriangle size={18}/><span>Low Stock<b>{stats.low}</b></span></div><div><span>Stock Value<b>{money(stats.value)}</b></span></div></div>
-  <div className="invToolbar"><div className="adminSearch"><Search size={15}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search item or SKU"/></div><div className="invTabs">{[['all','All'],['variant','Finished Goods'],['component','Components'],['enclosure','Enclosures']].map(([k,l])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{l}</button>)}</div><label className="invLowToggle"><input type="checkbox" checked={onlyLow} onChange={e=>setOnlyLow(e.target.checked)}/><span>Low stock only</span></label></div>
-  <section className="adminPanel invTablePanel"><div className="adminPanelHead"><div><h2>Stock Ledger</h2><p>{filtered.length} inventory items · Available = on hand − reserved</p></div></div><div className="adminTableWrap"><table className="adminTable invTable"><thead><tr><th>Item</th><th>Type</th><th>On hand</th><th>Reserved</th><th>Available</th><th>Threshold</th><th>Cost</th><th>Value</th><th></th></tr></thead><tbody>{loading?<tr><td colSpan={9} className="emptyCell">Loading stock…</td></tr>:filtered.length?filtered.map(r=>{const low=r.available<=r.threshold;return <tr key={`${r.type}-${r.id}`}><td><b>{r.name}</b><span className="tableSub">{r.sku}</span></td><td><span className={`invType ${r.type}`}>{r.type==='variant'?'Finished':r.type}</span></td><td>{r.stock} <small>{r.unit}</small></td><td>{r.reserved}</td><td><b className={low?'invLow':''}>{r.available}</b>{low&&<span className="tableSub invWarnText">Reorder attention</span>}</td><td><button className="invThresholdBtn" onClick={()=>{setThresholdEdit(r);setThreshold(String(r.threshold))}}>{r.threshold}</button></td><td>{money(r.cost)}</td><td>{money(r.value)}</td><td><button className="invAdjustBtn" onClick={()=>{setAdjust(r);setQty('');setNote('');setMovementType('purchase_in')}}><SlidersHorizontal size={14}/>Adjust</button></td></tr>}):<tr><td colSpan={9} className="emptyCell">No inventory items match this view.</td></tr>}</tbody></table></div></section>
-  <div className="invBottomGrid"><section className="adminPanel"><div className="adminPanelHead"><div><h2>Recent Movements</h2><p>Latest purchase, adjustment, sale and production consumption entries.</p></div></div><div className="invFeed">{movements.length?movements.slice(0,20).map(m=><div key={m.id}><span className={Number(m.quantity)>=0?'in':'out'}>{Number(m.quantity)>=0?'+':''}{Number(m.quantity)}</span><p><b>{String(m.movement_type||'movement').replaceAll('_',' ')}</b><small>{m.note||m.reference_type||'Inventory movement'} · {new Date(m.created_at).toLocaleString('en-IN')}</small></p></div>):<div className="padded muted">No stock movements yet.</div>}</div></section>
-  <section className="adminPanel"><div className="adminPanelHead"><div><h2>Active Reservations</h2><p>Stock held for confirmed orders and custom ACDB/DCDB production.</p></div></div><div className="invFeed">{reservations.length?reservations.slice(0,20).map(r=><div key={r.id}><span className="reserve">{Number(r.quantity)}</span><p><b>{r.production_job_id?'Production reservation':'Order reservation'}</b><small>Order {String(r.order_id).slice(0,8)}… · {new Date(r.created_at).toLocaleString('en-IN')}</small></p></div>):<div className="padded muted">No active reservations.</div>}</div></section></div>
-  {adjust&&<div className="invModalBackdrop" onMouseDown={()=>setAdjust(null)}><div className="invModal" onMouseDown={e=>e.stopPropagation()}><button className="invClose" onClick={()=>setAdjust(null)}><X size={18}/></button><h2>Adjust Stock</h2><p><b>{adjust.name}</b><br/><span>{adjust.sku} · Current {adjust.stock} {adjust.unit}</span></p><label>Movement<select value={movementType} onChange={e=>setMovementType(e.target.value)}><option value="purchase_in">Purchase In</option><option value="opening_stock">Opening Stock</option><option value="manual_adjustment">Manual Adjustment</option><option value="damage">Damage / Loss</option><option value="return_in">Return In</option></select></label><label>Quantity<input type="number" step="0.01" value={qty} onChange={e=>setQty(e.target.value)} placeholder="Use negative quantity for stock out"/></label><label>Note<textarea rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Supplier GRN, physical count, damage reason…"/></label><button className="adminBtn" disabled={busy||!qty} onClick={doAdjust}>{busy?'Saving…':'Save Movement'}</button></div></div>}
-  {thresholdEdit&&<div className="invModalBackdrop" onMouseDown={()=>setThresholdEdit(null)}><div className="invModal small" onMouseDown={e=>e.stopPropagation()}><button className="invClose" onClick={()=>setThresholdEdit(null)}><X size={18}/></button><h2>Low Stock Threshold</h2><p><b>{thresholdEdit.name}</b><br/><span>Alert when available stock reaches this level.</span></p><label>Threshold<input type="number" min="0" step="0.01" value={threshold} onChange={e=>setThreshold(e.target.value)}/></label><button className="adminBtn" disabled={busy} onClick={saveThreshold}>{busy?'Saving…':'Save Threshold'}</button></div></div>}
- </div>
+type Row = {
+  id: string;
+  type: "variant" | "component" | "enclosure";
+  name: string;
+  sku: string;
+  stock: number;
+  reserved: number;
+  available: number;
+  threshold: number;
+  unit: string;
+  cost: number;
+  value: number;
+  active: boolean;
+};
+const money = (n: number) =>
+  `₹${Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+const csv = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+export default function Inventory() {
+  const [variants, setVariants] = useState<any[]>([]),
+    [components, setComponents] = useState<any[]>([]),
+    [enclosures, setEnclosures] = useState<any[]>([]),
+    [movements, setMovements] = useState<any[]>([]),
+    [reservations, setReservations] = useState<any[]>([]),
+    [lots, setLots] = useState<any[]>([]);
+  const [q, setQ] = useState(""),
+    [tab, setTab] = useState("all"),
+    [onlyLow, setOnlyLow] = useState(false),
+    [loading, setLoading] = useState(true),
+    [msg, setMsg] = useState(""),
+    [adjust, setAdjust] = useState<Row | null>(null),
+    [qty, setQty] = useState(""),
+    [movementType, setMovementType] = useState("purchase_in"),
+    [note, setNote] = useState(""),
+    [busy, setBusy] = useState(false),
+    [thresholdEdit, setThresholdEdit] = useState<Row | null>(null),
+    [threshold, setThreshold] = useState("5");
+  useEffect(() => {
+    load();
+  }, []);
+  async function load() {
+    setLoading(true);
+    setMsg("");
+    const [v, c, e, m, r, l] = await Promise.all([
+      loadAdminCosts(
+        supabase,
+        supabase
+          .from("product_variants")
+          .select(
+            "id,sku,title,stock_qty,low_stock_threshold,unit,is_active,products(name)",
+          )
+          .order("stock_qty")
+          .limit(500),
+        "variant",
+        "inventory",
+      ),
+      loadAdminCosts(
+        supabase,
+        supabase
+          .from("components")
+          .select("id,name,sku,stock_qty,low_stock_threshold,unit,is_active")
+          .order("stock_qty")
+          .limit(500),
+        "component",
+        "inventory",
+      ),
+      loadAdminCosts(
+        supabase,
+        supabase
+          .from("enclosures")
+          .select("id,name,sku,stock_qty,low_stock_threshold,is_active")
+          .order("stock_qty")
+          .limit(300),
+        "enclosure",
+        "inventory",
+      ),
+      supabase
+        .from("inventory_movements")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("inventory_reservations")
+        .select("*")
+        .eq("status", "reserved")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      supabase
+        .from("inventory_lots")
+        .select("*")
+        .gt("quantity_remaining", 0)
+        .order("received_at", { ascending: true })
+        .limit(500),
+    ]);
+    const costError = v.error || c.error || e.error;
+    if (costError) {
+      setMsg(costError.message);
+      setVariants([]);
+      setComponents([]);
+      setEnclosures([]);
+      setLoading(false);
+      return;
+    }
+    setVariants(v.data || []);
+    setComponents(c.data || []);
+    setEnclosures(e.data || []);
+    setMovements(m.data || []);
+    setReservations(r.data || []);
+    setLots(l.data || []);
+    setLoading(false);
+  }
+  const reservedMaps = useMemo(() => {
+    const v: any = {},
+      c: any = {},
+      e: any = {};
+    for (const r of reservations) {
+      const map = r.variant_id ? v : r.component_id ? c : e;
+      const id = r.variant_id || r.component_id || r.enclosure_id;
+      if (id) map[id] = (map[id] || 0) + Number(r.quantity || 0);
+    }
+    return { v, c, e };
+  }, [reservations]);
+  const rows = useMemo<Row[]>(
+    () => [
+      ...variants.map((x) => {
+        const stock = Number(x.stock_qty || 0),
+          reserved = Number(reservedMaps.v[x.id] || 0),
+          cost = Number(x.cost_price || 0);
+        return {
+          id: x.id,
+          type: "variant" as const,
+          name: x.products?.name
+            ? `${x.products.name}${x.title && x.title !== "Standard" ? ` · ${x.title}` : ""}`
+            : x.title || x.sku,
+          sku: x.sku || "—",
+          stock,
+          reserved,
+          available: stock - reserved,
+          threshold: Number(x.low_stock_threshold || 0),
+          unit: x.unit || "pcs",
+          cost,
+          value: stock * cost,
+          active: !!x.is_active,
+        };
+      }),
+      ...components.map((x) => {
+        const stock = Number(x.stock_qty || 0),
+          reserved = Number(reservedMaps.c[x.id] || 0),
+          cost = Number(x.cost_price || 0);
+        return {
+          id: x.id,
+          type: "component" as const,
+          name: x.name || x.sku,
+          sku: x.sku || "—",
+          stock,
+          reserved,
+          available: stock - reserved,
+          threshold: Number(x.low_stock_threshold || 0),
+          unit: x.unit || "pcs",
+          cost,
+          value: stock * cost,
+          active: !!x.is_active,
+        };
+      }),
+      ...enclosures.map((x) => {
+        const stock = Number(x.stock_qty || 0),
+          reserved = Number(reservedMaps.e[x.id] || 0),
+          cost = Number(x.cost_price || 0);
+        return {
+          id: x.id,
+          type: "enclosure" as const,
+          name: x.name || x.sku,
+          sku: x.sku || "—",
+          stock,
+          reserved,
+          available: stock - reserved,
+          threshold: Number(x.low_stock_threshold || 0),
+          unit: "pcs",
+          cost,
+          value: stock * cost,
+          active: !!x.is_active,
+        };
+      }),
+    ],
+    [variants, components, enclosures, reservedMaps],
+  );
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        (r) =>
+          (tab === "all" || r.type === tab) &&
+          (!onlyLow || r.available <= r.threshold) &&
+          `${r.name} ${r.sku}`.toLowerCase().includes(q.toLowerCase()),
+      ),
+    [rows, tab, onlyLow, q],
+  );
+  const stats = useMemo(
+    () => ({
+      skus: rows.length,
+      onHand: rows.reduce((a, b) => a + b.stock, 0),
+      reserved: rows.reduce((a, b) => a + b.reserved, 0),
+      low: rows.filter((r) => r.available <= r.threshold).length,
+      value: rows.reduce((a, b) => a + b.value, 0),
+    }),
+    [rows],
+  );
+  async function doAdjust() {
+    if (!adjust || !qty || Number(qty) === 0) return;
+    setBusy(true);
+    let n = Number(qty);
+    if (movementType === "purchase_in" && n < 0) n = Math.abs(n);
+    const { error } = await supabase.rpc("adjust_inventory_stock", {
+      p_item_type: adjust.type,
+      p_item_id: adjust.id,
+      p_quantity: n,
+      p_movement_type: movementType,
+      p_note: note || null,
+      p_reference_type: "admin",
+      p_reference_id: null,
+    });
+    setBusy(false);
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
+    setMsg(`Stock updated for ${adjust.name}.`);
+    setAdjust(null);
+    setQty("");
+    setNote("");
+    load();
+  }
+  async function saveThreshold() {
+    if (!thresholdEdit) return;
+    setBusy(true);
+    const table =
+      thresholdEdit.type === "variant"
+        ? "product_variants"
+        : thresholdEdit.type === "component"
+          ? "components"
+          : "enclosures";
+    const { error } = await supabase
+      .from(table)
+      .update({ low_stock_threshold: Number(threshold || 0) })
+      .eq("id", thresholdEdit.id);
+    setBusy(false);
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
+    setMsg(`Low-stock threshold updated for ${thresholdEdit.name}.`);
+    setThresholdEdit(null);
+    load();
+  }
+  function exportCsv() {
+    const body = [
+      [
+        "item_type",
+        "identifier",
+        "quantity",
+        "note",
+        "current_stock",
+        "reserved",
+        "available",
+        "low_stock_threshold",
+        "unit",
+        "cost_price",
+        "stock_value",
+        "item_name",
+      ],
+      ...filtered.map((r) => [
+        r.type,
+        r.sku,
+        "",
+        "Enter stock adjustment reason",
+        r.stock,
+        r.reserved,
+        r.available,
+        r.threshold,
+        r.unit,
+        r.cost,
+        r.value,
+        r.name,
+      ]),
+    ]
+      .map((row) => row.map(csv).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([body], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `new-india-solar-inventory-update-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  return (
+    <div className="invV2">
+      <div className="invHero">
+        <div>
+          <span className="adminEyebrow">STOCK CONTROL CENTER</span>
+          <h1>Inventory & FIFO</h1>
+          <p>
+            Finished goods, components and enclosures with FIFO lots,
+            reservations, valuation and auditable movement history.
+          </p>
+        </div>
+        <div className="invHeroActions">
+          <button className="adminBtn ghost" onClick={load}>
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+          <button className="adminBtn ghost" onClick={exportCsv}>
+            <Download size={16} />
+            Download Update Sheet
+          </button>
+          <Link
+            className="adminBtn ghost"
+            href="/admin/imports?type=opening_stock"
+          >
+            <FileSpreadsheet size={16} />
+            Import Inventory
+          </Link>
+          <Link className="adminBtn" href="/admin/imports?type=pricing">
+            <FileSpreadsheet size={16} />
+            Update Cost Sheet
+          </Link>
+        </div>
+      </div>
+      {msg && <div className="invMessage">{msg}</div>}
+      <div className="invStats">
+        <div>
+          <Warehouse size={18} />
+          <span>
+            Total SKUs<b>{stats.skus}</b>
+          </span>
+        </div>
+        <div>
+          <Boxes size={18} />
+          <span>
+            On Hand<b>{stats.onHand.toLocaleString("en-IN")}</b>
+          </span>
+        </div>
+        <div>
+          <PackageCheck size={18} />
+          <span>
+            Reserved<b>{stats.reserved.toLocaleString("en-IN")}</b>
+          </span>
+        </div>
+        <div className={stats.low ? "warn" : ""}>
+          <AlertTriangle size={18} />
+          <span>
+            Low Stock<b>{stats.low}</b>
+          </span>
+        </div>
+        <div>
+          <span>
+            Stock Value<b>{money(stats.value)}</b>
+          </span>
+        </div>
+      </div>
+      <div className="invToolbar">
+        <div className="adminSearch">
+          <Search size={15} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search item or SKU"
+          />
+        </div>
+        <div className="invTabs">
+          {[
+            ["all", "All"],
+            ["variant", "Finished Goods"],
+            ["component", "Components"],
+            ["enclosure", "Enclosures"],
+          ].map(([k, l]) => (
+            <button
+              key={k}
+              className={tab === k ? "active" : ""}
+              onClick={() => setTab(k)}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+        <label className="invLowToggle">
+          <input
+            type="checkbox"
+            checked={onlyLow}
+            onChange={(e) => setOnlyLow(e.target.checked)}
+          />
+          <span>Low stock only</span>
+        </label>
+      </div>
+      <section className="adminPanel invTablePanel">
+        <div className="adminPanelHead">
+          <div>
+            <h2>Stock Ledger</h2>
+            <p>
+              {filtered.length} inventory items · Available = on hand − reserved
+            </p>
+          </div>
+        </div>
+        <div className="adminTableWrap">
+          <table className="adminTable invTable">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Type</th>
+                <th>On hand</th>
+                <th>Reserved</th>
+                <th>Available</th>
+                <th>Threshold</th>
+                <th>Cost</th>
+                <th>Value</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="emptyCell">
+                    Loading stock…
+                  </td>
+                </tr>
+              ) : filtered.length ? (
+                filtered.map((r) => {
+                  const low = r.available <= r.threshold;
+                  return (
+                    <tr key={`${r.type}-${r.id}`}>
+                      <td>
+                        <b>{r.name}</b>
+                        <span className="tableSub">{r.sku}</span>
+                      </td>
+                      <td>
+                        <span className={`invType ${r.type}`}>
+                          {r.type === "variant" ? "Finished" : r.type}
+                        </span>
+                      </td>
+                      <td>
+                        {r.stock} <small>{r.unit}</small>
+                      </td>
+                      <td>{r.reserved}</td>
+                      <td>
+                        <b className={low ? "invLow" : ""}>{r.available}</b>
+                        {low && (
+                          <span className="tableSub invWarnText">
+                            Reorder attention
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          className="invThresholdBtn"
+                          onClick={() => {
+                            setThresholdEdit(r);
+                            setThreshold(String(r.threshold));
+                          }}
+                        >
+                          {r.threshold}
+                        </button>
+                      </td>
+                      <td>{money(r.cost)}</td>
+                      <td>{money(r.value)}</td>
+                      <td>
+                        <button
+                          className="invAdjustBtn"
+                          onClick={() => {
+                            setAdjust(r);
+                            setQty("");
+                            setNote("");
+                            setMovementType("purchase_in");
+                          }}
+                        >
+                          <SlidersHorizontal size={14} />
+                          Adjust
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={9} className="emptyCell">
+                    No inventory items match this view.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <div className="invBottomGrid">
+        <section className="adminPanel">
+          <div className="adminPanelHead">
+            <div>
+              <h2>Recent Movements</h2>
+              <p>
+                Latest purchase, adjustment, sale and production consumption
+                entries.
+              </p>
+            </div>
+          </div>
+          <div className="invFeed">
+            {movements.length ? (
+              movements.slice(0, 20).map((m) => (
+                <div key={m.id}>
+                  <span className={Number(m.quantity) >= 0 ? "in" : "out"}>
+                    {Number(m.quantity) >= 0 ? "+" : ""}
+                    {Number(m.quantity)}
+                  </span>
+                  <p>
+                    <b>
+                      {String(m.movement_type || "movement").replaceAll(
+                        "_",
+                        " ",
+                      )}
+                    </b>
+                    <small>
+                      {m.note || m.reference_type || "Inventory movement"} ·{" "}
+                      {new Date(m.created_at).toLocaleString("en-IN")}
+                    </small>
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="padded muted">No stock movements yet.</div>
+            )}
+          </div>
+        </section>
+        <section className="adminPanel">
+          <div className="adminPanelHead">
+            <div>
+              <h2>Active Reservations</h2>
+              <p>
+                Stock held for confirmed orders and custom ACDB/DCDB production.
+              </p>
+            </div>
+          </div>
+          <div className="invFeed">
+            {reservations.length ? (
+              reservations.slice(0, 20).map((r) => (
+                <div key={r.id}>
+                  <span className="reserve">{Number(r.quantity)}</span>
+                  <p>
+                    <b>
+                      {r.production_job_id
+                        ? "Production reservation"
+                        : "Order reservation"}
+                    </b>
+                    <small>
+                      Order {String(r.order_id).slice(0, 8)}… ·{" "}
+                      {new Date(r.created_at).toLocaleString("en-IN")}
+                    </small>
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="padded muted">No active reservations.</div>
+            )}
+          </div>
+        </section>
+      </div>
+      <section className="adminPanel">
+        <div className="adminPanelHead">
+          <div>
+            <h2>FIFO Stock Layers</h2>
+            <p>
+              Oldest received stock is allocated first when an order ships or
+              assembly consumes parts.
+            </p>
+          </div>
+          <span>{lots.length} open lots</span>
+        </div>
+        <div className="adminTableWrap">
+          <table className="adminTable invTable">
+            <thead>
+              <tr>
+                <th>Lot</th>
+                <th>Item type</th>
+                <th>Received</th>
+                <th>Received qty</th>
+                <th>Remaining</th>
+                <th>Unit cost</th>
+                <th>Remaining value</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lots.length ? (
+                lots.slice(0, 100).map((l) => (
+                  <tr key={l.id}>
+                    <td>
+                      <b>{l.lot_number}</b>
+                    </td>
+                    <td>
+                      {l.variant_id
+                        ? "Finished"
+                        : l.component_id
+                          ? "Component"
+                          : "Enclosure"}
+                    </td>
+                    <td>
+                      {new Date(l.received_at).toLocaleDateString("en-IN")}
+                    </td>
+                    <td>{Number(l.quantity_received)}</td>
+                    <td>
+                      <b>{Number(l.quantity_remaining)}</b>
+                    </td>
+                    <td>{money(Number(l.unit_cost))}</td>
+                    <td>
+                      {money(
+                        Number(l.quantity_remaining) * Number(l.unit_cost),
+                      )}
+                    </td>
+                    <td>{l.source_type || "Opening balance"}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="emptyCell">
+                    No open FIFO lots.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {adjust && (
+        <div className="invModalBackdrop" onMouseDown={() => setAdjust(null)}>
+          <div className="invModal" onMouseDown={(e) => e.stopPropagation()}>
+            <button className="invClose" onClick={() => setAdjust(null)}>
+              <X size={18} />
+            </button>
+            <h2>Adjust Stock</h2>
+            <p>
+              <b>{adjust.name}</b>
+              <br />
+              <span>
+                {adjust.sku} · Current {adjust.stock} {adjust.unit}
+              </span>
+            </p>
+            <label>
+              Movement
+              <select
+                value={movementType}
+                onChange={(e) => setMovementType(e.target.value)}
+              >
+                <option value="purchase_in">Purchase In</option>
+                <option value="opening_stock">Opening Stock</option>
+                <option value="manual_adjustment">Manual Adjustment</option>
+                <option value="damage">Damage / Loss</option>
+                <option value="return_in">Return In</option>
+              </select>
+            </label>
+            <label>
+              Quantity
+              <input
+                type="number"
+                step="0.01"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                placeholder="Use negative quantity for stock out"
+              />
+            </label>
+            <label>
+              Note
+              <textarea
+                rows={3}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Supplier GRN, physical count, damage reason…"
+              />
+            </label>
+            <button
+              className="adminBtn"
+              disabled={busy || !qty}
+              onClick={doAdjust}
+            >
+              {busy ? "Saving…" : "Save Movement"}
+            </button>
+          </div>
+        </div>
+      )}
+      {thresholdEdit && (
+        <div
+          className="invModalBackdrop"
+          onMouseDown={() => setThresholdEdit(null)}
+        >
+          <div
+            className="invModal small"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button className="invClose" onClick={() => setThresholdEdit(null)}>
+              <X size={18} />
+            </button>
+            <h2>Low Stock Threshold</h2>
+            <p>
+              <b>{thresholdEdit.name}</b>
+              <br />
+              <span>Alert when available stock reaches this level.</span>
+            </p>
+            <label>
+              Threshold
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={threshold}
+                onChange={(e) => setThreshold(e.target.value)}
+              />
+            </label>
+            <button
+              className="adminBtn"
+              disabled={busy}
+              onClick={saveThreshold}
+            >
+              {busy ? "Saving…" : "Save Threshold"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
