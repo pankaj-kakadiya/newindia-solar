@@ -11,6 +11,9 @@ export type CartItem={
   qty:number
   minQty?:number
   productVariantId?:string
+  productSlug?:string
+  imageUrl?:string
+  imageAlt?:string
   customType?:'acdb'|'dcdb'
   templateId?:string
   selectedValueIds?:string[]

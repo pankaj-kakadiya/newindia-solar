@@ -61,7 +61,7 @@ export default function StoreHeader(){
     <Link href="/" className="nhBrand" aria-label="New India Solar home"><img src={headerLogo} alt={branding.logoAlt}/></Link>
     <nav className="nhDesktopNav" aria-label="Primary navigation">
      <button className={mega==='products'?'active':''} aria-expanded={mega==='products'} aria-controls="products-mega-menu" onClick={()=>toggleMega('products')}>Products <ChevronDown size={14}/></button>
-     <Link href="/categories">Categories</Link><Link href="/categories/acdb">ACDB</Link><Link href="/categories/dcdb">DCDB</Link>
+     <Link href="/categories">Categories</Link><Link className="nhOptionalNav" href="/categories/acdb">ACDB</Link><Link className="nhOptionalNav" href="/categories/dcdb">DCDB</Link>
      <button className={mega==='customize'?'active':''} aria-expanded={mega==='customize'} aria-controls="customize-mega-menu" onClick={()=>toggleMega('customize')}>Build a Box <ChevronDown size={14}/></button>
      {headerLinks.map(item=><span className="nhCmsNavItem" key={item.id}>{navigationLink(item)}</span>)}
     </nav>

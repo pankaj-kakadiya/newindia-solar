@@ -1,0 +1,112 @@
+/* Buyer storefront polish: compact, dimensional and resilient from 320px to wide desktop. */
+html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.homeV3,.cvPage,.pdPage,.cartPage,.comboPage,.nisFooter{font-synthesis:none}
+
+/* Desktop navigation keeps its useful actions without wrapping at laptop widths. */
+.nhNav,.nhDesktopNav,.nhActions{min-width:0}
+.nhDesktopNav{white-space:nowrap}
+.nhActions{flex:0 0 auto}
+@media (min-width:901px) and (max-width:1260px){
+  .nhNav{gap:12px;padding-inline:18px!important}
+  .nhBrand img{width:148px}
+  .nhDesktopNav{margin-left:0;gap:0}
+  .nhDesktopNav>a,.nhDesktopNav>button,.nhDesktopNav .nhCmsNavItem>a{padding-inline:7px;font-size:11px}
+  .nhOptionalNav{display:none!important}
+  .nhActions>a,.nhActions>button{min-width:40px;width:40px;padding:0}
+  .nhActions .nhQuoteAction{min-width:40px}
+  .nhActions .nhSearchAction{min-width:40px}
+  .nhActions .nhSearchAction span,.nhActions .nhSearchAction kbd{display:none}
+}
+
+/* A restrained 3D storefront treatment: depth, not visual noise. */
+.homeV3 .hvHeroVisual{perspective:1300px;transform-style:preserve-3d}
+.homeV3 .hvHeroBoard{transform:rotateY(-5deg) rotateX(2deg) rotateZ(-.7deg);transform-origin:center;box-shadow:18px 30px 0 rgba(29,155,84,.1),0 42px 95px rgba(0,0,0,.34)}
+.homeV3 .hvHeroBoard:after{content:"";position:absolute;inset:12px -14px -14px 12px;z-index:-1;border-radius:27px;background:linear-gradient(145deg,rgba(111,220,151,.28),rgba(7,23,43,.2));filter:blur(1px)}
+.homeV3 .hvHeroRfQ{transform:translateZ(55px);box-shadow:0 22px 48px rgba(0,0,0,.33)}
+.homeV3 .hvCategoryCard,.homeV3 .hvFeaturedCard,.homeV3 .hvBuyCard,.homeV3 .hvResourceList>a{box-shadow:0 10px 0 rgba(13,27,42,.025),0 18px 45px rgba(13,27,42,.06)}
+.homeV3 .hvCategoryCard:hover,.homeV3 .hvFeaturedCard:hover,.homeV3 .hvBuyCard:hover{transform:translateY(-6px);box-shadow:0 14px 0 rgba(29,155,84,.06),0 28px 55px rgba(13,27,42,.12)}
+.homeV3 .hvFeaturedCard{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.homeV3 .hvFeaturedPhoto img,.homeV3 .hvBuilderProduct img{filter:drop-shadow(0 13px 14px rgba(13,27,42,.15))}
+
+/* Cart: real product media and a stable, keyboard-friendly quantity row. */
+.cartPage{padding-top:40px;padding-bottom:76px}
+.cartPageHead{margin-bottom:24px}
+.cartLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(310px,370px);gap:24px;align-items:start}
+.cartItemsPanel{overflow:hidden;border:1px solid #dfe8e3;border-radius:22px;background:#fff;padding:0 22px;box-shadow:0 22px 60px rgba(13,27,42,.06)}
+.cartRow{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:22px!important;align-items:center;padding:22px 0!important;border-bottom:1px solid #e8eeeb}
+.cartRow:last-child{border-bottom:0}
+.cartProduct{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:center;min-width:0}
+.cartThumb{width:104px;height:104px;border:1px solid #e1e9e4;border-radius:16px;background:linear-gradient(145deg,#f9fbfa,#edf4f0);display:grid;place-items:center;overflow:hidden;color:#167943}
+.cartThumb img{display:block;width:100%;height:100%;object-fit:contain;padding:8px}
+.cartThumb>span{display:grid;place-items:center;gap:6px;text-align:center}
+.cartThumb svg{width:26px;height:26px}.cartThumb small{font-size:9px;font-weight:850}
+.cartInfo{min-width:0;display:grid;gap:5px}
+.cartInfo .cartKind{color:#168149;font-size:9px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+.cartInfo>b{font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.cartInfo>span:not(.cartKind){font-size:12px;color:#65747e}.cartInfo>small{line-height:1.45}
+.cartCommerce{display:grid;grid-template-columns:auto minmax(92px,auto);gap:10px 20px;align-items:end;justify-items:end}
+.cartQty{display:grid;gap:6px}.cartQty>span{font-size:9px;font-weight:850;color:#687684;text-transform:uppercase;letter-spacing:.08em}
+.cartQty .buyerQuantityControl{width:156px}.cartQty .buyerQuantityControl input{flex:1;width:auto;min-width:52px}
+.cartLineTotal{align-self:center;min-width:92px;text-align:right!important;font-size:18px}
+.cartRemove{grid-column:1/-1;border:0;background:transparent;color:#b54747;display:flex;align-items:center;gap:5px;font:inherit;font-size:11px;font-weight:750;cursor:pointer;padding:4px 0}
+.summary{box-shadow:0 22px 60px rgba(13,27,42,.07)}
+
+/* Broken image URLs collapse to a useful, branded state instead of alt-text blocks. */
+.pdImageFallback{width:100%;height:100%;min-height:80px;display:grid;place-items:center;align-content:center;gap:6px;background:linear-gradient(145deg,#f8fbf9,#edf4f0);color:#73837a;text-align:center}
+.pdImageFallback svg{width:28px;height:28px;color:#1d9b54}.pdImageFallback small{font-size:9px;font-weight:750}
+.pdImageStage>.pdImageFallback{min-height:100%}.pdThumbs .pdImageFallback small{display:none}.pdThumbs .pdImageFallback svg{width:18px}
+.pdRelatedImage .pdImageFallback{min-height:100%}
+
+/* Catalogue titles remain bold, but descriptions stay readable and compact. */
+.cvCard h2,.hvFeaturedCopy h3,.pdRelatedGrid h3{font-weight:800;letter-spacing:-.015em}
+.cvDescription,.hvFeaturedCopy p{font-weight:500}
+
+@media (max-width:720px){
+  .container{padding-left:14px!important;padding-right:14px!important}
+  .homeV3 .hvHeroBoard{transform:none;box-shadow:8px 12px 0 rgba(29,155,84,.09),0 25px 55px rgba(0,0,0,.3)}
+  .homeV3 .hvHeroRfQ{transform:none}
+  .homeV3 .hvSection{padding-block:46px}
+  .homeV3 .hvFeaturedGrid{grid-template-columns:1fr!important;gap:12px}
+  .homeV3 .hvFeaturedCard{display:grid;grid-template-columns:128px minmax(0,1fr);min-height:188px;border-radius:17px}
+  .homeV3 .hvFeaturedPhoto{height:100%;min-height:188px}
+  .homeV3 .hvFeaturedPhoto>span:not(.hvImagePlaceholder){left:7px;top:7px;padding:4px 6px;font-size:9px}
+  .homeV3 .hvFeaturedCopy{padding:13px;gap:7px}
+  .homeV3 .hvFeaturedCopy h3{font-size:14px;line-height:1.25}
+  .homeV3 .hvFeaturedCopy p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;line-height:1.45}
+  .homeV3 .hvFeaturedPrice b{font-size:17px}.homeV3 .hvFeaturedPrice small,.homeV3 .hvAvailable,.homeV3 .hvOnRequest{font-size:10px}
+  .homeV3 .hvFeaturedCopy .hvTextLink{min-height:36px;font-size:12px}
+  .cartPage{padding-top:24px;padding-bottom:52px}
+  .cartPageHead{align-items:flex-start;gap:10px}.cartPageHead h1{font-size:34px}
+  .cartLayout{grid-template-columns:1fr;gap:16px}
+  .cartItemsPanel{padding:0 14px!important;border-radius:18px}
+  .cartRow{grid-template-columns:1fr!important;gap:14px!important;padding:16px 0!important}
+  .cartProduct{grid-template-columns:82px minmax(0,1fr);gap:12px}
+  .cartThumb{width:82px;height:82px;border-radius:13px}
+  .cartInfo>b{font-size:14px}.cartInfo>span:not(.cartKind),.cartInfo>small{font-size:10px}
+  .cartCommerce{grid-template-columns:minmax(0,1fr) auto;justify-items:stretch;align-items:end;gap:8px 12px;padding-left:94px}
+  .cartQty .buyerQuantityField,.cartQty .buyerQuantityControl{width:100%}
+  .cartQty .buyerQuantityControl{min-width:148px}.cartQty .buyerQuantityControl button{width:43px;flex:0 0 43px}.cartQty .buyerQuantityControl input{min-width:54px}
+  .cartLineTotal{align-self:center;text-align:right!important;font-size:16px}
+  .cartRemove{grid-column:1/-1;justify-self:start}
+  .pdBuy h1{font-size:clamp(27px,8vw,33px)!important;line-height:1.06!important;letter-spacing:-.035em}
+  .pdLead{line-height:1.5}.pdPriceMain>strong{font-size:31px}
+  .pdRelatedGrid{grid-template-columns:1fr!important}
+  .pdRelatedGrid article{display:grid;grid-template-columns:122px minmax(0,1fr);min-height:150px}
+  .pdRelatedImage{height:100%;min-height:150px}
+  .pdRelatedGrid article>div{display:flex;flex-direction:column;justify-content:center;padding:13px}
+  .pdRelatedGrid h3{min-height:0;margin:5px 0 12px;font-size:13px}
+  .pdRelatedGrid article>div>div{margin-top:auto}
+  .cvHero{padding-block:38px}.cvHero h1{font-size:clamp(34px,10vw,47px)}
+}
+
+@media (max-width:420px){
+  .nhBrand img{width:132px!important}
+  .nhNav{gap:7px}
+  .homeV3 .hvFeaturedCard{grid-template-columns:110px minmax(0,1fr)}
+  .cartCommerce{padding-left:0;grid-template-columns:minmax(0,1fr) auto}
+  .cartQty .buyerQuantityControl{min-width:145px}
+  .pdBuyRow{grid-template-columns:1fr!important}.pdBuyRow .buyerQuantityField,.pdBuyRow .buyerQuantityControl{width:100%}.pdBuyRow .buyerQuantityControl input{flex:1;width:auto}
+}
+
+@media (prefers-reduced-motion:reduce){.homeV3 .hvHeroBoard,.homeV3 .hvHeroRfQ{transform:none}.homeV3 .hvCategoryCard,.homeV3 .hvFeaturedCard,.homeV3 .hvBuyCard{transition:none}}

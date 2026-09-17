@@ -107,7 +107,8 @@ function ProductCard({result}: {result: CatalogueResult}) {
       if (!latestPrice) throw new Error('Pricing needs confirmation. Please request a quotation.')
       const already = items.filter(i => i.productVariantId === variant.id).reduce((sum, i) => sum + i.qty, 0)
       if (!inStock(fresh, variant) || already + qty > (numeric(variant.stock_qty) ?? 0)) throw new Error('The available stock cannot cover this addition. Review your cart or enquire for supply.')
-      add({id: variant.id, kind: 'standard', productVariantId: variant.id, name: fresh.name, variant: variant.title || variant.sku, price: latestPrice.base, qty})
+      const image = productImage(fresh)
+      add({id: variant.id, kind: 'standard', productVariantId: variant.id, productSlug: fresh.slug, imageUrl: safeAssetUrl(image?.image_url) || undefined, imageAlt: image?.alt_text || fresh.name, name: fresh.name, variant: variant.title || variant.sku, price: latestPrice.base, qty})
       setNotice(`Added ${qty} ${variant.unit || 'unit'} to cart.${price && price.total !== latestPrice.total ? ' Price was updated; review your cart.' : ''}`)
     } catch (error) {setFailed(true); setNotice(error instanceof Error ? error.message : 'Unable to add this product. Please retry.')}
     finally {setAdding(false)}
