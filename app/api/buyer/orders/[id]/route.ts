@@ -4,9 +4,11 @@ import {ORDER_FIELDS,ORDER_ITEM_FIELDS,INVOICE_FIELDS,INVOICE_ITEM_FIELDS,UUID,s
 async function ownedOrder(request:NextRequest,params:Promise<{id:string}>){
  const context=await buyerContext(request),{id}=await params
  if(!UUID.test(id))throw new BuyerError('Order not found.',404)
- const {data:order}=await context.db.from('orders').select(ORDER_FIELDS).eq('id',id).eq('user_id',context.user.id).maybeSingle().throwOnError()
+ const db=context.db
+ if(!db)throw new BuyerError('Order details are temporarily unavailable.',503)
+ const {data:order}=await db.from('orders').select(ORDER_FIELDS).eq('id',id).eq('user_id',context.user.id).maybeSingle().throwOnError()
  if(!order)throw new BuyerError('Order not found.',404)
- return {...context,order}
+ return {...context,db,order}
 }
 export async function GET(request:NextRequest,{params}:{params:Promise<{id:string}>}){try{
  const {db,order}=await ownedOrder(request,params)

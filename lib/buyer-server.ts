@@ -11,8 +11,11 @@ export async function buyerContext(request:NextRequest){
  const client=createClient(url,key,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false}})
  const {data,error}=await client.auth.getUser(token)
  if(error||!data.user)throw new BuyerError('Your session expired. Please sign in again.',401)
- const db=serviceClient();if(!db)throw new BuyerError('Account service is unavailable.',503)
- return {user:data.user,client,db}
+ // Most buyer operations use the authenticated client and are protected by RLS.
+ // Privileged reads (issued invoices and internal order joins) check `db` only
+ // in the route that needs them, so a missing server secret cannot block the
+ // buyer's profile, address book, or order list.
+ return {user:data.user,client,db:serviceClient()}
 }
 export function buyerJson(data:unknown,status=200){return NextResponse.json(data,{status,headers:{'Cache-Control':'private, no-store'}})}
 export function buyerFailure(error:unknown){return buyerJson({error:error instanceof BuyerError?error.message:'Unable to complete your request. Please try again.'},error instanceof BuyerError?error.status:503)}
