@@ -14,18 +14,18 @@ type SearchProduct={name:string;slug:string;short_description?:string|null;categ
 type SearchSuggestion=SearchProduct|{term:string}
 
 const productGroups=[
- {name:'ACDB',desc:'AC protection & distribution',href:'/shop?q=ACDB',icon:Zap},
- {name:'DCDB',desc:'DC combiner & protection',href:'/shop?q=DCDB',icon:ShieldCheck},
- {name:'MCB / MCCB',desc:'Circuit protection devices',href:'/shop?q=MCB',icon:CircleGauge},
- {name:'SPD',desc:'AC & DC surge protection',href:'/shop?q=SPD',icon:PlugZap},
- {name:'Solar Cable',desc:'DC cable & internal wiring',href:'/shop?q=Solar%20Cable',icon:Cable},
- {name:'Earthing Kit',desc:'Project earthing solutions',href:'/shop?q=Earthing',icon:Layers},
- {name:'MC4 Connectors',desc:'PV connectors & accessories',href:'/shop?q=MC4',icon:Settings2},
- {name:'DC Fuse',desc:'Fuse links & holders',href:'/shop?q=Fuse',icon:CircleGauge},
- {name:'Enclosures',desc:'IP-rated industrial boxes',href:'/shop?q=Enclosure',icon:Boxes},
- {name:'Terminal Blocks',desc:'Internal connection systems',href:'/shop?q=Terminal',icon:Wrench},
- {name:'Cable Glands',desc:'Sealed cable entry',href:'/shop?q=Cable%20Gland',icon:PackageCheck},
- {name:'BOS Accessories',desc:'Balance-of-system parts',href:'/shop?q=BOS',icon:Sparkles},
+ {name:'ACDB',desc:'AC protection & distribution',href:'/categories/acdb',icon:Zap},
+ {name:'DCDB',desc:'DC combiner & protection',href:'/categories/dcdb',icon:ShieldCheck},
+ {name:'MCB / MCCB',desc:'Circuit protection devices',href:'/categories/mcb-mccb',icon:CircleGauge},
+ {name:'SPD',desc:'AC & DC surge protection',href:'/categories/spd',icon:PlugZap},
+ {name:'Solar Cable',desc:'DC cable & internal wiring',href:'/categories/solar-cable',icon:Cable},
+ {name:'Earthing Kit',desc:'Project earthing solutions',href:'/categories/earthing-kits',icon:Layers},
+ {name:'MC4 Connectors',desc:'PV connectors & accessories',href:'/categories/mc4-connectors',icon:Settings2},
+ {name:'DC Fuse',desc:'Fuse links & holders',href:'/categories/dc-fuses',icon:CircleGauge},
+ {name:'Enclosures',desc:'IP-rated industrial boxes',href:'/categories/enclosures',icon:Boxes},
+ {name:'Terminal Blocks',desc:'Internal connection systems',href:'/categories/terminal-blocks',icon:Wrench},
+ {name:'Cable Glands',desc:'Sealed cable entry',href:'/categories/cable-glands',icon:PackageCheck},
+ {name:'BOS Accessories',desc:'Balance-of-system parts',href:'/categories/bos-accessories',icon:Sparkles},
 ]
 const smartTerms=['ACDB','DCDB','SPD','MCB','MCCB','Solar Cable','MC4 Connector','Earthing Kit','2 In 2 Out DCDB','1000V DC SPD']
 const hiddenCmsLabels=new Set(['products','customize','bulk order','project rfq'])
@@ -49,7 +49,7 @@ export default function StoreHeader(){
  function go(value?:SearchSuggestion){const picked=value||suggestions[active];setSearchOpen(false);if(picked&&isProductSuggestion(picked)){router.push(`/product/${picked.slug}`);return}const term=picked&&'term' in picked?picked.term:query.trim();router.push(term?`/shop?q=${encodeURIComponent(term)}`:'/shop')}
  function submit(event:FormEvent){event.preventDefault();go()}
  function searchKeys(event:KeyboardEvent<HTMLInputElement>){if(event.key==='ArrowDown'){event.preventDefault();setActive(index=>Math.min(index+1,Math.max(0,suggestions.length-1)))}if(event.key==='ArrowUp'){event.preventDefault();setActive(index=>Math.max(0,index-1))}if(event.key==='Enter'){event.preventDefault();go()}if(event.key==='Escape'){event.preventDefault();setSearchOpen(false)}}
- function navigationLink(item:(typeof navigation)[number],className=''){return item.is_external?<a className={className} href={item.href} target="_blank" rel="noreferrer" onClick={closeAll}>{item.label}<ArrowUpRight size={13}/></a>:<Link className={className} href={item.href} onClick={closeAll}>{item.label}</Link>}
+ function navigationLink(item:(typeof navigation)[number],className=''){const label=item.label.toLowerCase().trim(),href=label==='why new india'?'/why-new-india':label==='contact'||label==='contact us'?'/contact':item.href;return item.is_external?<a className={className} href={href} target="_blank" rel="noreferrer" onClick={closeAll}>{item.label}<ArrowUpRight size={13}/></a>:<Link className={className} href={href} onClick={closeAll}>{item.label}</Link>}
 
  return <>
   <a className="nhSkipLink" href="#main-content">Skip to content</a>
@@ -61,7 +61,7 @@ export default function StoreHeader(){
     <Link href="/" className="nhBrand" aria-label="New India Solar home"><img src={headerLogo} alt={branding.logoAlt}/></Link>
     <nav className="nhDesktopNav" aria-label="Primary navigation">
      <button className={mega==='products'?'active':''} aria-expanded={mega==='products'} aria-controls="products-mega-menu" onClick={()=>toggleMega('products')}>Products <ChevronDown size={14}/></button>
-     <Link href="/categories">Categories</Link><Link href="/shop?q=ACDB">ACDB</Link><Link href="/shop?q=DCDB">DCDB</Link>
+     <Link href="/categories">Categories</Link><Link href="/categories/acdb">ACDB</Link><Link href="/categories/dcdb">DCDB</Link>
      <button className={mega==='customize'?'active':''} aria-expanded={mega==='customize'} aria-controls="customize-mega-menu" onClick={()=>toggleMega('customize')}>Build a Box <ChevronDown size={14}/></button>
      {headerLinks.map(item=><span className="nhCmsNavItem" key={item.id}>{navigationLink(item)}</span>)}
     </nav>

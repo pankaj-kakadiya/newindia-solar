@@ -35,12 +35,13 @@ async function readPublished(table: 'products' | 'categories', signal: AbortSign
 }
 
 type ChangeFilters = (patch: Partial<Filters>, resetPage?: boolean) => void
+type CatalogueScope = {categoryTerms: string[]; label: string; path: string; description: string}
 
 type FilterPanelProps = {
   filters: Filters; categories: Category[]; counts: Map<string, number>;
-  brands: {name: string; slug: string}[]; facets: Facet[]; change: ChangeFilters; clear: () => void
+  brands: {name: string; slug: string}[]; facets: Facet[]; change: ChangeFilters; clear: () => void; hideCategories?: boolean
 }
-function FilterPanel({filters, categories, counts, brands, facets, change, clear}: FilterPanelProps) {
+function FilterPanel({filters, categories, counts, brands, facets, change, clear, hideCategories=false}: FilterPanelProps) {
   const [min, setMin] = useState(filters.min), [max, setMax] = useState(filters.max)
   const [rangeError, setRangeError] = useState('')
   const id = useId()
@@ -52,11 +53,11 @@ function FilterPanel({filters, categories, counts, brands, facets, change, clear
   }
   return <div className="cvFilters">
     <div className="cvFilterHeading"><h2>Filter products</h2><button type="button" className="cvTextButton" onClick={clear}>Reset all</button></div>
-    <fieldset><legend>Category</legend>
+    {!hideCategories&&<fieldset><legend>Category</legend>
       <label className="cvChoice"><input type="radio" name={`category-${id}`} checked={!filters.category} onChange={() => change({category: '', specs: {}})}/><span>All components</span><small>{counts.get('') ?? 0}</small></label>
       {categories.map(category => <label key={category.id} className={`cvChoice ${category.parent_id ? 'cvChildCategory' : ''}`}><input type="radio" name={`category-${id}`} checked={filters.category === category.slug} onChange={() => change({category: category.slug, specs: {}})}/><span>{category.name}</span><small>{counts.get(category.slug) ?? 0}</small></label>)}
       {filters.category && !categories.some(c => c.slug === filters.category) && <p className="cvSmall">This category is not currently published.</p>}
-    </fieldset>
+    </fieldset>}
     <fieldset><legend>Availability</legend><label className="cvChoice"><input type="checkbox" checked={filters.stock} onChange={e => change({stock: e.target.checked})}/><span>In stock for minimum order</span></label></fieldset>
     <fieldset><legend>Unit price · including GST</legend><form onSubmit={applyPrice}>
       <div className="cvPriceFields"><BuyerField label="Min ₹"><BuyerInput type="number" inputMode="decimal" min="0" max="1000000000000" step="0.01" value={min} placeholder="0" onChange={e => setMin(e.target.value)} error={!!rangeError}/></BuyerField><BuyerField label="Max ₹"><BuyerInput type="number" inputMode="decimal" min="0" max="1000000000000" step="0.01" value={max} placeholder="Any" onChange={e => setMax(e.target.value)} error={!!rangeError}/></BuyerField></div>
@@ -127,8 +128,9 @@ function ProductCard({result}: {result: CatalogueResult}) {
   </article>
 }
 
-export default function ShopCatalogue() {
+export default function ShopCatalogue({scope}:{scope?:CatalogueScope}) {
   const router = useRouter(), searchParams = useSearchParams()
+  const basePath = scope?.path || '/shop'
   const queryString = searchParams.toString()
   const filters = useMemo(() => readFilters(new URLSearchParams(queryString)), [queryString])
   const [products, setProducts] = useState<Product[]>([]), [categories, setCategories] = useState<Category[]>([])
@@ -153,12 +155,13 @@ export default function ShopCatalogue() {
     const current = readFilters(params)
     const next = {...current, ...patch, page: resetPage ? 1 : patch.page ?? current.page}
     const query = writeFilters(next, params)
-    window.history.pushState(null, '', `/shop${query ? `?${query}` : ''}`)
+    window.history.pushState(null, '', `${basePath}${query ? `?${query}` : ''}`)
   }
   function clear() {change({...EMPTY_FILTERS, view: filters.view, specs: {}}); setSearch('')}
-  const results = useMemo(() => filterCatalogue(products, categories, filters), [products, categories, filters])
-  const facets = useMemo(() => catalogueFacets(products, categories, filters), [products, categories, filters])
-  const brands = useMemo(() => [...new Map(products.filter(p => p.brands?.is_active).map(p => [p.brands!.slug, {slug: p.brands!.slug, name: p.brands!.name}])).values()].sort((a,b) => a.name.localeCompare(b.name)), [products])
+  const scopedProducts = useMemo(() => {if(!scope)return products;const terms=new Set(scope.categoryTerms.map(term=>term.toLowerCase().replace(/[^a-z0-9]/g,'')));return products.filter(product=>{const name=product.categories?.name.toLowerCase().replace(/[^a-z0-9]/g,'')||'',slug=product.categories?.slug.toLowerCase().replace(/[^a-z0-9]/g,'')||'';return terms.has(name)||terms.has(slug)})}, [products, scope])
+  const results = useMemo(() => filterCatalogue(scopedProducts, categories, filters), [scopedProducts, categories, filters])
+  const facets = useMemo(() => catalogueFacets(scopedProducts, categories, filters), [scopedProducts, categories, filters])
+  const brands = useMemo(() => [...new Map(scopedProducts.filter(p => p.brands?.is_active).map(p => [p.brands!.slug, {slug: p.brands!.slug, name: p.brands!.name}])).values()].sort((a,b) => a.name.localeCompare(b.name)), [scopedProducts])
   const counts = useMemo(() => {
     const map = new Map<string, number>([['', products.length]])
     for (const c of categories) {const scope = categoryScope(categories, c.slug); map.set(c.slug, products.filter(p => p.category_id && scope.has(p.category_id)).length)}
@@ -170,9 +173,9 @@ export default function ShopCatalogue() {
   useEffect(() => {
     if (!loading && !error && filters.page !== page) {
       const query = writeFilters({...filters, page}, new URLSearchParams(queryString))
-      router.replace(`/shop${query ? `?${query}` : ''}`, {scroll: false})
+      router.replace(`${basePath}${query ? `?${query}` : ''}`, {scroll: false})
     }
-  }, [loading, error, filters, page, queryString, router])
+  }, [loading, error, filters, page, queryString, router, basePath])
   useEffect(() => {
     if (!modalOpen) return
     const old = document.body.style.overflow
@@ -189,20 +192,20 @@ export default function ShopCatalogue() {
   if (filters.stock) chips.push({label: 'In stock', remove: () => change({stock: false})})
   if (filters.min || filters.max) chips.push({label: `${filters.min ? money(Number(filters.min)) : '₹0'} – ${filters.max ? money(Number(filters.max)) : 'Any price'}`, remove: () => change({min: '', max: ''})})
   for (const [name, value] of Object.entries(filters.specs)) chips.push({label: `${attributeLabel(name)}: ${value}`, remove: () => {const specs = {...filters.specs}; delete specs[name]; change({specs})}})
-  const panelProps = {filters, categories, counts, brands, facets, change, clear}
+  const panelProps = {filters, categories, counts, brands, facets, change, clear, hideCategories:!!scope}
   const category = categories.find(c => c.slug === filters.category)
   function submitSearch(e: FormEvent) {e.preventDefault(); change({q: search.trim().slice(0,160)})}
   function goPage(next: number) {change({page: next}, false); resultsHeading.current?.scrollIntoView({block: 'start', behavior: 'auto'})}
   return <main id="main-content" className="cvPage">
-    <section className="cvHero"><div className="container"><nav className="cvBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><ChevronRight size={14}/><span aria-current="page">Shop components</span></nav>
-      <div className="cvHeroRow"><div><span className="nisEyebrow">THE SOLAR COMPONENT CATALOGUE</span><h1>Find the right component.<br/><em>Keep your project moving.</em></h1><p>ACDB, DCDB and BOS components — browse published ratings, choose the right option and buy with clear GST pricing.</p></div><Link href="/bulk-order" className="cvProjectLink"><FileText size={24}/><span><strong>Buying for a project?</strong><small>Send quantities, ratings and your BOQ.</small></span><ArrowRight size={20}/></Link></div>
-      <form onSubmit={submitSearch} role="search" className="cvSearch"><label htmlFor="catalogue-search" className="cvSrOnly">Search products, SKU, brand or rating</label><Search size={21}/><input id="catalogue-search" type="search" maxLength={160} value={search} placeholder="Search product, SKU, brand or rating…" onChange={e => setSearch(e.target.value)}/>{(search || filters.q) && <button type="button" className="cvIconButton" aria-label="Clear product search" onClick={() => {setSearch(''); change({q: ''})}}><X size={18}/></button>}<BuyerButton type="submit">Search</BuyerButton></form>
+    <section className="cvHero"><div className="container"><nav className="cvBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><ChevronRight size={14}/>{scope&&<><Link href="/categories">Categories</Link><ChevronRight size={14}/></>}<span aria-current="page">{scope?.label||'Shop components'}</span></nav>
+      <div className="cvHeroRow"><div><span className="nisEyebrow">{scope?'SOLAR COMPONENT CATEGORY':'THE SOLAR COMPONENT CATALOGUE'}</span><h1>{scope?<>{scope.label}<br/><em>for solar projects.</em></>:<>Find the right component.<br/><em>Keep your project moving.</em></>}</h1><p>{scope?.description||'ACDB, DCDB and BOS components — browse published ratings, choose the right option and buy with clear GST pricing.'}</p></div><Link href="/bulk-order" className="cvProjectLink"><FileText size={24}/><span><strong>Buying for a project?</strong><small>Send quantities, ratings and your BOQ.</small></span><ArrowRight size={20}/></Link></div>
+      <form onSubmit={submitSearch} role="search" className="cvSearch"><label htmlFor="catalogue-search" className="cvSrOnly">Search products, SKU, brand or rating</label><Search size={21}/><input id="catalogue-search" type="search" maxLength={160} value={search} placeholder={scope?`Search within ${scope.label}…`:'Search product, SKU, brand or rating…'} onChange={e => setSearch(e.target.value)}/>{(search || filters.q) && <button type="button" className="cvIconButton" aria-label="Clear product search" onClick={() => {setSearch(''); change({q: ''})}}><X size={18}/></button>}<BuyerButton type="submit">Search</BuyerButton></form>
       <div className="cvHeroFoot"><span><CheckCircle2 size={15}/> Prices include published GST</span><span><Package size={15}/> Choose from active product options</span><span><FileText size={15}/> Project RFQs welcome</span></div>
     </div></section>
-    <div className="container cvContent"><div className="cvCategoryStrip" aria-label="Browse product categories"><button type="button" aria-pressed={!filters.category} className={!filters.category ? 'active' : ''} onClick={() => change({category: '', specs: {}})}>All components</button>{categories.filter(c => !c.parent_id).map(c => <button type="button" aria-pressed={filters.category === c.slug} className={filters.category === c.slug ? 'active' : ''} key={c.id} onClick={() => change({category: c.slug, specs: {}})}>{c.name}<span>{counts.get(c.slug)}</span></button>)}<Link href="/categories">Category directory <ArrowRight size={14}/></Link></div><section className="cvComboBanner"><div><span>AC + DC PROTECTION PAIR</span><h2>Choose ACDB and DCDB together.</h2><p>Build a two-product combo from published stock and add both quantities to one cart.</p></div><Link href="/combo">Create combo <ArrowRight size={17}/></Link></section>
+    <div className="container cvContent"><div className="cvCategoryStrip" aria-label="Browse product categories">{scope?<><Link href="/categories"><ChevronLeft size={14}/> All categories</Link><Link href="/shop">Shop all components <ArrowRight size={14}/></Link></>:<><button type="button" aria-pressed={!filters.category} className={!filters.category ? 'active' : ''} onClick={() => change({category: '', specs: {}})}>All components</button>{categories.filter(c => !c.parent_id).map(c => <button type="button" aria-pressed={filters.category === c.slug} className={filters.category === c.slug ? 'active' : ''} key={c.id} onClick={() => change({category: c.slug, specs: {}})}>{c.name}<span>{counts.get(c.slug)}</span></button>)}<Link href="/categories">Category directory <ArrowRight size={14}/></Link></>}</div><section className="cvComboBanner"><div><span>AC + DC PROTECTION PAIR</span><h2>Choose ACDB and DCDB together.</h2><p>Build a two-product combo from published stock and add both quantities to one cart.</p></div><Link href="/combo">Create combo <ArrowRight size={17}/></Link></section>
       {error ? <BuyerAlert tone="error"><p>{error}</p><BuyerButton onClick={() => setRetry(r => r + 1)} variant="outline">Retry catalogue</BuyerButton></BuyerAlert> : <div className="cvLayout">
         <aside className="cvDesktopFilters" aria-label="Product filters">{!loading ? <FilterPanel {...panelProps}/> : <div className="cvFilterSkeleton"><BuyerSkeleton kind="title"/>{[0,1,2,3,4,5].map(i => <BuyerSkeleton key={i}/>)}</div>}</aside>
-        <section className="cvResults" aria-busy={loading} aria-label="Catalogue results"><div className="cvResultsHead" ref={resultsHeading}><div><h2>{category?.name || (filters.category ? 'Category results' : 'All components')}</h2><p role="status" aria-live="polite">{loading ? 'Loading published products…' : `${results.length ? (page - 1) * PAGE_SIZE + 1 : 0}–${Math.min(page * PAGE_SIZE, results.length)} of ${results.length} products`}</p></div><div className="cvResultControls"><button ref={filterButton} type="button" className="nisBtn nisBtnOutline cvMobileFilter" aria-haspopup="dialog" aria-controls={dialogId} onClick={() => {dialog.current?.showModal(); setModalOpen(true)}} disabled={loading}><SlidersHorizontal size={17}/> Filters{chips.length > 0 && <span>{chips.length}</span>}</button><BuyerField label="Sort products"><BuyerSelect value={filters.sort} onChange={e => change({sort: e.target.value as Filters['sort']})}><option value="featured">Featured first</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="name">Name: A–Z</option><option value="stock">In stock first</option></BuyerSelect></BuyerField><div className="cvViewControls" role="group" aria-label="Product view"><button type="button" className={filters.view === 'grid' ? 'active' : ''} aria-pressed={filters.view === 'grid'} aria-label="Grid view" onClick={() => change({view: 'grid'}, false)}><LayoutGrid size={19}/></button><button type="button" className={filters.view === 'list' ? 'active' : ''} aria-pressed={filters.view === 'list'} aria-label="List view" onClick={() => change({view: 'list'}, false)}><List size={19}/></button></div></div></div>
+        <section className="cvResults" aria-busy={loading} aria-label="Catalogue results"><div className="cvResultsHead" ref={resultsHeading}><div><h2>{scope?.label||category?.name || (filters.category ? 'Category results' : 'All components')}</h2><p role="status" aria-live="polite">{loading ? 'Loading published products…' : `${results.length ? (page - 1) * PAGE_SIZE + 1 : 0}–${Math.min(page * PAGE_SIZE, results.length)} of ${results.length} products`}</p></div><div className="cvResultControls"><button ref={filterButton} type="button" className="nisBtn nisBtnOutline cvMobileFilter" aria-haspopup="dialog" aria-controls={dialogId} onClick={() => {dialog.current?.showModal(); setModalOpen(true)}} disabled={loading}><SlidersHorizontal size={17}/> Filters{chips.length > 0 && <span>{chips.length}</span>}</button><BuyerField label="Sort products"><BuyerSelect value={filters.sort} onChange={e => change({sort: e.target.value as Filters['sort']})}><option value="featured">Featured first</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="name">Name: A–Z</option><option value="stock">In stock first</option></BuyerSelect></BuyerField><div className="cvViewControls" role="group" aria-label="Product view"><button type="button" className={filters.view === 'grid' ? 'active' : ''} aria-pressed={filters.view === 'grid'} aria-label="Grid view" onClick={() => change({view: 'grid'}, false)}><LayoutGrid size={19}/></button><button type="button" className={filters.view === 'list' ? 'active' : ''} aria-pressed={filters.view === 'list'} aria-label="List view" onClick={() => change({view: 'list'}, false)}><List size={19}/></button></div></div></div>
           {chips.length > 0 && <div className="cvActiveFilters" aria-label="Applied filters">{chips.map(chip => <button type="button" key={chip.label} onClick={chip.remove} aria-label={`Remove ${chip.label}`}>{chip.label}<X size={14}/></button>)}<button type="button" className="cvClearAll" onClick={clear}>Clear all</button></div>}
           {filters.min && filters.max && Number(filters.min) > Number(filters.max) && <BuyerAlert tone="warning">Minimum price exceeds maximum price. Clear or update the price filter.</BuyerAlert>}
           {loading ? <div className="cvGrid">{[0,1,2,3,4,5].map(i => <div className="nisCard cvLoadingCard" key={i}><BuyerSkeleton kind="media"/><BuyerSkeleton kind="title"/><BuyerSkeleton/><BuyerSkeleton kind="button"/></div>)}</div> : !results.length ? <div className="cvEmpty"><Search size={40}/><h3>{products.length ? 'No products match these filters.' : 'The catalogue is being prepared.'}</h3><p>{products.length ? 'Try fewer specifications, another category or a different search. Project requirements can also be submitted to our team.' : 'No active products are published yet. Send your requirement for a quotation.'}</p><div>{chips.length > 0 && <BuyerButton onClick={clear}>Clear filters</BuyerButton>}<BuyerButton href="/bulk-order" variant="outline">Send a requirement</BuyerButton></div></div> : <><div className={`cvGrid ${filters.view === 'list' ? 'cvList' : ''}`}>{visible.map(row => <ProductCard result={row} key={row.product.id}/>)}</div>{pages > 1 && <nav className="cvPagination" aria-label="Catalogue pages"><BuyerButton variant="outline" disabled={page === 1} onClick={() => goPage(page - 1)}><ChevronLeft size={16}/> Previous</BuyerButton><span>Page {page} of {pages}</span><BuyerButton variant="outline" disabled={page === pages} onClick={() => goPage(page + 1)}>Next <ChevronRight size={16}/></BuyerButton></nav>}</>}
