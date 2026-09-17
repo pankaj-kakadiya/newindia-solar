@@ -1,4 +1,5 @@
 import './globals.css'
+import './buyer-account.css'
 import './brand.css'
 import './upgrade.css'
 import './upgrade2.css'

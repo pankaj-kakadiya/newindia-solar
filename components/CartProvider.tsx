@@ -26,7 +26,7 @@ export function CartProvider({children}:{children:React.ReactNode}){
   useEffect(()=>{localStorage.setItem('nis-cart',JSON.stringify(items))},[items])
   const api=useMemo(()=>({
     items,
-    add:(i:CartItem)=>setItems(x=>{const f=x.find(a=>a.id===i.id);return f?x.map(a=>a.id===i.id?{...a,qty:a.qty+i.qty}:a):[...x,i]}),
+    add:(i:CartItem)=>setItems(x=>{const f=x.find(a=>a.id===i.id);return f?x.map(a=>a.id===i.id?{...a,...i,qty:a.qty+i.qty}:a):[...x,i]}),
     remove:(id:string)=>setItems(x=>x.filter(i=>i.id!==id)),
     updateQty:(id:string,q:number)=>setItems(x=>q<=0?x.filter(i=>i.id!==id):x.map(i=>i.id===id?{...i,qty:q}:i)),
     clear:()=>setItems([]),
