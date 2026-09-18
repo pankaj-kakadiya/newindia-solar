@@ -31,7 +31,7 @@ const safeName=(s:string)=>s.toLowerCase().replace(/[^a-z0-9.]+/g,'-').replace(/
 
 export default function Production(){
  const [jobs,setJobs]=useState<any[]>([]),[profiles,setProfiles]=useState<any[]>([]),[selected,setSelected]=useState<any>(null)
- const [bom,setBom]=useState<any[]>([]),[reservations,setReservations]=useState<any[]>([]),[history,setHistory]=useState<any[]>([]),[componentStock,setComponentStock]=useState<Record<string,any>>({})
+ const [bom,setBom]=useState<any[]>([]),[reservations,setReservations]=useState<any[]>([]),[history,setHistory]=useState<any[]>([]),[materialStock,setMaterialStock]=useState<Record<string,any>>({})
  const [q,setQ]=useState(''),[priority,setPriority]=useState('all'),[onlyOverdue,setOnlyOverdue]=useState(false),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[uploading,setUploading]=useState(false),[msg,setMsg]=useState('')
 
  useEffect(()=>{load()},[])
@@ -42,6 +42,8 @@ export default function Production(){
    supabase.from('profiles').select('id,full_name,role').in('role',['admin','staff']).order('full_name')
   ])
   setJobs(j.data||[]);setProfiles(p.data||[]);setLoading(false)
+  const requested=typeof window!=='undefined'?new URLSearchParams(window.location.search).get('job'):null
+  const requestedJob=(j.data||[]).find((x:any)=>x.id===requested);if(requestedJob&&!selected)await openJob(requestedJob)
  }
  async function openJob(j:any){
   setSelected(j);setMsg('')
@@ -51,8 +53,13 @@ export default function Production(){
    supabase.from('production_job_history').select('*').eq('production_job_id',j.id).order('created_at',{ascending:false})
   ])
   const br=b.data||[];setBom(br);setReservations(r.data||[]);setHistory(h.data||[])
-  const ids=br.map((x:any)=>x.component_id).filter(Boolean)
-  if(ids.length){const {data}=await supabase.from('components').select('id,name,sku,stock_qty,unit').in('id',ids);setComponentStock(Object.fromEntries((data||[]).map((x:any)=>[x.id,x])))}else setComponentStock({})
+  const componentIds=br.map((x:any)=>x.component_id).filter(Boolean),enclosureIds=br.map((x:any)=>x.enclosure_id).filter(Boolean),variantIds=br.map((x:any)=>x.variant_id).filter(Boolean)
+  const [components,enclosures,variants]=await Promise.all([
+   componentIds.length?supabase.from('components').select('id,name,sku,stock_qty,unit').in('id',componentIds):Promise.resolve({data:[]}),
+   enclosureIds.length?supabase.from('enclosures').select('id,name,sku,stock_qty').in('id',enclosureIds):Promise.resolve({data:[]}),
+   variantIds.length?supabase.from('product_variants').select('id,sku,title,stock_qty,unit').in('id',variantIds):Promise.resolve({data:[]}),
+  ])
+  const all=[...(components.data||[]),...(enclosures.data||[]),...(variants.data||[])];setMaterialStock(Object.fromEntries(all.map((x:any)=>[x.id,x])))
  }
  async function refreshSelected(){if(!selected)return;const {data}=await supabase.from('production_jobs').select('*,orders(order_number,status,payment_status,company_name,customer_snapshot)').eq('id',selected.id).single();if(data)await openJob(data);await load()}
 
@@ -121,7 +128,7 @@ export default function Production(){
    <div className="productionDrawerGrid">
     <main>
      <section className="productionPanel"><div className="productionPanelHead"><div><h3><Warehouse size={18}/>Material & BOM</h3><p>Required, reserved, picked and issued quantities.</p></div><div><button onClick={()=>markAll('picked_qty')} disabled={!bom.length||saving}>Pick all</button><button onClick={()=>markAll('issued_qty')} disabled={!bom.length||saving}>Issue all</button></div></div>
-      <div className="productionTableWrap"><table><thead><tr><th>Component</th><th>Required</th><th>On hand</th><th>Picked</th><th>Issued</th><th>Status</th></tr></thead><tbody>{bom.map(row=>{const stock=componentStock[row.component_id];const req=Number(row.required_qty||row.quantity||0);const picked=Number(row.picked_qty||0);const issued=Number(row.issued_qty||0);return <tr key={row.id}><td><b>{row.component_name}</b><small>{row.sku_snapshot||row.component_category||'Component'}</small></td><td>{req} {row.unit||'pcs'}</td><td>{stock?`${stock.stock_qty} ${stock.unit||''}`:'—'}</td><td><div className="qtyStepper"><button onClick={()=>setBomQty(row,'picked_qty',picked-1)}>−</button><input type="number" value={picked} onChange={e=>setBomQty(row,'picked_qty',Number(e.target.value))}/><button onClick={()=>setBomQty(row,'picked_qty',picked+1)}>+</button></div></td><td><div className="qtyStepper"><button onClick={()=>setBomQty(row,'issued_qty',issued-1)}>−</button><input type="number" value={issued} onChange={e=>setBomQty(row,'issued_qty',Number(e.target.value))}/><button onClick={()=>setBomQty(row,'issued_qty',issued+1)}>+</button></div></td><td><span className={`materialState ${picked>=req?'ok':'wait'}`}>{picked>=req?'Ready':'Pick pending'}</span></td></tr>})}{!bom.length&&<tr><td colSpan={6} className="emptyCell">No BOM items generated for this job.</td></tr>}</tbody></table></div>
+      <div className="productionTableWrap"><table><thead><tr><th>Component</th><th>Required</th><th>On hand</th><th>Picked</th><th>Issued</th><th>Status</th></tr></thead><tbody>{bom.map(row=>{const stock=materialStock[row.component_id||row.enclosure_id||row.variant_id];const req=Number(row.required_qty||row.quantity||0);const picked=Number(row.picked_qty||0);const issued=Number(row.issued_qty||0);return <tr key={row.id}><td><b>{row.component_name}</b><small>{row.sku_snapshot||row.component_category||'Component'}</small></td><td>{req} {row.unit||'pcs'}</td><td>{stock?`${stock.stock_qty} ${stock.unit||'pcs'}`:'—'}</td><td><div className="qtyStepper"><button onClick={()=>setBomQty(row,'picked_qty',picked-1)}>−</button><input type="number" value={picked} onChange={e=>setBomQty(row,'picked_qty',Number(e.target.value))}/><button onClick={()=>setBomQty(row,'picked_qty',picked+1)}>+</button></div></td><td><div className="qtyStepper"><button onClick={()=>setBomQty(row,'issued_qty',issued-1)}>−</button><input type="number" value={issued} onChange={e=>setBomQty(row,'issued_qty',Number(e.target.value))}/><button onClick={()=>setBomQty(row,'issued_qty',issued+1)}>+</button></div></td><td><span className={`materialState ${picked>=req?'ok':'wait'}`}>{picked>=req?'Ready':'Pick pending'}</span></td></tr>})}{!bom.length&&<tr><td colSpan={6} className="emptyCell">No BOM items generated for this job.</td></tr>}</tbody></table></div>
       <div className="reservationSummary"><Box size={16}/><b>{reservations.filter(r=>r.status==='reserved').length}</b> active material reservations <span>·</span> {reservations.filter(r=>r.status==='consumed').length} consumed</div>
      </section>
 
@@ -134,7 +141,7 @@ export default function Production(){
     </main>
     <aside className="productionSide">
      <section className="productionPanel compact"><h3>Job control</h3><label className="productionField"><span>Stage</span><select value={selected.status} onChange={e=>move(e.target.value)} disabled={saving}>{stages.map(s=><option value={s.key} key={s.key}>{s.label}</option>)}<option value="cancelled">Cancelled</option></select></label><label className="productionField"><span>Priority</span><select value={selected.priority||'normal'} onChange={e=>setSelected((s:any)=>({...s,priority:e.target.value}))}><option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select></label><label className="productionField"><span>Assigned to</span><select value={selected.assigned_to||''} onChange={e=>setSelected((s:any)=>({...s,assigned_to:e.target.value||null}))}><option value="">Unassigned</option>{profiles.map(p=><option key={p.id} value={p.id}>{p.full_name||p.role}</option>)}</select></label><label className="productionField"><span>Due date</span><input type="date" value={selected.due_date||''} onChange={e=>setSelected((s:any)=>({...s,due_date:e.target.value}))}/></label><label className="productionField"><span>Internal notes</span><textarea rows={4} value={selected.internal_notes||''} onChange={e=>setSelected((s:any)=>({...s,internal_notes:e.target.value}))}/></label><button className="adminBtn fullBtn" onClick={saveJob} disabled={saving}>{saving?'Saving…':'Save Job'}</button></section>
-     <section className="productionPanel compact"><h3>Customer order</h3><p><b>{selected.orders?.company_name||selected.orders?.customer_snapshot?.name||'Customer'}</b></p><p>{selected.orders?.order_number||'—'}</p><div className="miniStatus"><span>{selected.orders?.status||'—'}</span><span>{selected.orders?.payment_status||'—'}</span></div>{selected.order_id&&<Link href={`/admin/orders/${selected.order_id}`}>Open order →</Link>}</section>
+     <section className="productionPanel compact"><h3>{selected.build_mode==='make_to_stock'?'Finished inventory':'Customer order'}</h3>{selected.build_mode==='make_to_stock'?<><p><b>Make to stock batch</b></p><p>Estimated unit cost {money(selected.estimated_unit_cost)}</p>{selected.actual_unit_cost&&<p>Actual FIFO unit cost {money(selected.actual_unit_cost)}</p>}<div className="miniStatus"><span>{selected.output_recorded_at?'Stock received':'Output pending'}</span><span>Qty {selected.quantity}</span></div></>:<><p><b>{selected.orders?.company_name||selected.orders?.customer_snapshot?.name||'Customer'}</b></p><p>{selected.orders?.order_number||'—'}</p><div className="miniStatus"><span>{selected.orders?.status||'—'}</span><span>{selected.orders?.payment_status||'—'}</span></div>{selected.order_id&&<Link href={`/admin/orders/${selected.order_id}`}>Open order →</Link>}</>}</section>
      <section className="productionPanel compact"><h3>Timeline</h3><div className="productionTimeline">{history.map(h=><div key={h.id}><span></span><p><b>{(h.from_status||'Created').replaceAll('_',' ')} → {h.to_status.replaceAll('_',' ')}</b><small>{new Date(h.created_at).toLocaleString('en-IN')}</small></p></div>)}{!history.length&&<p className="muted">No stage changes recorded yet.</p>}</div></section>
     </aside>
    </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Archive,
+  Calculator,
   Check,
   Copy,
   Download,
@@ -132,7 +133,8 @@ export default function Products() {
     [status, setStatus] = useState("all"),
     [stock, setStock] = useState("all"),
     [selected, setSelected] = useState<string[]>([]),
-    [bulkStatus, setBulkStatus] = useState("active");
+    [bulkStatus, setBulkStatus] = useState("active"),
+    [costView, setCostView] = useState<any>(null);
   useEffect(() => {
     load();
   }, []);
@@ -471,6 +473,27 @@ export default function Products() {
     setMsg(error ? error.message : "Product moved to inactive.");
     load();
   }
+  async function openManufacturingCost(p: any) {
+    const v = firstVar(p);
+    setMsg("");
+    const { data: recipe, error } = await supabase
+      .from("manufacturing_recipes")
+      .select("id,name,version,status,box_type")
+      .eq("variant_id", v.id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (error) { setMsg(error.message); return; }
+    if (!recipe) {
+      setMsg(`No active manufacturing recipe is linked to ${v.sku || p.name}. Create one in Box Cost & Recipes.`);
+      return;
+    }
+    const [summary, lines] = await Promise.all([
+      supabase.rpc("manufacturing_recipe_costs", { p_recipe_id: recipe.id }),
+      supabase.rpc("manufacturing_recipe_cost_lines", { p_recipe_id: recipe.id }),
+    ]);
+    if (summary.error || lines.error) { setMsg(summary.error?.message || lines.error?.message || "Unable to calculate box cost."); return; }
+    setCostView({ product: p, variant: v, recipe, summary: summary.data?.[0], lines: lines.data || [] });
+  }
   function toggle(id: string) {
     setSelected((s) =>
       s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
@@ -760,6 +783,12 @@ export default function Products() {
                             onClick={() => edit(p, true)}
                           >
                             <Copy size={15} />
+                          </button>
+                          <button
+                            title="Full box cost calculation"
+                            onClick={() => openManufacturingCost(p)}
+                          >
+                            <Calculator size={15} />
                           </button>
                           <a
                             title="Preview"
@@ -1305,6 +1334,29 @@ export default function Products() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+      {costView && (
+        <div className="catalogueDrawerBackdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setCostView(null); }}>
+          <aside className="catalogueDrawer costCalculationDrawer">
+            <div className="catalogueDrawerHead">
+              <div><span>PROTECTED MANUFACTURING COST</span><h2>{costView.product.name}</h2><p>{costView.variant.sku} · {costView.recipe.name} · Version {costView.recipe.version}</p></div>
+              <button onClick={() => setCostView(null)}><X /></button>
+            </div>
+            <div className="catalogueDrawerBody">
+              <div className="costCalculationStats">
+                <div><small>Material</small><b>{money(costView.summary?.material_cost)}</b></div>
+                <div><small>Labour</small><b>{money(costView.summary?.labour_cost)}</b></div>
+                <div><small>Overhead + pack</small><b>{money(Number(costView.summary?.overhead_cost || 0) + Number(costView.summary?.packaging_cost || 0))}</b></div>
+                <div><small>Full unit cost</small><b>{money(costView.summary?.total_cost)}</b></div>
+                <div><small>Current selling</small><b>{money(costView.summary?.current_selling_price)}</b></div>
+                <div><small>Gross margin</small><b>{Number(costView.summary?.gross_margin_percent || 0).toFixed(1)}%</b></div>
+              </div>
+              <div className="costRecommendation"><Calculator size={20}/><div><b>Recommended selling price: {money(costView.summary?.recommended_selling_price)}</b><p>Based on a {Number(costView.summary?.target_margin_percent || 0).toFixed(1)}% target margin. {Number(costView.summary?.buildable_qty || 0)} finished unit(s) can be built now.</p></div></div>
+              <div className="costLineTable"><table><thead><tr><th>Material</th><th>Qty + wastage</th><th>Stock</th><th>Unit cost</th><th>Line cost</th></tr></thead><tbody>{costView.lines.map((line:any)=><tr key={line.item_id}><td><b>{line.item_name}</b><small>{line.sku || line.item_type}</small></td><td>{Number(line.required_qty)} {line.unit}<small>{Number(line.wastage_percent)>0?`${line.wastage_percent}% wastage`:"No wastage"}</small></td><td className={Number(line.shortage)>0?"stockLow":""}>{Number(line.stock_qty)}<small>{Number(line.shortage)>0?`Short ${line.shortage}`:"Available"}</small></td><td>{money(line.unit_cost)}</td><td><b>{money(line.line_cost)}</b></td></tr>)}</tbody></table></div>
+            </div>
+            <div className="catalogueDrawerFoot"><Link className="catalogueBtn ghost" href="/admin/manufacturing">Edit Recipe</Link><button className="catalogueBtn" onClick={() => setCostView(null)}>Done</button></div>
+          </aside>
         </div>
       )}
     </div>
