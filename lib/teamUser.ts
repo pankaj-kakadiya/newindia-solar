@@ -4,6 +4,13 @@ export type StaffRole=(typeof staffRoles)[number]
 export type ManualTeamUserInput={full_name:string;email:string;phone?:string;admin_role:string;job_title?:string;temporary_password:string}
 export type ValidatedTeamUser={full_name:string;email:string;phone:string|null;admin_role:StaffRole;job_title:string|null;temporary_password:string}
 
+export function validateTemporaryPassword(value:unknown){
+ const password=String(value||'')
+ if(password.length<12||password.length>72)return 'Temporary password must be 12–72 characters.'
+ if(!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password))return 'Temporary password needs uppercase, lowercase, number and symbol characters.'
+ return null
+}
+
 export function validateManualTeamUser(value:unknown):{data?:ValidatedTeamUser;error?:string}{
  if(!value||typeof value!=='object')return {error:'Invalid team-user details.'}
  const input=value as Partial<ManualTeamUserInput>
@@ -18,7 +25,7 @@ export function validateManualTeamUser(value:unknown):{data?:ValidatedTeamUser;e
  if(phone&&!/^\+[1-9]\d{7,14}$/.test(phone))return {error:'Enter the mobile number with country code, for example +919876543210.'}
  if(!staffRoles.includes(admin_role as StaffRole))return {error:'Select a valid department role.'}
  if(job_title.length>80)return {error:'Job title must be 80 characters or fewer.'}
- if(temporary_password.length<12||temporary_password.length>72)return {error:'Temporary password must be 12–72 characters.'}
- if(!/[a-z]/.test(temporary_password)||!/[A-Z]/.test(temporary_password)||!/[0-9]/.test(temporary_password)||!/[^A-Za-z0-9]/.test(temporary_password))return {error:'Temporary password needs uppercase, lowercase, number and symbol characters.'}
+ const passwordError=validateTemporaryPassword(temporary_password)
+ if(passwordError)return {error:passwordError}
  return {data:{full_name,email,phone:phone||null,admin_role:admin_role as StaffRole,job_title:job_title||null,temporary_password}}
 }
