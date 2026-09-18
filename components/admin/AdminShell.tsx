@@ -262,6 +262,11 @@ const navGroups: NavGroup[] = [
         module: "security",
       },
       {
+        href: "/admin/account-security",
+        label: "Account Security",
+        icon: ShieldCheck,
+      },
+      {
         href: "/admin/change-password",
         label: "Change Password",
         icon: KeyRound,
@@ -807,6 +812,9 @@ export default function AdminShell({
                   </div>
                   <Link href="/admin/change-password">
                     <KeyRound size={16} /> Change password
+                  </Link>
+                  <Link href="/admin/account-security">
+                    <ShieldCheck size={16} /> Account security
                   </Link>
                   {canAdmin(access, "settings") && (
                     <Link href="/admin/settings">

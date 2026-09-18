@@ -1,5 +1,5 @@
 export const staffRoles=['general','sales','finance','production','inventory','content'] as const
-export type StaffRole=(typeof staffRoles)[number]
+export type StaffRole=string
 
 export type ManualTeamUserInput={full_name:string;email:string;phone?:string;admin_role:string;job_title?:string;temporary_password:string}
 export type ValidatedTeamUser={full_name:string;email:string;phone:string|null;admin_role:StaffRole;job_title:string|null;temporary_password:string}
@@ -23,9 +23,9 @@ export function validateManualTeamUser(value:unknown):{data?:ValidatedTeamUser;e
  if(full_name.length<2||full_name.length>100)return {error:'Enter a valid full name (2–100 characters).'}
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)return {error:'Enter a valid work email address.'}
  if(phone&&!/^\+[1-9]\d{7,14}$/.test(phone))return {error:'Enter the mobile number with country code, for example +919876543210.'}
- if(!staffRoles.includes(admin_role as StaffRole))return {error:'Select a valid department role.'}
+ if(admin_role==='admin'||!/^[a-z][a-z0-9_]{1,39}$/.test(admin_role))return {error:'Select a valid department role.'}
  if(job_title.length>80)return {error:'Job title must be 80 characters or fewer.'}
  const passwordError=validateTemporaryPassword(temporary_password)
  if(passwordError)return {error:passwordError}
- return {data:{full_name,email,phone:phone||null,admin_role:admin_role as StaffRole,job_title:job_title||null,temporary_password}}
+ return {data:{full_name,email,phone:phone||null,admin_role,job_title:job_title||null,temporary_password}}
 }

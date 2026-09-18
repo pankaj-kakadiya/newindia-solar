@@ -6,6 +6,9 @@ export type AdminAccess={
   admin_role:string
   staff_status:string
   job_title?:string|null
+  must_change_password?:boolean
+  mfa_required?:boolean
+  aal?:string
   permissions:Record<string,ModulePermission>
 }
 

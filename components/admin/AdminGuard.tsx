@@ -9,6 +9,8 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
   const path=usePathname()
   const [ok,setOk]=useState(false)
   const isLogin=path==='/admin/login'
+  const isPassword=path==='/admin/change-password'
+  const isSecurity=path==='/admin/account-security'
 
   useEffect(()=>{
     let alive=true
@@ -20,7 +22,7 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
         return
       }
 
-      const {data:profile}=await supabase.from('profiles').select('role,staff_status').eq('id',user.id).maybeSingle()
+      const {data:profile}=await supabase.from('profiles').select('role,staff_status,must_change_password,mfa_required').eq('id',user.id).maybeSingle()
       const internal=['admin','staff'].includes(profile?.role||'')&&profile?.staff_status!=='suspended'&&profile?.staff_status!=='inactive'
       if(!internal){
         await supabase.auth.signOut()
@@ -28,6 +30,12 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
         return
       }
       if(isLogin){router.replace('/admin');return}
+
+      if(profile?.must_change_password&&!isPassword){router.replace('/admin/change-password?required=1');return}
+      if(profile?.mfa_required&&!isPassword&&!isSecurity){
+        const {data:aal}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+        if(aal?.currentLevel!=='aal2'){router.replace('/admin/account-security?required=1');return}
+      }
 
       const {data:accessData}=await supabase.rpc('get_my_admin_access')
       const access=(accessData||null) as AdminAccess|null
@@ -47,7 +55,7 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
       if(alive)setOk(true)
     })()
     return()=>{alive=false}
-  },[router,isLogin,path])
+  },[router,isLogin,isPassword,isSecurity,path])
 
   if(isLogin)return <>{children}</>
   if(!ok)return <div className="adminLoading">Checking secure access…</div>
