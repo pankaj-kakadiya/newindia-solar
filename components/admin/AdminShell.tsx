@@ -257,7 +257,7 @@ const navGroups: NavGroup[] = [
       },
       {
         href: "/admin/access",
-        label: "Team Roles & Audit",
+        label: "Team & Users",
         icon: ShieldCheck,
         module: "security",
       },
