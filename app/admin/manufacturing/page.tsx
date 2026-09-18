@@ -1,0 +1,81 @@
+'use client'
+
+import {FormEvent,useEffect,useMemo,useState} from 'react'
+import Link from 'next/link'
+import {AlertTriangle,Calculator,Check,ChevronRight,Factory,Layers3,PackageCheck,Plus,RefreshCw,Save,Trash2,Wrench,X} from 'lucide-react'
+import {supabase} from '../../../lib/supabase'
+import {COMPONENT_FIELDS,ENCLOSURE_FIELDS,VARIANT_FIELDS} from '../../../lib/catalogue-projections'
+
+type ItemType='component'|'enclosure'|'variant'
+type DraftLine={id?:string;item_type:ItemType;item_id:string;quantity:number|string;wastage_percent:number|string;unit:string;notes:string;sort_order:number}
+const blankLine=(sort=0):DraftLine=>({item_type:'component',item_id:'',quantity:1,wastage_percent:0,unit:'pcs',notes:'',sort_order:sort})
+const blank={id:'',variant_id:'',name:'',box_type:'acdb',status:'draft',labour_cost:0,overhead_cost:0,packaging_cost:0,target_margin_percent:25,notes:'',items:[blankLine()]}
+const money=(value:any)=>`₹${Number(value||0).toLocaleString('en-IN',{maximumFractionDigits:2})}`
+
+export default function Manufacturing(){
+ const [recipes,setRecipes]=useState<any[]>([]),[costs,setCosts]=useState<any[]>([]),[components,setComponents]=useState<any[]>([]),[enclosures,setEnclosures]=useState<any[]>([]),[variants,setVariants]=useState<any[]>([])
+ const [form,setForm]=useState<any>(blank),[show,setShow]=useState(false),[batch,setBatch]=useState<any>(null),[batchQty,setBatchQty]=useState(1),[dueDate,setDueDate]=useState(''),[priority,setPriority]=useState('normal'),[batchNotes,setBatchNotes]=useState('')
+ const [costLines,setCostLines]=useState<any[]>([]),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[msg,setMsg]=useState('')
+ useEffect(()=>{void load()},[])
+ async function load(){
+  setLoading(true)
+  const [r,c,e,pv,summary]=await Promise.all([
+   supabase.from('manufacturing_recipes').select('*,manufacturing_recipe_items(*)').order('updated_at',{ascending:false}),
+   supabase.from('components').select(COMPONENT_FIELDS).eq('is_active',true).order('category').order('name'),
+   supabase.from('enclosures').select(ENCLOSURE_FIELDS).eq('is_active',true).order('name'),
+   supabase.from('product_variants').select(`${VARIANT_FIELDS},products(name,product_type,status)`).eq('is_active',true).order('sku'),
+   supabase.rpc('manufacturing_recipe_costs',{p_recipe_id:null}),
+  ])
+  const error=r.error||c.error||e.error||pv.error||summary.error
+  if(error)setMsg(error.message)
+  setRecipes(r.data||[]);setComponents(c.data||[]);setEnclosures(e.data||[]);setVariants(pv.data||[]);setCosts(summary.data||[]);setLoading(false)
+ }
+ const summaryById=useMemo(()=>Object.fromEntries(costs.map(x=>[x.recipe_id,x])),[costs])
+ const active=costs.filter(x=>x.status==='active')
+ const stats={recipes:recipes.length,buildable:active.reduce((n,x)=>n+Number(x.buildable_qty||0),0),shortages:active.filter(x=>Number(x.shortage_count)>0).length,value:active.reduce((n,x)=>n+Number(x.total_cost||0)*Number(x.buildable_qty||0),0)}
+ function productLabel(v:any){return `${v.products?.name||'Product'} · ${v.title} (${v.sku})`}
+ function options(type:ItemType){return type==='component'?components:type==='enclosure'?enclosures:variants}
+ function optionLabel(type:ItemType,item:any){return type==='variant'?productLabel(item):`${item.name}${item.sku?` (${item.sku})`:''}`}
+ function openNew(){setForm({...blank,items:[blankLine()]});setCostLines([]);setShow(true);setMsg('')}
+ async function edit(recipe:any){
+  const items=(recipe.manufacturing_recipe_items||[]).sort((a:any,b:any)=>a.sort_order-b.sort_order).map((i:any,index:number)=>({id:i.id,item_type:i.component_id?'component':i.enclosure_id?'enclosure':'variant',item_id:i.component_id||i.enclosure_id||i.variant_id,quantity:i.quantity,wastage_percent:i.wastage_percent,unit:i.unit,notes:i.notes||'',sort_order:index}))
+  setForm({...recipe,items:items.length?items:[blankLine()]});setShow(true);setMsg('')
+  const {data}=await supabase.rpc('manufacturing_recipe_cost_lines',{p_recipe_id:recipe.id});setCostLines(data||[])
+ }
+ function setField(key:string,value:any){setForm((f:any)=>({...f,[key]:value}))}
+ function setLine(index:number,key:keyof DraftLine,value:any){setForm((f:any)=>({...f,items:f.items.map((line:DraftLine,i:number)=>i===index?{...line,[key]:value}:line)}))}
+ function addLine(){setForm((f:any)=>({...f,items:[...f.items,blankLine(f.items.length)]}))}
+ function removeLine(index:number){setForm((f:any)=>({...f,items:f.items.filter((_:DraftLine,i:number)=>i!==index).map((x:DraftLine,i:number)=>({...x,sort_order:i}))}))}
+ async function save(event:FormEvent){
+  event.preventDefault();if(form.items.some((x:DraftLine)=>!x.item_id)){setMsg('Select an item on every BOM line.');return}
+  setSaving(true);setMsg('')
+  const {data,error}=await supabase.rpc('save_manufacturing_recipe',{p_recipe_id:form.id||null,p_variant_id:form.variant_id,p_name:form.name,p_box_type:form.box_type,p_status:form.status,p_labour_cost:Number(form.labour_cost||0),p_overhead_cost:Number(form.overhead_cost||0),p_packaging_cost:Number(form.packaging_cost||0),p_target_margin_percent:Number(form.target_margin_percent||0),p_notes:form.notes||null,p_items:form.items.map((x:DraftLine,i:number)=>({...x,quantity:Number(x.quantity),wastage_percent:Number(x.wastage_percent),sort_order:i}))})
+  setSaving(false);if(error){setMsg(error.message);return}setShow(false);setMsg(`Recipe saved${data!==form.id&&form.id?' as a new protected version':''}.`);await load()
+ }
+ async function startBatch(){
+  if(!batch)return;setSaving(true);setMsg('')
+  const {data,error}=await supabase.rpc('create_manufacturing_batch',{p_recipe_id:batch.recipe_id,p_quantity:Number(batchQty),p_due_date:dueDate||null,p_priority:priority,p_notes:batchNotes||null})
+  setSaving(false);if(error){setMsg(error.message);return}setBatch(null);setMsg('Production batch created and materials reserved.');await load();window.location.href=`/admin/production?job=${data}`
+ }
+ return <div className="manufacturingPage">
+  <div className="manufacturingHero"><div><span className="adminEyebrow">MANUFACTURING COST ENGINE</span><h1>ACDB / DCDB Recipe Builder</h1><p>Build versioned box and combo BOMs, calculate full cost, check shortages and turn available components into finished inventory.</p></div><div><button className="manufacturingBtn ghost" onClick={load}><RefreshCw size={16}/>Refresh</button><button className="manufacturingBtn" onClick={openNew}><Plus size={16}/>New Recipe</button></div></div>
+  {msg&&<div className="manufacturingMessage"><Check size={16}/>{msg}</div>}
+  <div className="manufacturingStats"><div><Layers3/><span><b>{stats.recipes}</b><small>Recipe versions</small></span></div><div><PackageCheck/><span><b>{stats.buildable}</b><small>Units buildable now</small></span></div><div className={stats.shortages?'warn':''}><AlertTriangle/><span><b>{stats.shortages}</b><small>Recipes with shortages</small></span></div><div><Calculator/><span><b>{money(stats.value)}</b><small>Buildable material value</small></span></div></div>
+  <div className="manufacturingGuide"><Wrench/><div><b>One recipe powers everything</b><p>Use the same BOM for cost, shortage planning, production picking, FIFO consumption and finished-goods valuation. Completed batches automatically increase product stock.</p></div><Link href="/admin/production">Open production board <ChevronRight size={15}/></Link></div>
+  <section className="manufacturingPanel"><div className="manufacturingPanelHead"><div><h2>Box & combo recipes</h2><p>Cost figures are private and visible only to authorised production users.</p></div></div>
+   <div className="manufacturingTableWrap"><table><thead><tr><th>Recipe / output SKU</th><th>Type</th><th>Cost breakdown</th><th>Selling & margin</th><th>Availability</th><th>Status</th><th></th></tr></thead><tbody>
+    {loading?<tr><td colSpan={7} className="manufacturingEmpty">Loading manufacturing recipes…</td></tr>:recipes.length?recipes.map(recipe=>{const s=summaryById[recipe.id]||{};const v=variants.find(x=>x.id===recipe.variant_id);return <tr key={recipe.id}><td><b>{recipe.name}</b><small>{v?productLabel(v):'Output product'} · v{recipe.version}</small></td><td><span className={`boxType ${recipe.box_type}`}>{recipe.box_type.toUpperCase()}</span></td><td><b>{money(s.total_cost)}</b><small>Material {money(s.material_cost)} · Labour {money(s.labour_cost)}</small><small>Overhead + pack {money(Number(s.overhead_cost||0)+Number(s.packaging_cost||0))}</small></td><td><b>{money(s.current_selling_price)}</b><small>{Number(s.gross_margin_percent||0).toFixed(1)}% current margin</small><small>Suggested {money(s.recommended_selling_price)}</small></td><td><b>{Number(s.buildable_qty||0)} buildable</b><small className={Number(s.shortage_count)>0?'shortage':''}>{Number(s.shortage_count)>0?`${s.shortage_count} material shortage(s)`:`${s.item_count||0} BOM items ready`}</small></td><td><span className={`recipeStatus ${recipe.status}`}>{recipe.status}</span></td><td><div className="manufacturingActions"><button onClick={()=>edit(recipe)}>Edit</button><button className="build" disabled={recipe.status!=='active'||Number(s.buildable_qty)<1} onClick={()=>{setBatch(s);setBatchQty(1);setDueDate('');setBatchNotes('')}}><Factory size={14}/>Build</button></div></td></tr>}):<tr><td colSpan={7} className="manufacturingEmpty">No recipes yet. Create the first ACDB, DCDB or combo recipe.</td></tr>}
+   </tbody></table></div>
+  </section>
+
+  {show&&<div className="manufacturingModalBack" onMouseDown={e=>{if(e.target===e.currentTarget)setShow(false)}}><form className="manufacturingModal" onSubmit={save}><header><div><span>{form.id?'EDIT / VERSION RECIPE':'NEW MANUFACTURING RECIPE'}</span><h2>{form.name||'ACDB / DCDB recipe'}</h2><p>Once a recipe has production history, saving changes creates a new version automatically.</p></div><button type="button" onClick={()=>setShow(false)}><X/></button></header><div className="manufacturingModalBody">
+   <section className="recipeBasics"><label className="wide"><span>Recipe name</span><input required value={form.name} onChange={e=>setField('name',e.target.value)} placeholder="Example: 10 kW 3-Phase ACDB"/></label><label><span>Output finished product</span><select required value={form.variant_id} onChange={e=>setField('variant_id',e.target.value)}><option value="">Select product variant</option>{variants.map(v=><option value={v.id} key={v.id}>{productLabel(v)}</option>)}</select></label><label><span>Box type</span><select value={form.box_type} onChange={e=>setField('box_type',e.target.value)}><option value="acdb">ACDB</option><option value="dcdb">DCDB</option><option value="combo">ACDB + DCDB Combo</option></select></label><label><span>Status</span><select value={form.status} onChange={e=>setField('status',e.target.value)}><option value="draft">Draft</option><option value="active">Active</option><option value="archived">Archived</option></select></label><label><span>Target margin %</span><input type="number" min="0" max="99" step="0.1" value={form.target_margin_percent} onChange={e=>setField('target_margin_percent',e.target.value)}/></label></section>
+   <section className="recipeCosts"><label><span>Labour / box</span><input type="number" min="0" step="0.01" value={form.labour_cost} onChange={e=>setField('labour_cost',e.target.value)}/></label><label><span>Factory overhead / box</span><input type="number" min="0" step="0.01" value={form.overhead_cost} onChange={e=>setField('overhead_cost',e.target.value)}/></label><label><span>Packaging / box</span><input type="number" min="0" step="0.01" value={form.packaging_cost} onChange={e=>setField('packaging_cost',e.target.value)}/></label><label className="wide"><span>Engineering notes</span><input value={form.notes||''} onChange={e=>setField('notes',e.target.value)} placeholder="Wiring, ratings, QA or assembly instructions"/></label></section>
+   <section className="recipeBom"><div className="recipeSectionHead"><div><h3>Bill of materials</h3><p>Add components, the enclosure, or finished ACDB/DCDB products for a combo.</p></div><button type="button" onClick={addLine}><Plus size={15}/>Add material</button></div>{form.items.map((line:DraftLine,index:number)=><div className="recipeLine" key={line.id||index}><span className="lineNumber">{index+1}</span><label><span>Type</span><select value={line.item_type} onChange={e=>{setLine(index,'item_type',e.target.value as ItemType);setLine(index,'item_id','')}}><option value="component">Component</option><option value="enclosure">Enclosure</option><option value="variant">Finished product</option></select></label><label className="itemSelect"><span>Item</span><select required value={line.item_id} onChange={e=>setLine(index,'item_id',e.target.value)}><option value="">Select {line.item_type}</option>{options(line.item_type).map(item=><option key={item.id} value={item.id}>{optionLabel(line.item_type,item)} · Stock {Number(item.stock_qty||0)}</option>)}</select></label><label><span>Qty / box</span><input required type="number" min="0.0001" step="0.01" value={line.quantity} onChange={e=>setLine(index,'quantity',e.target.value)}/></label><label><span>Wastage %</span><input type="number" min="0" max="100" step="0.1" value={line.wastage_percent} onChange={e=>setLine(index,'wastage_percent',e.target.value)}/></label><button type="button" className="removeLine" onClick={()=>removeLine(index)} disabled={form.items.length===1}><Trash2 size={15}/></button></div>)}
+   {costLines.length>0&&<div className="protectedCostPreview"><Calculator/><div><b>Current saved recipe: {money(costLines.reduce((n,x)=>n+Number(x.line_cost||0),0))} material cost</b><span>{costLines.filter(x=>Number(x.shortage)>0).length} shortage line(s) based on current stock and cost.</span></div></div>}
+   </section>
+  </div><footer><button type="button" className="manufacturingBtn ghost" onClick={()=>setShow(false)}>Cancel</button><button className="manufacturingBtn" disabled={saving}><Save size={15}/>{saving?'Saving…':'Save Recipe'}</button></footer></form></div>}
+
+  {batch&&<div className="manufacturingModalBack" onMouseDown={e=>{if(e.target===e.currentTarget)setBatch(null)}}><div className="batchModal"><header><div><span>CREATE PRODUCTION BATCH</span><h2>{batch.recipe_name}</h2><p>{batch.buildable_qty} unit(s) can be built from current available stock.</p></div><button onClick={()=>setBatch(null)}><X/></button></header><div className="batchBody"><label><span>Build quantity</span><input type="number" min="1" max={Number(batch.buildable_qty)} value={batchQty} onChange={e=>setBatchQty(Number(e.target.value))}/></label><label><span>Due date</span><input type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)}/></label><label><span>Priority</span><select value={priority} onChange={e=>setPriority(e.target.value)}><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option><option value="low">Low</option></select></label><label className="wide"><span>Batch notes</span><textarea rows={3} value={batchNotes} onChange={e=>setBatchNotes(e.target.value)} placeholder="Production or scheduling instructions"/></label><div className="batchEstimate"><span>Estimated unit cost <b>{money(batch.total_cost)}</b></span><span>Batch value <b>{money(Number(batch.total_cost)*Number(batchQty))}</b></span><span>Suggested selling <b>{money(batch.recommended_selling_price)}</b></span></div></div><footer><button className="manufacturingBtn ghost" onClick={()=>setBatch(null)}>Cancel</button><button className="manufacturingBtn" onClick={startBatch} disabled={saving||batchQty<1||batchQty>Number(batch.buildable_qty)}><Factory size={15}/>{saving?'Creating…':'Create & Reserve Batch'}</button></footer></div></div>}
+ </div>
+}

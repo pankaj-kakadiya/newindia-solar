@@ -192,6 +192,12 @@ const navGroups: NavGroup[] = [
     label: "Assembly & Engineering",
     items: [
       {
+        href: "/admin/manufacturing",
+        label: "Box Cost & Recipes",
+        icon: Calculator,
+        module: "production",
+      },
+      {
         href: "/admin/configurator",
         label: "ACDB / DCDB Builder",
         icon: SlidersHorizontal,
