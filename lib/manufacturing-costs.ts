@@ -38,6 +38,18 @@ const number = (value: unknown) => {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+export function calculateGstBreakdown(value: unknown, gstRate: unknown) {
+  const exclusive = Math.max(number(value), 0)
+  const rate = Math.max(number(gstRate), 0)
+  const gstAmount = exclusive * rate / 100
+  return {
+    exclusive,
+    gst_rate: rate,
+    gst_amount: gstAmount,
+    inclusive: exclusive + gstAmount,
+  }
+}
+
 export function calculateLiveManufacturingCost(
   items: DraftItem[],
   catalogues: Record<ManufacturingItemType, CatalogueItem[]>,

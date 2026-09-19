@@ -3,6 +3,12 @@
 .costCalculationStats>div{background:#f6faf7;border:1px solid #e0e9e3;border-radius:12px;padding:13px;display:grid;gap:4px}
 .costCalculationStats small{color:#718078;text-transform:uppercase;font-size:9px;font-weight:850}
 .costCalculationStats b{font-size:18px;color:#173728}
+.costTaxNotice{background:#fff8e6;border:1px solid #f0dfaa;color:#6f5a19;border-radius:12px;padding:11px 13px;margin-bottom:12px;font-size:12px;line-height:1.45}
+.costEditableGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.costEditableGrid label{display:grid;gap:6px}
+.costEditableGrid span{font-size:10px;font-weight:850;text-transform:uppercase;color:#596a61}
+.costEditableGrid input{width:100%;border:1px solid #cfddd4;border-radius:10px;padding:11px;background:#fff;color:#173728;font:inherit}
+.costEditableGrid input:focus{outline:2px solid #bce4cb;border-color:#1d9b54}
 .costRecommendation{display:flex;gap:12px;align-items:center;background:#edf8f1;border:1px solid #d3eadb;color:#167746;border-radius:14px;padding:15px;margin:15px 0}
 .costRecommendation p{margin:3px 0 0;color:#627268;font-size:12px}
 .costLineTable{overflow:auto;border:1px solid #e1e8e3;border-radius:13px}
@@ -10,4 +16,4 @@
 .costLineTable th{text-align:left;background:#f7faf8;padding:10px;font-size:9px;color:#68766e;text-transform:uppercase}
 .costLineTable td{padding:11px;border-top:1px solid #e7ece9}
 .costLineTable td small{display:block;color:#78857d;margin-top:3px;font-size:10px}
-@media(max-width:680px){.costCalculationStats{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.costCalculationStats,.costEditableGrid{grid-template-columns:1fr 1fr}}

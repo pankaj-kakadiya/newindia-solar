@@ -1,7 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
-import {calculateLiveManufacturingCost} from '../lib/manufacturing-costs.ts'
+import {calculateGstBreakdown,calculateLiveManufacturingCost} from '../lib/manufacturing-costs.ts'
+
+test('calculates GST-exclusive, GST amount and GST-inclusive values', () => {
+  assert.deepEqual(calculateGstBreakdown(1000,18), {
+    exclusive:1000,
+    gst_rate:18,
+    gst_amount:180,
+    inclusive:1180,
+  })
+  assert.equal(calculateGstBreakdown('2500','12').inclusive,2800)
+})
 
 test('calculates live component and finished-product cost with wastage and extras', () => {
   const result = calculateLiveManufacturingCost([
