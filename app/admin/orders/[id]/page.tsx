@@ -22,24 +22,27 @@ export default function OrderDetail(){
   const [jobs,setJobs]=useState<any[]>([])
   const [history,setHistory]=useState<any[]>([])
   const [payments,setPayments]=useState<any[]>([])
+  const [recipeCosts,setRecipeCosts]=useState<any[]>([])
   const [status,setStatus]=useState('')
   const [paymentStatus,setPaymentStatus]=useState('')
   const [note,setNote]=useState('')
   const [busy,setBusy]=useState(false)
   const [loading,setLoading]=useState(true)
   const [message,setMessage]=useState('')
+  const [startingItem,setStartingItem]=useState('')
 
   async function load(){
     setLoading(true)
-    const [{data:od,error},{data:it},{data:j},{data:h},{data:p}]=await Promise.all([
+    const [{data:od,error},{data:it},{data:j},{data:h},{data:p},{data:rc}]=await Promise.all([
       supabase.from('orders').select('*').eq('id',id).single(),
       supabase.from('order_items').select('*').eq('order_id',id).order('created_at'),
       supabase.from('production_jobs').select('*').eq('order_id',id).order('created_at'),
       supabase.from('order_status_history').select('*').eq('order_id',id).order('created_at',{ascending:false}),
-      supabase.from('payments').select('*').eq('order_id',id).order('created_at',{ascending:false})
+      supabase.from('payments').select('*').eq('order_id',id).order('created_at',{ascending:false}),
+      supabase.rpc('manufacturing_recipe_costs',{p_recipe_id:null})
     ])
     if(error){setMessage(error.message);setLoading(false);return}
-    setO(od);setItems(it||[]);setJobs(j||[]);setHistory(h||[]);setPayments(p||[]);setStatus(od?.status||'');setPaymentStatus(od?.payment_status||'');setNote(od?.admin_notes||'');setLoading(false)
+    setO(od);setItems(it||[]);setJobs(j||[]);setHistory(h||[]);setPayments(p||[]);setRecipeCosts((rc||[]).filter((x:any)=>x.status==='active'));setStatus(od?.status||'');setPaymentStatus(od?.payment_status||'');setNote(od?.admin_notes||'');setLoading(false)
   }
 
   useEffect(()=>{load()},[id])
@@ -49,6 +52,9 @@ export default function OrderDetail(){
   const bill=o?.billing_address||{}
   const progressIndex=normalFlow.indexOf(status)
   const totals=useMemo(()=>({qty:items.reduce((a,i)=>a+Number(i.quantity||0),0),tax:items.reduce((a,i)=>a+Number(i.tax_amount||0),0)}),[items])
+  const jobByItem=useMemo(()=>Object.fromEntries(jobs.filter(j=>j.order_item_id).map(j=>[j.order_item_id,j])),[jobs])
+  const recipeByVariant=useMemo(()=>Object.fromEntries(recipeCosts.map(r=>[r.variant_id,r])),[recipeCosts])
+  const assemblyReady=items.filter(i=>recipeByVariant[i.variant_id]&&!jobByItem[i.id]).length
 
   async function save(){
     if(!o)return
@@ -69,6 +75,15 @@ export default function OrderDetail(){
     await load();setBusy(false)
   }
 
+  async function startAssembly(item:any){
+    if(!window.confirm(`Start assembly for ${item.name_snapshot} · Qty ${Number(item.quantity||0)}?`))return
+    setStartingItem(item.id);setMessage('')
+    const {data,error}=await supabase.rpc('start_order_item_assembly',{p_order_item_id:item.id})
+    setStartingItem('')
+    if(error){setMessage(error.message);return}
+    window.location.href=`/admin/production?job=${data}`
+  }
+
   if(loading)return <div className="adminLoading">Loading order control center…</div>
   if(!o)return <div className="orderNotFound"><AlertTriangle/><h2>Order not found</h2><p>{message||'This order could not be loaded.'}</p><Link href="/admin/orders">Back to orders</Link></div>
 
@@ -85,16 +100,16 @@ export default function OrderDetail(){
       <section className="orderControlCard"><div className="orderControlCardIcon"><Package size={18}/></div><div><small>Fulfilment status</small><select value={status} onChange={e=>setStatus(e.target.value)}>{orderStatuses.map(s=><option key={s} value={s}>{title(s)}</option>)}</select></div></section>
       <section className="orderControlCard"><div className="orderControlCardIcon payment"><CreditCard size={18}/></div><div><small>Payment status</small><select value={paymentStatus} onChange={e=>setPaymentStatus(e.target.value)}>{paymentStatuses.map(s=><option key={s} value={s}>{title(s)}</option>)}</select></div></section>
       <section className="orderControlCard"><div className="orderControlCardIcon business"><Building2 size={18}/></div><div><small>Purchase type</small><b>{o.business_purchase?'GST Business':'Individual'}</b><span>{o.gstin||'No GSTIN'}</span></div></section>
-      <section className="orderControlCard"><div className="orderControlCardIcon factory"><Factory size={18}/></div><div><small>Production</small><b>{jobs.length?`${jobs.length} job${jobs.length===1?'':'s'}`:'Not required'}</b><span>{jobs.length?jobs.map(j=>title(j.status)).join(' · '):hasCustom?'Awaiting production job':'Standard order'}</span></div></section>
+      <section className="orderControlCard"><div className="orderControlCardIcon factory"><Factory size={18}/></div><div><small>Production</small><b>{jobs.length?`${jobs.length} job${jobs.length===1?'':'s'}`:assemblyReady?`${assemblyReady} ready to start`:'Not required'}</b><span>{jobs.length?jobs.map(j=>title(j.status)).join(' · '):assemblyReady?'Use Start Assembly below':hasCustom?'Awaiting production job':'Standard order'}</span></div></section>
     </div>
 
     <div className="orderDetailGrid">
       <div className="orderDetailMain">
         <section className="adminPanel orderItemsPanel"><div className="adminPanelHead"><div><h2>Order items</h2><p>Frozen commercial and configuration snapshots from checkout.</p></div><span className="orderItemCount">{totals.qty} total qty</span></div>
-          {items.length?items.map(i=><article className="orderItemV2" key={i.id}><div className="orderItemMain"><div className="orderItemTop"><span className={`itemType ${i.item_type}`}>{i.item_type==='custom'?'Custom ACDB/DCDB':'Standard Product'}</span><span>Qty {Number(i.quantity||0)}</span></div><h3>{i.name_snapshot||'Configured Solar Assembly'}</h3><p>{i.sku_snapshot||'Custom configured build'}</p><div className="orderItemMath"><span>{money(i.unit_price)} × {Number(i.quantity||0)}</span><span>GST {Number(i.gst_rate||0)}% · {money(i.tax_amount)}</span></div>{i.item_type==='custom'&&i.configuration_snapshot&&<details className="configurationDetail"><summary>View locked configuration snapshot</summary><div><pre>{JSON.stringify(i.configuration_snapshot,null,2)}</pre></div></details>}</div><div className="orderItemTotal"><small>Line total</small><b>{money(i.line_total)}</b></div></article>):<div className="ordersEmpty">No order items found.</div>}
+          {items.length?items.map(i=>{const job=jobByItem[i.id],recipe=recipeByVariant[i.variant_id];const canStart=['confirmed','processing'].includes(o.status)&&recipe&&Number(recipe.buildable_qty)>=Number(i.quantity||0);const assemblyProduct=!!recipe||(/\b(ACDB|DCDB)\b/i.test(i.name_snapshot||'')&&!/enclosure/i.test(i.name_snapshot||''));return <article className="orderItemV2" key={i.id}><div className="orderItemMain"><div className="orderItemTop"><span className={`itemType ${i.item_type}`}>{i.item_type==='custom'?'Custom ACDB/DCDB':'Standard Product'}</span><span>Qty {Number(i.quantity||0)}</span></div><h3>{i.name_snapshot||'Configured Solar Assembly'}</h3><p>{i.sku_snapshot||'Custom configured build'}</p><div className="orderItemMath"><span>{money(i.unit_price)} × {Number(i.quantity||0)}</span><span>GST {Number(i.gst_rate||0)}% · {money(i.tax_amount)}</span></div>{i.item_type==='custom'&&i.configuration_snapshot&&<details className="configurationDetail"><summary>View locked configuration snapshot</summary><div><pre>{JSON.stringify(i.configuration_snapshot,null,2)}</pre></div></details>}{job?<div className="orderAssemblyAction"><Link href={`/admin/production?job=${job.id}`}><Factory size={14}/> Open Assembly Job <ExternalLink size={11}/></Link><span>{job.job_number} · {title(job.status)}</span></div>:recipe?<div className="orderAssemblyAction"><button onClick={()=>startAssembly(i)} disabled={!canStart||startingItem===i.id}><Factory size={14}/>{startingItem===i.id?'Starting…':'Start Assembly'}</button><span>{!['confirmed','processing'].includes(o.status)?'Confirm the order first':Number(recipe.buildable_qty)<Number(i.quantity||0)?`Need ${Number(i.quantity||0)} · only ${Number(recipe.buildable_qty||0)} buildable`:`${recipe.recipe_name} · ${Number(recipe.buildable_qty||0)} buildable`}</span></div>:assemblyProduct?<div className="orderAssemblyAction missing"><Link href="/admin/manufacturing">Create active recipe first <ExternalLink size={11}/></Link><span>This product is not yet linked to a recipe.</span></div>:null}</div><div className="orderItemTotal"><small>Line total</small><b>{money(i.line_total)}</b></div></article>}):<div className="ordersEmpty">No order items found.</div>}
         </section>
 
-        {jobs.length>0&&<section className="adminPanel"><div className="adminPanelHead"><div><h2>Production jobs</h2><p>Assembly and QC workflow linked to this order.</p></div><Link href="/admin/production"><Factory size={15}/> Production board <ExternalLink size={12}/></Link></div><div className="productionJobList">{jobs.map(j=><article className="productionJobCard" key={j.id}><div className="productionJobIcon"><Factory size={18}/></div><div><b>{j.job_number}</b><span>{j.product_name||'Custom assembly'} · Qty {Number(j.quantity||0)}</span><small>{j.due_date?`Due ${new Date(j.due_date).toLocaleDateString('en-IN')}`:'No due date'} · Priority {title(j.priority||'normal')}</small></div><span className={`statusPill status-${j.status}`}>{title(j.status)}</span></article>)}</div></section>}
+        {jobs.length>0&&<section className="adminPanel"><div className="adminPanelHead"><div><h2>Production jobs</h2><p>Assembly and QC workflow linked to this order.</p></div><Link href="/admin/production"><Factory size={15}/> Assembly board <ExternalLink size={12}/></Link></div><div className="productionJobList">{jobs.map(j=><Link className="productionJobCard" href={`/admin/production?job=${j.id}`} key={j.id}><div className="productionJobIcon"><Factory size={18}/></div><div><b>{j.job_number}</b><span>{j.product_name||'Custom assembly'} · Qty {Number(j.quantity||0)}</span><small>{j.due_date?`Due ${new Date(j.due_date).toLocaleDateString('en-IN')}`:'No due date'} · Priority {title(j.priority||'normal')}</small></div><span className={`statusPill status-${j.status}`}>{title(j.status)}</span></Link>)}</div></section>}
 
         <section className="adminPanel"><div className="adminPanelHead"><div><h2>Internal notes</h2><p>Private operational notes visible only to authorized admin/staff.</p></div></div><textarea className="adminTextarea orderNotes" rows={5} value={note} onChange={e=>setNote(e.target.value)} placeholder="Payment follow-up, customer commitment, dispatch instruction, production note…"/><div className="orderNotesActions"><span>Saved together with order status changes.</span><button className="adminPrimary" onClick={save} disabled={busy}><Save size={15}/> Save notes</button></div></section>
 
