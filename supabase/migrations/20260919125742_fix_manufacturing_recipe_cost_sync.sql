@@ -109,3 +109,5 @@ revoke all on function public.save_manufacturing_recipe(uuid,uuid,text,text,text
 grant execute on function public.save_manufacturing_recipe(uuid,uuid,text,text,text,numeric,numeric,numeric,numeric,text,jsonb) to authenticated;
 
 notify pgrst, 'reload schema';
+
+-- Deployment trigger after verified production migration.
