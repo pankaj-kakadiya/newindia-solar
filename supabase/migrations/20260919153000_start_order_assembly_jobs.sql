@@ -113,3 +113,5 @@ grant execute on function public.start_order_item_assembly(uuid) to authenticate
 
 comment on function public.start_order_item_assembly(uuid) is
  'Creates one recipe-backed make-to-order assembly job for an eligible order item and reserves its BOM materials.';
+
+-- Deployment trigger: order assembly workflow verified on 2026-09-19.
