@@ -222,3 +222,53 @@
   .homeV4 *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   .v4Btn:hover,.v4CategoryCard:hover,.v4HeroProduct:hover{transform:none}
 }
+
+
+/* V4 component selector alignment */
+.v4BosIcon{height:92px;display:grid;place-items:center;margin-bottom:9px}
+.v4BosIcon img{width:100%;height:100%;object-fit:contain}
+.v4BosIcon>b{width:52px;height:52px;display:grid;place-items:center;border-radius:50%;background:#edf7f0;color:var(--v4-green);font-size:25px}
+.v4BosStep>span{display:block}.v4BosStep>span b,.v4BosStep>span small{display:block}.v4BosStep>span b{font-size:12px}.v4BosStep>span small{margin-top:3px;color:var(--v4-muted);font-size:9px}
+.v4BosArrow{position:absolute;right:-15px;top:50%;z-index:2;width:28px;height:28px;padding:7px;border-radius:50%;background:#fff;border:1px solid var(--v4-line);color:var(--v4-green)}
+
+.v4Category{position:relative;overflow:hidden;border:1px solid var(--v4-line);border-radius:18px;background:#fff;color:var(--v4-ink);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.v4Category:hover{transform:translateY(-4px);border-color:#b9dac4;box-shadow:0 18px 42px rgba(7,24,39,.08)}
+.v4CatIndex{position:absolute;z-index:2;top:10px;left:10px;padding:5px 7px;border-radius:6px;background:#0b2234;color:#fff;font-size:7px;font-weight:900;letter-spacing:.08em}
+.v4CatMedia{height:146px;display:grid;place-items:center;background:#f4f7f5}
+.v4CatMedia img{width:100%;height:100%;object-fit:contain}
+.v4CatMedia>svg{width:64px;height:64px;padding:15px;border-radius:18px;background:#e9f6ee;color:var(--v4-green)}
+.v4CatCopy{display:grid;grid-template-columns:1fr 15px;gap:9px;align-items:center;padding:14px}
+.v4CatCopy h3{margin:0 0 3px;font-size:14px}.v4CatCopy p{margin:0;color:var(--v4-muted);font-size:10px;line-height:1.45}.v4CatCopy>svg{width:14px;color:#98a59e}
+
+.v4BuildAc{background:linear-gradient(145deg,#102c41,#071c2e)}
+.v4BuildDc{background:linear-gradient(145deg,#eef8f1,#d9efdf);color:var(--v4-ink);border-color:#bcdcc7}
+.v4BuildDc p{color:#607268}.v4BuildDc strong{color:#146d3d}
+.v4BuildImage{align-self:center;border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 20px 46px rgba(0,0,0,.16)}
+.v4BuildImage img{width:100%;height:auto;display:block}
+
+.v4PartnerCard.dealer{background:linear-gradient(145deg,#edf8f1,#dcefe2)}
+.v4PartnerCard.epc{background:linear-gradient(145deg,#071827,#0e3a2b);color:#fff;border-color:#153f32}
+.v4PartnerCard.epc>span{color:#7bdc98}.v4PartnerCard.epc h2{color:#fff}.v4PartnerCard.epc p{color:#bfd0d6}
+.v4PartnerCard>a{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;margin-top:5px;padding:12px 15px;border-radius:9px;background:var(--v4-green);color:#fff;font-size:11px;font-weight:850}
+.v4PartnerCard.epc>a{background:#fff;color:var(--v4-ink)}
+.v4PartnerCard>a svg{width:15px}
+
+.v4IndiaVision{padding:74px 0;background:#fff}
+.v4VisionArt{position:relative;overflow:hidden;min-height:360px;border-radius:28px;background:linear-gradient(150deg,#07213a 0%,#0c4a31 70%);box-shadow:0 24px 60px rgba(7,24,39,.13)}
+.v4VisionArt:after{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;background:repeating-linear-gradient(100deg,rgba(89,154,210,.35) 0 42px,rgba(255,255,255,.13) 43px 45px),linear-gradient(#0e4d7b,#0a3456);transform:skewY(-9deg);transform-origin:bottom left}
+.v4FlagLine{position:absolute;left:28px;top:28px;z-index:3;width:136px;height:8px;border-radius:99px;background:linear-gradient(90deg,#f77f00 0 33.33%,#fff 33.33% 66.66%,#138808 66.66%)}
+.v4VisionSun{position:absolute;right:40px;top:38px;z-index:2;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,#fff5b7,#ffb703 46%,rgba(255,183,3,.08) 67%,transparent 68%)}
+.v4VisionPanels{position:absolute;left:36px;right:36px;bottom:42px;z-index:2;display:grid;grid-template-columns:repeat(6,1fr);gap:7px;transform:skewY(-7deg)}
+.v4VisionPanels i{height:96px;border:1px solid rgba(255,255,255,.22);background:linear-gradient(140deg,#0a4d7a,#082c4c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.v4VisionArt>svg{position:absolute;right:28px;bottom:24px;z-index:3;width:54px;height:54px;padding:13px;border-radius:16px;background:#1d9b54;color:#fff}
+.v4VisionCopy>a{display:inline-flex;align-items:center;gap:7px;margin-top:22px;color:var(--v4-green);font-size:11px;font-weight:850}
+
+@media(max-width:1120px){
+  .v4BosArrow{display:none}
+  .v4BuildImage{position:absolute;right:25px;bottom:22px;width:210px}
+}
+@media(max-width:560px){
+  .v4CatMedia{height:112px}.v4CatCopy{padding:11px}.v4CatCopy h3{font-size:12px}.v4CatCopy p{font-size:9px}
+  .v4BuildImage{right:50%;bottom:-20px;width:160px;transform:translateX(50%)}
+  .v4IndiaVision{padding:54px 0}.v4VisionArt{min-height:280px}.v4VisionSun{width:82px;height:82px;right:22px;top:30px}.v4VisionPanels{left:22px;right:22px;bottom:35px}.v4VisionPanels i{height:72px}
+}
