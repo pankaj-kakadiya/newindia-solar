@@ -17,3 +17,4 @@
 .costLineTable td{padding:11px;border-top:1px solid #e7ece9}
 .costLineTable td small{display:block;color:#78857d;margin-top:3px;font-size:10px}
 @media(max-width:680px){.costCalculationStats,.costEditableGrid{grid-template-columns:1fr 1fr}}
+/* Deployment trigger: GST-aware editable box costs. */
