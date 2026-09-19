@@ -334,6 +334,8 @@ export default function ImportCenter() {
     setBusy(true);
     setMsg("");
     try {
+      if (file.size > 5 * 1024 * 1024)
+        throw new Error("File too large. Maximum size is 5 MB.");
       const ext = (file.name.split(".").pop() || "").toLowerCase();
       let parsed: any[] = [];
       if (ext === "csv") {
