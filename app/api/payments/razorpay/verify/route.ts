@@ -3,6 +3,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {secureEqualHex,paymentPaise,matchesPayment} from '../../../../../lib/payment-security'
 import {serviceClient} from '../../../../../lib/transactionRuntime'
+import {rateLimit} from '../../../../../lib/rate-limit'
 
 function basicAuth(keyId:string,keySecret:string){return `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`}
 async function currentUser(request:NextRequest){
@@ -16,6 +17,8 @@ async function currentUser(request:NextRequest){
 
 async function handleRequest(request:NextRequest){
  const user=await currentUser(request);if(!user)return NextResponse.json({error:'Authentication required.'},{status:401})
+ const limit=rateLimit(`razorpay-verify:${user.id}`,20,10*60*1000)
+ if(!limit.allowed)return NextResponse.json({error:'Too many verification attempts. Please wait a few minutes and try again.'},{status:429,headers:{'Retry-After':String(Math.ceil(limit.retryAfterMs/1000))}})
  const db=serviceClient(),keyId=process.env.RAZORPAY_KEY_ID,keySecret=process.env.RAZORPAY_KEY_SECRET
  if(!db||!keyId||!keySecret)return NextResponse.json({error:'Secure payment verification is not configured.'},{status:503})
  let body:any={};try{body=await request.json()}catch{}
