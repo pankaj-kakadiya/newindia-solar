@@ -42,9 +42,28 @@ test('distinguishes a missing cost from a valid zero cost', () => {
   assert.equal(result.lines[1].missing_cost,false)
 })
 
+test('calculates fractional cable quantities in metres instead of pieces', () => {
+  const result = calculateLiveManufacturingCost([
+    {item_type:'component',item_id:'cable',quantity:1.75,wastage_percent:10},
+  ], {
+    component:[{id:'cable',name:'4 sq mm cable',cost_price:40,stock_qty:100,unit:'mtr'}],
+    enclosure:[], variant:[],
+  }, {labour_cost:0,overhead_cost:0,packaging_cost:0,target_margin_percent:0})
+  assert.equal(result.lines[0].unit,'mtr')
+  assert.ok(Math.abs(result.lines[0].required_qty-1.925)<1e-9)
+  assert.ok(Math.abs(result.material_cost-77)<1e-9)
+})
+
 test('recipe migration grants production cost access and atomically syncs product cost', async () => {
   const migration = await readFile(new URL('../supabase/migrations/20260919125742_fix_manufacturing_recipe_cost_sync.sql',import.meta.url),'utf8')
   assert.match(migration,/p_module in \([^)]*'production'/)
   assert.match(migration,/update public\.product_variants\s+set cost_price=v_total_cost/)
   assert.match(migration,/Every selected BOM material must have a cost price/)
+})
+
+test('meter-unit migration keeps recipe and production units aligned with the material master', async () => {
+  const migration = await readFile(new URL('../supabase/migrations/20260919203000_meter_based_material_units.sql',import.meta.url),'utf8')
+  assert.match(migration,/where lower\(trim\(coalesce\(category,''\)\)\)='solar cable'/)
+  assert.match(migration,/before insert or update of component_id,enclosure_id,variant_id,unit/)
+  assert.match(migration,/update public\.production_bom_items/)
 })
