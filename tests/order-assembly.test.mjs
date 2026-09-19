@@ -17,10 +17,19 @@ test('order assembly RPC is authorized, idempotent and recipe-backed',async()=>{
   assert.match(sql,/grant execute on function public\.start_order_item_assembly\(uuid\) to authenticated/)
 })
 
+test('planned jobs can be created before stock and reserved atomically later',async()=>{
+  const sql=await readFile(new URL('../supabase/migrations/20260919183500_allow_planned_assembly_jobs.sql',import.meta.url),'utf8')
+  assert.match(sql,/reserve_production_job_materials/)
+  assert.match(sql,/Validate the whole BOM first so reservation remains all-or-nothing/)
+  assert.doesNotMatch(sql,/Only % unit\(s\) can be assembled/)
+  assert.match(sql,/if v_cost\.buildable_qty>=p_quantity then perform public\.reserve_production_job_materials/)
+  assert.match(sql,/if v_cost\.buildable_qty>=oi\.quantity then perform public\.reserve_production_job_materials/)
+})
+
 test('order page starts or opens the exact assembly job',async()=>{
   const source=await readFile(orderPageUrl,'utf8')
   assert.match(source,/rpc\('start_order_item_assembly'/)
-  assert.match(source,/Start Assembly/)
+  assert.match(source,/Create Assembly/)
   assert.match(source,/\/admin\/production\?job=\$\{data\}/)
   assert.match(source,/href=\{`\/admin\/production\?job=\$\{job\.id\}`\}/)
 })

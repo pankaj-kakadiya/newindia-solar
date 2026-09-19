@@ -73,10 +73,19 @@ export default function Production(){
  const assignee=(id:string)=>profiles.find(p=>p.id===id)?.full_name||'Unassigned'
  const qcComplete=(j:any)=>qcItems.every(([k])=>j?.qc_checklist?.[k]===true)
  const allPicked=()=>bom.length>0&&bom.every(x=>Number(x.picked_qty||0)>=Number(x.required_qty||x.quantity||0))
+ const reservedQty=(row:any)=>reservations.filter(r=>r.status==='reserved'&&r.component_id===row.component_id&&r.enclosure_id===row.enclosure_id&&r.variant_id===row.variant_id).reduce((n,r)=>n+Number(r.quantity||0),0)
+ const allReserved=()=>bom.length>0&&bom.every(x=>reservedQty(x)>=Number(x.required_qty||x.quantity||0))
+
+ async function reserveMaterials(){
+  if(!selected)return;setSaving(true);setMsg('')
+  const {error}=await supabase.rpc('reserve_production_job_materials',{p_job_id:selected.id})
+  setSaving(false);if(error){setMsg(error.message);return}setMsg('All BOM materials reserved.');await refreshSelected()
+ }
 
  async function move(status:string){
   if(!selected)return
-  if(status==='materials_reserved'&&bom.length&&reservations.filter(r=>r.status==='reserved').length===0){setMsg('Material reservation is missing. Confirm the customer order first so inventory can be reserved.');return}
+  if(status==='materials_reserved'&&!allReserved()){setMsg('Reserve every BOM material before moving to Materials Reserved.');return}
+  if(status==='assembly'&&!allReserved()){setMsg('Reserve every BOM material before starting assembly.');return}
   if(status==='assembly'&&!allPicked()){setMsg('Pick all required BOM material before starting assembly.');return}
   if(status==='qc_passed'&&!qcComplete(selected)){setMsg('Complete every QC checkpoint before marking QC Passed.');return}
   if(['ready_to_dispatch','completed'].includes(status)&&(!qcComplete(selected)||!selected.final_photo_url)){setMsg('QC must be complete and a final product photo must be uploaded first.');return}
@@ -113,7 +122,7 @@ export default function Production(){
  function printSheet(){window.print()}
 
  return <div className="productionV2">
-  <div className="productionHero"><div><span className="adminEyebrow">FACTORY OPERATIONS</span><h1>Production Control</h1><p>Material picking, assembly, testing, QC, packing and dispatch readiness for custom ACDB/DCDB builds.</p></div><button className="adminBtn ghost" onClick={load}><RefreshCw size={16}/>Refresh</button></div>
+  <div className="productionHero"><div><span className="adminEyebrow">FACTORY OPERATIONS</span><h1>Production Control</h1><p>Material reservation, picking, assembly, testing, QC, packing and dispatch for every ACDB/DCDB job.</p></div><button className="adminBtn ghost" onClick={load}><RefreshCw size={16}/>Refresh</button></div>
   {msg&&!selected&&<div className="themeMessage"><Check size={16}/>{msg}</div>}
   <div className="productionStats">
    <div><Factory/><b>{stats.active}</b><span>Active jobs</span></div><div><ListChecks/><b>{stats.assembly}</b><span>Assembly / Test</span></div><div><ShieldCheck/><b>{stats.qc}</b><span>QC passed</span></div><div><PackageCheck/><b>{stats.dispatch}</b><span>Ready dispatch</span></div><div className={stats.overdue?'danger':''}><AlertTriangle/><b>{stats.overdue}</b><span>Overdue</span></div>
@@ -127,9 +136,9 @@ export default function Production(){
    <div className="productionProgress">{stages.map((s,i)=>{const current=stages.findIndex(x=>x.key===selected.status);return <button key={s.key} className={`${i<current?'done':''} ${i===current?'current':''}`} onClick={()=>move(s.key)} disabled={saving}><span>{i<current?<Check size={13}/>:i+1}</span><small>{s.label}</small></button>})}</div>
    <div className="productionDrawerGrid">
     <main>
-     <section className="productionPanel"><div className="productionPanelHead"><div><h3><Warehouse size={18}/>Material & BOM</h3><p>Required, reserved, picked and issued quantities.</p></div><div><button onClick={()=>markAll('picked_qty')} disabled={!bom.length||saving}>Pick all</button><button onClick={()=>markAll('issued_qty')} disabled={!bom.length||saving}>Issue all</button></div></div>
+     <section className="productionPanel"><div className="productionPanelHead"><div><h3><Warehouse size={18}/>Material & BOM</h3><p>Required, reserved, picked and issued quantities.</p></div><div><button onClick={reserveMaterials} disabled={!bom.length||allReserved()||saving}>{allReserved()?'Materials reserved':'Reserve materials'}</button><button onClick={()=>markAll('picked_qty')} disabled={!bom.length||!allReserved()||saving}>Pick all</button><button onClick={()=>markAll('issued_qty')} disabled={!bom.length||!allReserved()||saving}>Issue all</button></div></div>
       <div className="productionTableWrap"><table><thead><tr><th>Component</th><th>Required</th><th>On hand</th><th>Picked</th><th>Issued</th><th>Status</th></tr></thead><tbody>{bom.map(row=>{const stock=materialStock[row.component_id||row.enclosure_id||row.variant_id];const req=Number(row.required_qty||row.quantity||0);const picked=Number(row.picked_qty||0);const issued=Number(row.issued_qty||0);return <tr key={row.id}><td><b>{row.component_name}</b><small>{row.sku_snapshot||row.component_category||'Component'}</small></td><td>{req} {row.unit||'pcs'}</td><td>{stock?`${stock.stock_qty} ${stock.unit||'pcs'}`:'—'}</td><td><div className="qtyStepper"><button onClick={()=>setBomQty(row,'picked_qty',picked-1)}>−</button><input type="number" value={picked} onChange={e=>setBomQty(row,'picked_qty',Number(e.target.value))}/><button onClick={()=>setBomQty(row,'picked_qty',picked+1)}>+</button></div></td><td><div className="qtyStepper"><button onClick={()=>setBomQty(row,'issued_qty',issued-1)}>−</button><input type="number" value={issued} onChange={e=>setBomQty(row,'issued_qty',Number(e.target.value))}/><button onClick={()=>setBomQty(row,'issued_qty',issued+1)}>+</button></div></td><td><span className={`materialState ${picked>=req?'ok':'wait'}`}>{picked>=req?'Ready':'Pick pending'}</span></td></tr>})}{!bom.length&&<tr><td colSpan={6} className="emptyCell">No BOM items generated for this job.</td></tr>}</tbody></table></div>
-      <div className="reservationSummary"><Box size={16}/><b>{reservations.filter(r=>r.status==='reserved').length}</b> active material reservations <span>·</span> {reservations.filter(r=>r.status==='consumed').length} consumed</div>
+      <div className="reservationSummary"><Box size={16}/><b>{reservations.filter(r=>r.status==='reserved').length}</b> active material reservations <span>·</span> {allReserved()?'BOM fully reserved':'Reservation pending / stock shortage'} <span>·</span> {reservations.filter(r=>r.status==='consumed').length} consumed</div>
      </section>
 
      <section className="productionPanel"><div className="productionPanelHead"><div><h3><ClipboardCheck size={18}/>Quality Control</h3><p>Complete all checks before QC Passed.</p></div><span className={`qcScore ${qcComplete(selected)?'complete':''}`}>{qcItems.filter(([k])=>selected.qc_checklist?.[k]).length}/{qcItems.length}</span></div>
