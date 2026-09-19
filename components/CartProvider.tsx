@@ -26,7 +26,7 @@ const C=createContext<Ctx|null>(null)
 export function CartProvider({children}:{children:React.ReactNode}){
   const [items,setItems]=useState<CartItem[]>([])
   useEffect(()=>{try{setItems(JSON.parse(localStorage.getItem('nis-cart')||'[]'))}catch{}},[])
-  useEffect(()=>{localStorage.setItem('nis-cart',JSON.stringify(items))},[items])
+  useEffect(()=>{try{localStorage.setItem('nis-cart',JSON.stringify(items))}catch{}},[items])
   const api=useMemo(()=>({
     items,
     add:(i:CartItem)=>setItems(x=>{const f=x.find(a=>a.id===i.id);return f?x.map(a=>a.id===i.id?{...a,...i,qty:a.qty+i.qty}:a):[...x,i]}),
