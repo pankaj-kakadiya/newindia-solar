@@ -61,3 +61,4 @@ where b.component_id=c.id
   and b.unit is distinct from coalesce(nullif(trim(c.unit),''),'pcs');
 
 notify pgrst,'reload schema';
+-- Deployment trigger after verified metre-unit migration.
