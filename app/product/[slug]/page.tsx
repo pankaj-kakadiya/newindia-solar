@@ -11,12 +11,11 @@ import {
 } from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import {BUYER_VARIANT_FIELDS} from '../../../lib/catalogue-projections'
-import {safeAssetUrl} from '../../../lib/catalogue'
+import {safeAssetUrl, money} from '../../../lib/catalogue'
 import {useCart} from '../../../components/CartProvider'
 import StoreHeader from '../../../components/StoreHeader'
 import StoreFooter from '../../../components/StoreFooter'
 
-const money=(n:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n)
 const gstPrice=(price:number,gst=18)=>{const paise=Math.round((price+Number.EPSILON)*100);return (paise+Math.round(paise*gst/100))/100}
 
 function SafeProductImage({src,alt,className}:{src?:string|null;alt:string;className?:string}){

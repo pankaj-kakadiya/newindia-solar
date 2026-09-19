@@ -8,10 +8,10 @@ import {useCart} from '../../components/CartProvider'
 import {supabase} from '../../lib/supabase'
 import {buyerFetch} from '../../lib/buyer-client'
 import {addressInput,profileInput} from '../../lib/buyer-account'
+import {money} from '../../lib/catalogue'
 import StoreHeader from '../../components/StoreHeader'
 import StoreFooter from '../../components/StoreFooter'
 
-const money=(n:number)=>`₹${n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 const roundMoney=(n:number)=>Math.round((n+Number.EPSILON)*100)/100
 
 async function loadRazorpay(){

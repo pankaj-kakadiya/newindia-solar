@@ -8,10 +8,9 @@ import {useCart, type CartItem} from '../../components/CartProvider'
 import StoreHeader from '../../components/StoreHeader'
 import StoreFooter from '../../components/StoreFooter'
 import {supabase} from '../../lib/supabase'
-import {safeAssetUrl} from '../../lib/catalogue'
+import {safeAssetUrl, money} from '../../lib/catalogue'
 
 const GST_RATE=18
-const money=(n:number)=>`₹${Math.round(n).toLocaleString('en-IN')}`
 const gst=(n:number)=>Math.round(n*GST_RATE/100)
 type ProductMedia={imageUrl?:string;imageAlt?:string;productSlug?:string}
 
