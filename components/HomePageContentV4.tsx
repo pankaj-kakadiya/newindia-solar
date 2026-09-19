@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {
   ArrowRight, BadgeCheck, Boxes, Cable, Check, CheckCircle2, CircleGauge,
-  Download, Factory, FileText, Gauge, Headphones, Layers3, Leaf, MapPinned,
+  Factory, FileText, Gauge, Headphones, Layers3, Leaf,
   PackageCheck, PlugZap, SearchCheck, Settings2, ShieldCheck, ShoppingCart,
   Sparkles, Truck, Users, Wrench, Zap
 } from 'lucide-react'
@@ -11,7 +11,7 @@ import StoreHeader from './StoreHeader'
 import StoreFooter from './StoreFooter'
 import {useSiteContent} from './SiteContentProvider'
 import {HomeFeaturedProducts, HomeResources, HomeProductImage} from './HomeHighlights'
-import {publicAssetUrl, type HomeProduct, type HomeDownload} from '../lib/homepage-sections'
+import {type HomeProduct, type HomeDownload} from '../lib/homepage-sections'
 
 const categories=[
   {name:'ACDB',desc:'AC protection & distribution',href:'/categories/acdb',image:'/acdb-demo.svg',icon:Zap},
