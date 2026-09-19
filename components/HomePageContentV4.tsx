@@ -222,7 +222,7 @@ export default function HomePageContentV4({products=[],downloads=[],productsUnav
 
       <section className="v4IndiaVision">
         <div className="container v4VisionGrid">
-          <div className="v4VisionCopy"><span>INDIA'S CLEAN ENERGY JOURNEY</span><h2>Components that support a larger renewable-energy transition.</h2><p>India has set a national goal of reaching 500 GW of renewable-energy capacity by 2030. New India Solar's role is commercial: supplying and configuring solar BOS and protection components for installers, EPCs and project buyers.</p><a href="https://www.pmindia.gov.in/en/news_updates/pms-remarks-at-india-energy-week-2025/" target="_blank" rel="noreferrer">Read the official 2030 energy-goal statement <ArrowRight size={16}/></a></div>
+          <div className="v4VisionCopy"><span>INDIA'S CLEAN ENERGY JOURNEY</span><h2>Components that support a larger renewable-energy transition.</h2><p>The Government of India is working toward 500 GW of installed electricity capacity from non-fossil fuel sources by 2030. Official data reported 300.5 GW of non-fossil capacity as of 31 July 2026, including 164.59 GW of solar power. New India Solar's role is commercial: supplying and configuring solar BOS and protection components for installers, EPCs and project buyers.</p><a href="https://www.pib.gov.in/newsite/erelcontent.aspx?lang=2&reg=48&relid=293063" target="_blank" rel="noreferrer">View Government of India capacity update <ArrowRight size={16}/></a></div>
           <div className="v4VisionArt" aria-hidden="true"><div className="v4FlagLine"/><div className="v4VisionSun"/><div className="v4VisionPanels"><i/><i/><i/><i/><i/><i/></div><Leaf/></div>
         </div>
       </section>
