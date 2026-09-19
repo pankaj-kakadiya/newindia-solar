@@ -83,7 +83,7 @@ export default function Product(){
   const features=[...(p?.product_badges||[]),...(p?.inclusions||[])].filter(Boolean).slice(0,5)
 
   if(loading)return <><StoreHeader/><main className="container productLoading"><div/><div/></main></>
-  if(loadError)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Couldn't load this product.</h1><p>Check your connection and try again.</p><button className="btn btnPrimary" onClick={()=>setRetryToken(t=>t+1)}>Retry</button></main></>
+  if(loadError)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Couldn&apos;t load this product.</h1><p>Check your connection and try again.</p><button className="btn btnPrimary" onClick={()=>setRetryToken(t=>t+1)}>Retry</button></main></>
   if(!p)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Product not found.</h1><Link className="btn btnPrimary" href="/shop">Back to Products</Link></main></>
 
   function addToCart(){if(!v||price<=0||qty<minQty||qty>stock||!Number.isSafeInteger(qty))return;const image=imgs[0];add({id:v.id,kind:'standard',productVariantId:v.id,productSlug:p.slug,imageUrl:safeAssetUrl(image?.image_url)||undefined,imageAlt:image?.alt_text||p.name,name:p.name,variant:v.title||v.sku,price,qty,minQty})}
