@@ -242,3 +242,5 @@ grant execute on function public.start_order_item_assembly(uuid) to authenticate
 
 comment on function public.reserve_production_job_materials(uuid) is
  'Atomically reserves every outstanding BOM material for a planned production job once stock is available.';
+
+-- Deployment trigger: planned assembly workflow verified on 2026-09-19.
