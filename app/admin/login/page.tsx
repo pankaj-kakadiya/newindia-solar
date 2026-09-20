@@ -63,8 +63,8 @@ export default function Login(){
      <p>{resetMode?'Enter your admin email and we will send a secure recovery link.':'Use your authorized New India Solar account to continue.'}</p>
     </div>
     <form className="adminLoginForm" onSubmit={submit}>
-     <label><span>Email address</span><div className="adminLoginInput"><Mail size={18}/><input name="email" type="email" required autoComplete="email" defaultValue="pankajkakadiya919@gmail.com" placeholder="name@newindiasolar.com"/></div></label>
-     {!resetMode&&<label><span>Password</span><div className="adminLoginInput"><LockKeyhole size={18}/><input name="password" type={showPassword?'text':'password'} required autoComplete="current-password" placeholder="Enter your password"/><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Hide password':'Show password'}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>}
+     <label><span>User ID</span><div className="adminLoginInput"><Mail size={18}/><input name="email" type="email" required autoComplete="email" placeholder="User ID"/></div></label>
+     {!resetMode&&<label><span>Password</span><div className="adminLoginInput"><LockKeyhole size={18}/><input name="password" type={showPassword?'text':'password'} required autoComplete="current-password" placeholder="Password"/><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Hide password':'Show password'}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>}
      {message&&<div className={message.startsWith('Password reset')?'adminLoginMessage success':'adminLoginMessage'} role="status">{message}</div>}
      <button className="adminLoginSubmit" disabled={busy}>{busy?'Please wait…':resetMode?'Send secure reset link':'Sign in securely'}<ArrowRight size={18}/></button>
     </form>
