@@ -582,8 +582,8 @@ export default function AdminShell({
             aria-label="New India Solar admin dashboard"
           >
             <span className="adminV2LogoBox" aria-hidden="true">
-              <Image className="adminV2LogoFull" src="/new-india-solar-full-logo.webp" alt="" width={224} height={76} priority />
-              <Image className="adminV2LogoCompact" src="/new-india-solar-logo.webp" alt="" width={52} height={52} priority />
+              <Image className="adminV2LogoFull" src="/new-india-solar-full-logo.webp" alt="" fill sizes="238px" priority />
+              <Image className="adminV2LogoCompact" src="/new-india-solar-logo.webp" alt="" fill sizes="54px" priority />
             </span>
           </Link>
           <button
