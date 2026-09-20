@@ -1,1 +1,69 @@
 .supportMemberActions{display:flex;align-items:center;gap:8px}.supportMemberActions button{border:1px solid #d7e3dc;border-radius:8px;background:#fff;color:#7d2d27;padding:6px 8px;font:inherit;font-size:10px;font-weight:850;cursor:pointer}@media(max-width:700px){.supportMemberActions{width:100%;justify-content:space-between}}
+
+.supportLauncher{
+  position:fixed;
+  right:max(24px,env(safe-area-inset-right));
+  bottom:max(24px,env(safe-area-inset-bottom));
+  z-index:230;
+  font-family:inherit;
+}
+.supportLauncherButton{
+  min-width:132px;
+  min-height:54px;
+  padding:0 20px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;
+  background:linear-gradient(135deg,#0b3a30 0%,#159b50 100%);
+  box-shadow:0 14px 36px rgba(5,38,29,.28),0 4px 12px rgba(8,65,43,.18);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  font:inherit;
+  font-size:15px;
+  font-weight:850;
+  letter-spacing:.01em;
+  cursor:pointer;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+}
+.supportLauncherButton:hover{transform:translateY(-2px);box-shadow:0 18px 42px rgba(5,38,29,.34),0 5px 14px rgba(8,65,43,.2)}
+.supportLauncherButton:focus-visible{outline:3px solid rgba(240,148,42,.65);outline-offset:4px}
+.supportLauncherButton svg{width:21px;height:21px;stroke-width:2.2}
+.supportLauncher.open .supportLauncherButton{background:#082f28}
+.supportLauncher aside{
+  position:absolute;
+  right:0;
+  bottom:68px;
+  width:min(370px,calc(100vw - 32px));
+  padding:27px;
+  border:1px solid #d9e8df;
+  border-radius:22px;
+  background:linear-gradient(180deg,#fff 0%,#f8fcf9 100%);
+  box-shadow:0 24px 70px rgba(5,35,27,.24),0 5px 20px rgba(5,35,27,.1);
+  color:#10202f;
+  overflow:hidden;
+  animation:supportLauncherIn .2s ease-out both;
+}
+.supportLauncher aside::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#159b50 0 78%,#f0942a 78%)}
+.supportLauncher aside>span{display:inline-flex;align-items:center;gap:7px;color:#168749;font-size:12px;font-weight:900;letter-spacing:.075em;text-transform:uppercase}
+.supportLauncher aside>span svg{width:16px;height:16px}
+.supportLauncher aside h2{margin:13px 0 8px;color:#071927;font-size:26px;line-height:1.12;letter-spacing:-.025em}
+.supportLauncher aside p{margin:0;color:#5d6d76;font-size:15px;line-height:1.55}
+.supportLauncher aside a{min-height:48px;margin-top:20px;padding:0 18px;border-radius:12px;background:#159b50;box-shadow:0 9px 22px rgba(21,155,80,.2);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:850;text-decoration:none;transition:background .2s ease,transform .2s ease}
+.supportLauncher aside a:hover{background:#0f8341;transform:translateY(-1px)}
+.supportLauncher aside a:focus-visible{outline:3px solid rgba(240,148,42,.55);outline-offset:3px}
+.supportLauncher aside small{margin-top:13px;color:#728079;display:block;font-size:12px;line-height:1.45;text-align:center}
+@keyframes supportLauncherIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+@media(max-width:700px){
+  .supportLauncher{right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom))}
+  .supportLauncherButton{width:58px;min-width:58px;height:58px;min-height:58px;padding:0;border-radius:50%}
+  .supportLauncherButton span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .supportLauncherButton svg{width:24px;height:24px}
+  .supportLauncher aside{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));left:12px;width:auto;max-height:calc(100dvh - 110px);padding:24px 22px;border-radius:20px;overflow-y:auto}
+  .supportLauncher aside h2{font-size:24px}
+  .supportLauncher aside p{font-size:15px}
+  .supportLauncher aside a{min-height:50px}
+}
+@media(prefers-reduced-motion:reduce){.supportLauncherButton,.supportLauncher aside,.supportLauncher aside a{animation:none;transition:none}}
