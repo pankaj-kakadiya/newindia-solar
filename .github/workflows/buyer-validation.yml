@@ -1,0 +1,43 @@
+name: Buyer release validation
+on:
+  push:
+    branches: ['work/step28', 'work/step29', 'claude/gallant-ritchie-1g3q2e']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  buyer-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture tracked buyer source checkpoint
+        run: |
+          mkdir -p /tmp/buyer-checkpoint
+          git archive --format=zip --output=/tmp/buyer-checkpoint/source.zip HEAD app components lib tests docs package.json tsconfig.json
+          git rev-parse HEAD > /tmp/buyer-checkpoint/COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buyer-source-checkpoint
+          path: /tmp/buyer-checkpoint/
+          retention-days: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install application dependencies
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Pure regression tests
+        run: node --experimental-strip-types --test tests/*.test.mjs
+      - name: Production build and application types
+        run: npm run build
+      - name: Install isolated browser test dependency
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.1
+      - run: npx playwright install --with-deps chromium
+      - name: Browser checks with synthetic catalogue only
+        run: npx playwright test --config tests/browser.config.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: buyer-validation-results
+          path: test-results/
+          retention-days: 7

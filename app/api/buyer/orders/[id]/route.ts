@@ -28,7 +28,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
  const items:any[]=[],notAdded:string[]=[]
  for(const line of lines||[]){
   if(line.variant_id){
-   const {data:v}=await db.from('product_variants').select('id,sku,title,selling_price,stock_qty,is_active,unit,attributes,products(name,status,min_order_qty)').eq('id',line.variant_id).maybeSingle().throwOnError()
+   const {data:v}=await db.from('product_variants').select('id,sku,title,selling_price,stock_qty,is_active,unit,attributes,products(name,status,min_order_qty,gst_rate)').eq('id',line.variant_id).maybeSingle().throwOnError()
    const product:any=Array.isArray(v?.products)?v.products[0]:v?.products
    if(!v?.is_active||product?.status!=='active'||!(Number(v.selling_price)>0)){notAdded.push(`${line.name_snapshot}: no longer available.`);continue}
    const {data:reserved}=await db.from('inventory_reservations').select('quantity').eq('variant_id',v.id).eq('status','reserved').throwOnError()
@@ -36,7 +36,8 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
    const attrs=v.attributes as any,step=Number(attrs?.quantity_step||( ['m','meter','metre','meters','metres','kg','l','litre','liter'].includes(String(v.unit).toLowerCase())?0.01:1))
    const qty=Math.round(Math.ceil(Math.max(Number(line.quantity),Number(product.min_order_qty)||1)/step)*step*1000)/1000
    if(!Number.isFinite(qty)||qty<=0||qty>available){notAdded.push(`${line.name_snapshot}: requested quantity is not in stock.`);continue}
-   items.push({id:v.id,kind:'standard',productVariantId:v.id,name:product.name,variant:v.title||v.sku,price:Number(v.selling_price),qty,minQty:Number(product.min_order_qty)||1})
+   const gstRate=Number(product.gst_rate)
+   items.push({id:v.id,kind:'standard',productVariantId:v.id,name:product.name,variant:v.title||v.sku,price:Number(v.selling_price),qty,minQty:Number(product.min_order_qty)||1,quantityStep:step,gstRate:Number.isFinite(gstRate)&&gstRate>=0?gstRate:null,maxQty:available})
   }else if(line.custom_configuration_id){
    const {data:c}=await db.from('custom_configurations').select('template_id,selected_options,config_name').eq('id',line.custom_configuration_id).eq('user_id',user.id).maybeSingle().throwOnError()
    if(!c){notAdded.push(`${line.name_snapshot}: configuration is unavailable.`);continue}
