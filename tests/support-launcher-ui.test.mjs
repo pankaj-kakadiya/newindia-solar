@@ -21,13 +21,11 @@ test('launcher exposes an accessible popup control',async()=>{
  assert.match(component,/event\.key==='Escape'/)
 })
 
-test('buyer support uses automatic device protection while admin retains PIN unlock',async()=>{
+test('buyer and admin support open without PIN or device activation screens',async()=>{
  const workspace=await readFile(new URL('components/support/SecureSupportWorkspace.tsx',root),'utf8')
- const crypto=await readFile(new URL('lib/support-crypto.ts',root),'utf8')
- assert.match(workspace,/mode==='buyer'&&!privateKey/)
- assert.match(workspace,/No separate buyer PIN is required\./)
- assert.match(workspace,/mode==='admin'&&!identity/)
- assert.match(workspace,/mode==='admin'&&!privateKey/)
- assert.match(crypto,/DEVICE-AES-GCM/)
- assert.match(crypto,/indexedDB\.open/)
+ assert.match(workspace,/support_create_simple_conversation/)
+ assert.match(workspace,/ACCOUNT SUPPORT/)
+ assert.match(workspace,/Start chat/)
+ assert.doesNotMatch(workspace,/Secure Chat PIN|Activate this browser|AUTOMATIC DEVICE PROTECTION/)
+ assert.doesNotMatch(workspace,/createDeviceSupportIdentity|unlockDeviceSupportIdentity/)
 })
