@@ -1,0 +1,9 @@
+export type QuickAnswer={question:string;answer:string;category:string;subject:string}
+
+export const supportQuickAnswers:QuickAnswer[]=[
+ {question:'Which ACDB or DCDB is right for my project?',answer:'Share your inverter capacity, phase, string count and required protection rating with our team. For a standard setup, browse ACDB or DCDB products; for a project-specific box, use the custom builder or talk with an agent for selection support.',category:'technical',subject:'ACDB / DCDB selection help'},
+ {question:'Where is my order?',answer:'Open Orders & Account to see confirmation, invoice and shipment updates. Courier details appear after dispatch. If an order is delayed or has no tracking update, connect with an agent and we will check it on priority.',category:'order',subject:'Order tracking help'},
+ {question:'How do I get project or bulk pricing?',answer:'Use Project RFQ for volume quantities, a BOM or custom requirements. Add the product, quantity, location and expected purchase date. Our sales team will review stock, GST and dispatch terms before sharing the quotation.',category:'product',subject:'Project and bulk pricing'},
+ {question:'What are the delivery timelines?',answer:'Delivery depends on stock, quantity, configuration and destination. Ready components can move after order confirmation; assembled ACDB/DCDB orders may need production time. An agent can confirm the current timeline for your exact requirement.',category:'delivery',subject:'Delivery timeline confirmation'},
+ {question:'I need technical product help',answer:'We can help with ratings, SPD type, pole configuration, MCB/MCCB selection and ACDB/DCDB compatibility. Choose Talk to an agent and your request will enter the support queue as high priority.',category:'technical',subject:'Technical product assistance'},
+]
