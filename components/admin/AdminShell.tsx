@@ -568,7 +568,7 @@ export default function AdminShell({
   if (isLogin) return <>{children}</>;
 
   return (
-    <div className={`adminV2 ${collapsed ? "isCollapsed" : ""}`}>
+    <div className={`adminV2 adminV3 ${collapsed ? "isCollapsed" : ""}`}>
       <button
         className={`adminV2Overlay ${mobileOpen ? "show" : ""}`}
         aria-label="Close navigation"
