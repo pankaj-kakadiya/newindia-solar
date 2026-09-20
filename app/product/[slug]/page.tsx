@@ -96,7 +96,13 @@ export default function Product(){
     <div className="container pdBreadcrumbs"><Link href="/">Home</Link><span>›</span><Link href="/shop">Products</Link><span>›</span><Link href={`/shop?q=${encodeURIComponent(p.categories?.name||'')}`}>{p.categories?.name||'Solar Component'}</Link><span>›</span><b>{p.name}</b></div>
 
     <section className="container pdHero">
+      <div className="pdMobileHead">
+        <span className="pdCategory">{p.categories?.name||'Solar Component'}</span>
+        <h1>{p.name}</h1>
+        <small>SKU: {v?.sku||'—'}</small>
+      </div>
       <div className="pdGalleryColumn">
+        <div className="pdGalleryBadges">{(p.product_badges?.length?p.product_badges:['IP65','Solar Ready','EPC Ready']).slice(0,3).map((b:string,i:number)=><span key={b}>{i===0?<ShieldCheck/>:i===1?<Zap/>:<PackageCheck/>}<b>{b}</b></span>)}</div>
         <div className="pdGallery" tabIndex={0} onKeyDown={keySlide} onTouchStart={e=>{touchStart.current=e.touches[0].clientX}} onTouchEnd={touchEnd} aria-label={`${p.name} image gallery`}>
           <div className="pdImageStage">
             {activeImg?<SafeProductImage src={activeImg.image_url} alt={activeImg.alt_text||`${p.name} image ${activeIndex+1}`}/>:<div className="pdNoImage"><ImageIcon/><span>Product image</span></div>}
@@ -105,7 +111,6 @@ export default function Product(){
           </div>
           {imgs.length>1&&<div className="pdThumbs">{imgs.map((img:any,i:number)=><button key={img.id||img.image_url} className={i===activeIndex?'active':''} onClick={()=>go(i)} aria-label={`Show image ${i+1}`}><SafeProductImage src={img.image_url} alt={img.alt_text||`${p.name} thumbnail ${i+1}`}/></button>)}</div>}
         </div>
-        <div className="pdGalleryBadges">{(p.product_badges?.length?p.product_badges:['IP65','Solar Ready','EPC Ready']).slice(0,3).map((b:string,i:number)=><span key={b}>{i===0?<ShieldCheck/>:i===1?<Zap/>:<PackageCheck/>}<b>{b}</b></span>)}</div>
       </div>
 
       <div className="pdBuy">
@@ -114,7 +119,7 @@ export default function Product(){
         <p className="pdLead">{p.short_description||p.description||'Reliable New India Solar component engineered for solar installation projects.'}</p>
         <div className="pdMeta"><span className={stock>0?'stock':'out'}><CheckCircle2/>{stock>0?`In stock (${stock} ${v?.unit||'pcs'})`:'Available on request'}</span><span>GST {gst}%</span>{p.warranty_months?<span>{p.warranty_months} month warranty</span>:null}<span>MOQ {p.min_order_qty||1} {v?.unit||'pcs'}</span><span>{Number(p.lead_time_days)>0?`Lead time ${p.lead_time_days} days`:'Confirm dispatch time'}</span></div>
 
-        {variants.length>1&&<div className="pdVariants"><label>Choose Variant</label><div>{variants.map((x:any)=>{const base=Number(x.selling_price||0);return <button key={x.id} className={x.id===v?.id?'active':''} onClick={()=>{setVariantId(x.id);setQty(1)}}><b>{x.title||x.sku}</b><span>{money(gstPrice(base,gst))} incl. GST</span></button>})}</div></div>}
+        {variants.length>1&&<div className="pdVariants"><label>Choose Variant</label><div>{variants.map((x:any)=>{const base=Number(x.selling_price||0);return <button key={x.id} className={x.id===v?.id?'active':''} onClick={()=>{setVariantId(x.id);setQty(minQty)}}><b>{x.title||x.sku}</b><span>{money(gstPrice(base,gst))} incl. GST</span></button>})}</div></div>}
 
         <div className="pdPriceCard">
           <div className="pdPriceMain"><small>Price (including {gst}% GST)</small><strong>{price>0?money(priceIncl):'Price on request'}</strong>{price>0&&<div className="pdSaving">{saving>0&&<b>You save {money(saving)} ({discount}% off)</b>}{mrpIncl>priceIncl&&<del>{money(mrpIncl)}</del>}{discount>0&&<span>{discount}% OFF</span>}</div>}<div className="pdTaxLine"><div><small>Base Price</small><b>{money(price)}</b></div><i>+</i><div><small>GST @ {gst}%</small><b>{money(gstAmt)}</b></div><i>=</i><div><small>Total ({qty} {v?.unit||'pcs'})</small><b>{money(priceIncl*qty)}</b></div></div></div>
