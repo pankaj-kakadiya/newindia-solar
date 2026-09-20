@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 
-const files=['../supabase/migrations/20260920143000_secure_support_chat.sql','../supabase/migrations/20260920175500_secure_support_chat_hardening.sql','../supabase/migrations/20260920182000_support_team_permission_sync.sql','../supabase/migrations/20260920202849_simple_account_support.sql']
+const files=['../supabase/migrations/20260920143000_secure_support_chat.sql','../supabase/migrations/20260920175500_secure_support_chat_hardening.sql','../supabase/migrations/20260920182000_support_team_permission_sync.sql','../supabase/migrations/20260920202849_simple_account_support.sql','../supabase/migrations/20260920211522_grant_support_policy_helpers.sql']
 const sql=(await Promise.all(files.map(x=>readFile(new URL(x,import.meta.url),'utf8')))).join('\n').toLowerCase()
 
 test('all exposed support tables enable row level security',()=>{
@@ -11,6 +11,12 @@ test('all exposed support tables enable row level security',()=>{
 test('anonymous roles cannot execute privileged support functions',()=>{
  assert.match(sql,/revoke all on function[\s\S]*support_create_conversation[\s\S]*from public,anon/)
  assert.match(sql,/grant execute on function[\s\S]*support_create_conversation[\s\S]*to authenticated/)
+})
+test('authenticated users can execute the helpers required by support RLS policies',()=>{
+ assert.match(sql,/revoke all on function public\.support_is_team_member\(uuid, uuid\) from public, anon/)
+ assert.match(sql,/revoke all on function public\.support_can_access\(uuid\) from public, anon/)
+ assert.match(sql,/grant execute on function public\.support_is_team_member\(uuid, uuid\) to authenticated/)
+ assert.match(sql,/grant execute on function public\.support_can_access\(uuid\) to authenticated/)
 })
 test('message content remains in the RLS-protected support message schema',()=>{
  assert.match(sql,/create table public\.support_messages[\s\S]*ciphertext text not null[\s\S]*iv text not null/)
