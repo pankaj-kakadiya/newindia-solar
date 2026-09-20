@@ -7,25 +7,27 @@ const root=new URL('../',import.meta.url)
 test('support launcher stays floating and adapts to mobile screens',async()=>{
  const css=await readFile(new URL('app/support-chat-controls-v8.css',root),'utf8')
  assert.match(css,/\.supportLauncher\s*\{[^}]*position:fixed/s)
- assert.match(css,/\.supportLauncher aside\s*\{[^}]*position:absolute/s)
  assert.match(css,/@media\(max-width:700px\)/)
- assert.match(css,/max-height:calc\(100dvh - 110px\)/)
  assert.match(css,/safe-area-inset-bottom/)
+ assert.match(css,/width:60px/)
 })
 
-test('launcher exposes an accessible popup control',async()=>{
+test('launcher opens the support page directly without an intermediate popup',async()=>{
  const component=await readFile(new URL('components/support/SupportLauncher.tsx',root),'utf8')
- assert.match(component,/aria-expanded=\{open\}/)
- assert.match(component,/aria-controls="support-launcher-panel"/)
- assert.match(component,/role="dialog"/)
- assert.match(component,/event\.key==='Escape'/)
+ assert.match(component,/href=\{href\}/)
+ assert.match(component,/aria-label="Open New India Solar support chat"/)
+ assert.match(component,/Chat support/)
+ assert.doesNotMatch(component,/role="dialog"|aria-expanded|setOpen/)
 })
 
-test('buyer and admin support open without PIN or device activation screens',async()=>{
+test('buyer guided support opens without forms, PINs or device activation screens',async()=>{
  const workspace=await readFile(new URL('components/support/SecureSupportWorkspace.tsx',root),'utf8')
  assert.match(workspace,/support_create_simple_conversation/)
- assert.match(workspace,/ACCOUNT SUPPORT/)
- assert.match(workspace,/Start chat/)
+ assert.match(workspace,/CHOOSE A QUICK QUESTION/)
+ assert.match(workspace,/Talk to an agent/)
+ assert.match(workspace,/p_priority:'high'/)
+ assert.match(workspace,/No form or setup required/)
  assert.doesNotMatch(workspace,/Secure Chat PIN|Activate this browser|AUTOMATIC DEVICE PROTECTION/)
  assert.doesNotMatch(workspace,/createDeviceSupportIdentity|unlockDeviceSupportIdentity/)
+ assert.doesNotMatch(workspace,/showCreate|New conversation|Start chat/)
 })
