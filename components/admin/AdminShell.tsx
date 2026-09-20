@@ -341,7 +341,7 @@ export default function AdminShell({
     setEnvironment(
       host.includes("vercel.app") || host.includes("localhost")
         ? "STAGING"
-        : "PRODUCTION",
+        : "LIVE",
     );
   }, [isLogin]);
   useEffect(() => {
@@ -595,7 +595,7 @@ export default function AdminShell({
           </button>
         </div>
         <div className="adminV2Environment">
-          <span className={environment === "PRODUCTION" ? "live" : "stage"} />
+          <span className={environment === "LIVE" ? "live" : "stage"} />
           <span>{environment}</span>
         </div>
         <nav className="adminV2Nav" aria-label="Admin navigation">
