@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -580,15 +581,9 @@ export default function AdminShell({
             className="adminV2Brand"
             aria-label="New India Solar admin dashboard"
           >
-            <span className="adminV2LogoBox">
-              <img
-                src="/new-india-solar-full-logo.webp"
-                alt="New India Solar"
-              />
-            </span>
-            <span className="adminV2BrandCopy">
-              <b>Control Center</b>
-              <small>New India Solar</small>
+            <span className="adminV2LogoBox" aria-hidden="true">
+              <Image className="adminV2LogoFull" src="/new-india-solar-full-logo.webp" alt="" width={224} height={76} priority />
+              <Image className="adminV2LogoCompact" src="/new-india-solar-logo.webp" alt="" width={52} height={52} priority />
             </span>
           </Link>
           <button
@@ -664,6 +659,9 @@ export default function AdminShell({
             >
               <Menu size={20} />
             </button>
+            <Link className="adminV2MobileBrand" href="/admin" aria-label="New India Solar admin dashboard">
+              <Image src="/new-india-solar-logo.webp" alt="" width={34} height={34} priority />
+            </Link>
             <div className="adminV2PageIdentity">
               <small>New India Solar</small>
               <b>{routeTitle(pathname)}</b>
