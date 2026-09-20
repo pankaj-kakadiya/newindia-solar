@@ -24,6 +24,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageCircle,
   Package,
   Palette,
   ReceiptText,
@@ -39,7 +40,7 @@ import {
 import { supabase } from "../../lib/supabase";
 import { AdminAccess, adminRoleLabels, canAdmin } from "../../lib/adminAccess";
 
-type BadgeKey = "orders" | "production" | "rfqs" | "alerts";
+type BadgeKey = "orders" | "production" | "rfqs" | "alerts" | "support";
 type NavItem = {
   href: string;
   label: string;
@@ -123,6 +124,13 @@ const navGroups: NavGroup[] = [
         label: "Customer CRM",
         icon: Users,
         module: "customers",
+      },
+      {
+        href: "/admin/support",
+        label: "Secure Support",
+        icon: MessageCircle,
+        badge: "support",
+        module: "support",
       },
     ],
   },
@@ -325,6 +333,7 @@ export default function AdminShell({
       production: 0,
       rfqs: 0,
       alerts: 0,
+      support: 0,
     }),
     [access, setAccess] = useState<AdminAccess | null>(null),
     [workflowAlerts, setWorkflowAlerts] = useState<WorkflowAlert[]>([]),
@@ -361,6 +370,7 @@ export default function AdminShell({
         production: 0,
         rfqs: 0,
         alerts: 0,
+        support: 0,
       };
       const tasks: Promise<void>[] = [];
       if (canAdmin(a, "orders"))
@@ -402,6 +412,12 @@ export default function AdminShell({
           ).then(({ count }) => {
             next.rfqs = count || 0;
           }),
+        );
+      if (canAdmin(a, "support"))
+        tasks.push(
+          Promise.resolve(
+            supabase.from("support_conversations").select("*", { count: "exact", head: true }).in("status", ["open", "pending_team"]),
+          ).then(({ count }) => { next.support = count || 0; }),
         );
       if (canAdmin(a, "notifications"))
         tasks.push(

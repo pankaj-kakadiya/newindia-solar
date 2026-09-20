@@ -1,0 +1,1 @@
+.supportMemberActions{display:flex;align-items:center;gap:8px}.supportMemberActions button{border:1px solid #d7e3dc;border-radius:8px;background:#fff;color:#7d2d27;padding:6px 8px;font:inherit;font-size:10px;font-weight:850;cursor:pointer}@media(max-width:700px){.supportMemberActions{width:100%;justify-content:space-between}}
