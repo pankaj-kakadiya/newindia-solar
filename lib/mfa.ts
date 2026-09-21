@@ -15,11 +15,25 @@ export function needsMfaChallenge(state:MfaState){
   return state.currentLevel!=='aal2'&&(state.nextLevel==='aal2'||state.factors.some(f=>f.status==='verified'))
 }
 
+export type AdminLoginStep='verify'|'password'|'enroll'|'ready'
+export function adminLoginStep(profile:{must_change_password?:boolean;mfa_required?:boolean},state:MfaState):AdminLoginStep{
+  if(needsMfaChallenge(state))return 'verify'
+  if(profile.must_change_password)return 'password'
+  if(profile.mfa_required&&(state.currentLevel!=='aal2'||!state.factors.some(f=>f.status==='verified')))return 'enroll'
+  return 'ready'
+}
+
+export function safeAdminReturnTo(value:string|null|undefined){
+  if(!value||!value.startsWith('/admin')||/[\\\\\x00-\x1f]/.test(value))return '/admin'
+  try{
+    const url=new URL(value,'https://admin.invalid')
+    if(url.origin!=='https://admin.invalid'||!/^\/admin(?:\/|$)/.test(url.pathname)||/^\/admin\/login(?:\/|$)/.test(url.pathname))return '/admin'
+    return url.pathname+url.search+url.hash
+  }catch{return '/admin'}
+}
+
 export function adminSecurityRedirect(profile:{must_change_password?:boolean;mfa_required?:boolean},state:MfaState,path:string){
-  const security=path==='/admin/account-security'
-  // Verify an existing factor before attempting a password change.
-  if(needsMfaChallenge(state))return security?null:'/admin/account-security?required=1'
-  if(profile.must_change_password)return path==='/admin/change-password'?null:'/admin/change-password?required=1'
-  if(profile.mfa_required&&state.currentLevel!=='aal2')return security?null:'/admin/account-security?required=1'
-  return null
+  if(path==='/admin/login'||adminLoginStep(profile,state)==='ready')return null
+  const next=['/admin/change-password','/admin/account-security'].includes(path)?'/admin':safeAdminReturnTo(path)
+  return '/admin/login?next='+encodeURIComponent(next)
 }

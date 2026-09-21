@@ -19,6 +19,9 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
   useEffect(()=>{
     let alive=true
     setAllowedPath('');setError('')
+    // Login owns password, first-login setup and MFA; never bounce it to admin
+    // just because a password-only Supabase session exists.
+    if(isLogin)return
     ;(async()=>{
       try{
         const {data:{user},error:userError}=await supabase.auth.getUser()
@@ -29,13 +32,10 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
         if(!['admin','staff'].includes(profile?.role||'')||profile?.staff_status!=='active'){
           await supabase.auth.signOut();if(alive)router.replace('/admin/login?access=denied');return
         }
-        if(isLogin){router.replace('/admin');return}
         const mfa=await readMfaState(supabase)
         if(!alive)return
         const redirect=adminSecurityRedirect(profile,mfa,path)
         if(redirect){router.replace(redirect);return}
-        // Bootstrap pages stay reachable while business permissions are locked.
-        if(path==='/admin/account-security'||path==='/admin/change-password'){setAllowedPath(path);return}
         const {data:accessData,error:accessError}=await supabase.rpc('get_my_admin_access')
         if(accessError)throw accessError
         const access=(accessData||null) as AdminAccess|null

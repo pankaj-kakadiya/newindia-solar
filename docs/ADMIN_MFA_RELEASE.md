@@ -5,15 +5,21 @@ and checkout do not become subject to mandatory authenticator enrollment.
 
 ## Journey
 
+All required sign-in steps run on `/admin/login` inside the login card. The admin
+shell, sidebar, and business pages remain hidden until password setup and MFA
+requirements are satisfied. `/admin/account-security` is for managing devices
+after sign-in; opening a protected URL with incomplete authentication returns to
+login, preserving a validated internal destination.
+
 - New staff: temporary password → private password → authenticator enrollment if
   required by the administrator → dashboard.
 - Previously enrolled staff or owner: password → existing authenticator code →
   required password change, if any → dashboard. Enrollment is enforced even when
   the separate MFA-required policy switch is off.
-- Account Security supports an existing-factor challenge, multiple authenticators,
-  QR/manual-key setup, cancellation after an interrupted enrollment, and refresh
-  after removal. Required accounts must add a replacement before removing their
-  last verified authenticator.
+- The login page challenges existing authenticators. Account Security supports
+  multiple authenticators, QR/manual-key setup, cancellation after an interrupted
+  enrollment, and refresh after removal. Required accounts must add a replacement
+  before removing their last verified authenticator.
 - Password changes preserve the verified session. Email recovery also asks for an
   existing authenticator before updating a password.
 
@@ -37,7 +43,7 @@ enrollment. Do not use email/password-only recovery to bypass a working second f
 1. Merge after regression tests and the production build pass.
 2. Deploy this commit through the existing Hostinger release process. GitHub merge
    alone does not prove that Hostinger has deployed it.
-3. Confirm Account Security presents "Verify & continue" for an enrolled AAL1
+3. Confirm the login page presents "Verify & continue" for an enrolled AAL1
    account and test an authenticator login on that deployment.
 4. Apply the reviewed complete_admin_mfa_flow Supabase migration to the newindia
    project. Do not enable database enforcement before the new verification UI is
@@ -51,7 +57,7 @@ with a private fingerprint of the Auth password hash until the password changes.
 
 ## Verification
 
-`node --experimental-strip-types --test tests/admin-mfa*.test.mjs tests/admin-password-change.test.mjs`
+`node --experimental-strip-types --test tests/admin-login-flow.test.mjs tests/admin-mfa*.test.mjs tests/admin-password-change.test.mjs`
 
 UI tests execute real component handlers with isolated Auth responses. PostgreSQL
 tests execute the release SQL and verify the new-user, enrolled-owner, Finance,
