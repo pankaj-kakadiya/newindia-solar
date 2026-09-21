@@ -29,7 +29,7 @@ function harness(options={}){
   async updateUser(input){
    calls.push('updateUser')
    if(options.signInError)return {error:{message:'Current password is incorrect.'}}
-   if(options.updateError)return {error:{message:options.updateError}}
+   if(options.updateError)return {error:{message:options.updateError,code:options.updateCode}}
    if(options.requireCurrent!==false&&input.current_password!==expectedCurrent){
     return {error:{message:'Current password required when setting new password.'}}
    }
@@ -37,7 +37,8 @@ function harness(options={}){
    passwordUpdated=true
    return {error:null}
   },
-  async signOut(input){calls.push('signOut');assert.equal(input.scope,'others');return {error:null}}
+  async signOut(input){calls.push('signOut');assert.equal(input.scope,'others');return {error:null}},
+  async reauthenticate(){calls.push('reauthenticate');return {error:null}}
  },async rpc(name){
   calls.push(name)
   assert.equal(name,'complete_initial_password_change')
@@ -165,5 +166,15 @@ test('failed first-login completion cannot report success or redirect',async()=>
  assert.equal(h.mustChangePassword,true)
  assert.equal(h.state[1],'Account update failed.')
  assert.equal(h.state[2],false)
+ assert.equal(h.timers.length,0)
+})
+
+test('an older session requests a security nonce without replacing its MFA session',async()=>{
+ const h=harness({updateError:'Password update requires reauthentication',updateCode:'reauthentication_needed'})
+ await h.submit()
+ assert.deepEqual(h.calls,['getUser','updateUser','reauthenticate'])
+ assert.equal(h.passwordUpdated,false)
+ assert.equal(h.mustChangePassword,true)
+ assert.equal(h.state[4],true)
  assert.equal(h.timers.length,0)
 })
