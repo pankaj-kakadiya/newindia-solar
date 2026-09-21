@@ -3,31 +3,36 @@ import {readFile} from 'node:fs/promises'
 import {createRequire} from 'node:module'
 import vm from 'node:vm'
 import test from 'node:test'
-import {adminSecurityRedirect,needsMfaChallenge,readMfaState} from '../lib/mfa.ts'
+import {adminLoginStep,adminSecurityRedirect,needsMfaChallenge,readMfaState,safeAdminReturnTo} from '../lib/mfa.ts'
 
 const require=createRequire(import.meta.url),ts=require('typescript')
 const factor={id:'primary',friendly_name:'Phone',status:'verified',factor_type:'totp'}
 const state=(level='aal1',factors=[factor])=>({currentLevel:level,nextLevel:factors.some(f=>f.status==='verified')?'aal2':'aal1',factors})
 
-test('every internal role must challenge an opted-in factor, even when policy is optional',()=>{
+test('every internal role completes opted-in MFA on the login page',()=>{
  for(const role of ['admin','general','sales','finance','production','inventory','content','custom']){
-  assert.equal(adminSecurityRedirect({role,mfa_required:false},state(),'/admin/finance'),'/admin/account-security?required=1',role)
+  assert.equal(adminSecurityRedirect({role,mfa_required:false},state(),'/admin/finance'),'/admin/login?next=%2Fadmin%2Ffinance',role)
   assert.equal(adminSecurityRedirect({role,mfa_required:false},state('aal2'),'/admin/finance'),null,role)
  }
 })
-test('required first-login sequence is password then enrollment for a new account',()=>{
- const profile={must_change_password:true,mfa_required:true}
- assert.equal(adminSecurityRedirect(profile,state('aal1',[]),'/admin'),'/admin/change-password?required=1')
- assert.equal(adminSecurityRedirect(profile,state('aal1',[]),'/admin/change-password'),null)
- assert.equal(adminSecurityRedirect({mfa_required:true},state('aal1',[]),'/admin'),'/admin/account-security?required=1')
- assert.equal(adminSecurityRedirect({mfa_required:true},state('aal1',[]),'/admin/account-security'),null)
+test('new accounts change password and enroll within the login flow',()=>{
+ assert.equal(adminLoginStep({must_change_password:true,mfa_required:true},state('aal1',[])),'password')
+ assert.equal(adminLoginStep({mfa_required:true},state('aal1',[])),'enroll')
+ assert.equal(adminLoginStep({mfa_required:true},state('aal2')),'ready')
+ for(const path of ['/admin','/admin/change-password','/admin/account-security']){
+  assert.equal(adminSecurityRedirect({must_change_password:true,mfa_required:true},state('aal1',[]),path),'/admin/login?next=%2Fadmin')
+ }
 })
-test('password-required users with existing MFA verify first without redirect loops',()=>{
+test('MFA precedes required password changes without a login redirect loop',()=>{
  const profile={must_change_password:true,mfa_required:true}
- assert.equal(adminSecurityRedirect(profile,state(),'/admin/change-password'),'/admin/account-security?required=1')
- assert.equal(adminSecurityRedirect(profile,state(),'/admin/account-security'),null)
- assert.equal(adminSecurityRedirect(profile,state('aal2'),'/admin/account-security'),'/admin/change-password?required=1')
- assert.equal(adminSecurityRedirect(profile,state('aal2'),'/admin/change-password'),null)
+ assert.equal(adminLoginStep(profile,state()),'verify')
+ assert.equal(adminLoginStep(profile,state('aal2')),'password')
+ assert.equal(adminSecurityRedirect(profile,state(),'/admin/login'),null)
+ assert.equal(adminSecurityRedirect(profile,state('aal2'),'/admin/change-password'),'/admin/login?next=%2Fadmin')
+})
+test('login return paths reject external and login-loop destinations',()=>{
+ for(const next of ['https://evil.invalid','//evil.invalid','/admin/../../elsewhere','/administrator','/admin/login','/admin/login?next=/admin'])assert.equal(safeAdminReturnTo(next),'/admin')
+ assert.equal(safeAdminReturnTo('/admin/finance?tab=invoices'),'/admin/finance?tab=invoices')
 })
 test('incomplete enrollment alone does not claim 2FA protection',()=>{
  assert.equal(needsMfaChallenge(state('aal1',[{...factor,status:'unverified'}])),false)
@@ -78,12 +83,12 @@ async function component(path,options={}){
   'next/link':{__esModule:true,default:'a'},
   'next/navigation':{useRouter:()=>({replace:path=>calls.push(['redirect',path])}),useSearchParams:()=>new URLSearchParams(options.required?'required=1':'')},
   '../../lib/supabase':{supabase},'../../../lib/supabase':{supabase},
-  '../../../lib/mfa':{readMfaState,needsMfaChallenge},
+  '../../lib/mfa':{readMfaState,needsMfaChallenge},
   '../../../components/auth/MfaChallenge':{__esModule:true,default:MfaChallenge}
  }
  const mod={exports:{}}
  vm.runInNewContext(compiled,{module:mod,exports:mod.exports,require:name=>{assert.ok(modules[name],name);return modules[name]},window:{confirm:()=>true},Date},{filename:path})
- const props={factors:options.factors||[factor],onVerified:()=>calls.push(['verified'])}
+ const props={factors:options.factors||[factor],onVerified:()=>calls.push(['verified']),setupOnly:options.required||false,onComplete:options.required?()=>calls.push(['complete']):undefined}
  function render(){cursor=0;tree=mod.exports.default(props);first=false;return tree}
  render()
  for(const effect of effects)effect()
@@ -109,20 +114,20 @@ test('invalid or expired codes cannot finish verification',async()=>{
  assert.equal(h.level,'aal1');assert.ok(!h.calls.some(c=>c[0]==='verified'))
  assert.ok(h.values.includes('Invalid or expired code'))
 })
-test('security page presents a challenge for the screenshot state',async()=>{
- const h=await component('app/admin/account-security/page.tsx')
- assert.ok(h.find(h.MfaChallenge))
+test('security settings return password-only users to the login page',async()=>{
+ const h=await component('components/auth/AccountSecurityPanel.tsx')
+ assert.ok(h.calls.some(c=>c[0]==='redirect'&&c[1]==='/admin/login?next=%2Fadmin%2Faccount-security'))
  assert.equal(h.button('Add authenticator'),undefined)
 })
-test('activation verifies the new factor and returns to dashboard',async()=>{
- const h=await component('app/admin/account-security/page.tsx',{factors:[],required:true,requiredPolicy:true})
+test('activation verifies the new factor and advances the login flow',async()=>{
+ const h=await component('components/auth/AccountSecurityPanel.tsx',{factors:[],required:true,requiredPolicy:true})
  await h.button('Add authenticator').props.onClick();h.render()
  h.find('input').props.onChange({target:{value:'123456'}});h.render()
  await h.find('form').props.onSubmit({preventDefault(){}})
- assert.equal(h.level,'aal2');assert.ok(h.calls.some(c=>c[0]==='redirect'&&c[1]==='/admin'))
+ assert.equal(h.level,'aal2');assert.ok(h.calls.some(c=>c[0]==='complete'))
 })
 test('abandoned setup can be cancelled after reload and started again',async()=>{
- const h=await component('app/admin/account-security/page.tsx',{factors:[{...factor,status:'unverified'}]})
+ const h=await component('components/auth/AccountSecurityPanel.tsx',{factors:[{...factor,status:'unverified'}]})
  assert.equal(h.find('form'),undefined)
  await h.button('Cancel setup').props.onClick();h.render()
  assert.ok(h.calls.some(c=>c[0]==='remove'));assert.ok(h.calls.some(c=>c[0]==='refresh'))
@@ -130,13 +135,13 @@ test('abandoned setup can be cancelled after reload and started again',async()=>
  assert.ok(h.find('form'))
 })
 test('required final factor cannot be removed, including through its handler',async()=>{
- const h=await component('app/admin/account-security/page.tsx',{level:'aal2',requiredPolicy:true})
+ const h=await component('components/auth/AccountSecurityPanel.tsx',{level:'aal2',requiredPolicy:true})
  const remove=h.button('Remove');assert.equal(remove.props.disabled,true)
  await remove.props.onClick()
  assert.ok(!h.calls.some(c=>c[0]==='remove'))
 })
 test('optional last-factor removal refreshes assurance to password only',async()=>{
- const h=await component('app/admin/account-security/page.tsx',{level:'aal2'})
+ const h=await component('components/auth/AccountSecurityPanel.tsx',{level:'aal2'})
  await h.button('Remove').props.onClick()
  assert.equal(h.level,'aal1');assert.ok(h.calls.some(c=>c[0]==='refresh'))
 })

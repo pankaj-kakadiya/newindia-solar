@@ -7,7 +7,7 @@ import {validateTemporaryPassword} from '../lib/teamUser.ts'
 
 const require=createRequire(import.meta.url)
 const ts=require('typescript')
-const page=await readFile(new URL('../app/admin/change-password/page.tsx',import.meta.url),'utf8')
+const page=await readFile(new URL('../components/auth/AdminPasswordForm.tsx',import.meta.url),'utf8')
 const compiled=ts.transpileModule(page,{compilerOptions:{
  target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX
 }}).outputText
@@ -54,8 +54,8 @@ function harness(options={}){
    useRouter:()=>({replace(path){calls.push(`redirect:${path}`)}}),
    useSearchParams:()=>new URLSearchParams(options.required===false?'':'required=1')
   },
-  '../../../lib/supabase':{supabase},
-  '../../../lib/teamUser':{validateTemporaryPassword}
+  '../../lib/supabase':{supabase},
+  '../../lib/teamUser':{validateTemporaryPassword}
  }
  const module={exports:{}}
  vm.runInNewContext(compiled,{
@@ -63,7 +63,7 @@ function harness(options={}){
   require(name){assert.ok(Object.hasOwn(modules,name),`Unexpected dependency: ${name}`);return modules[name]},
   FormData:class {constructor(element){assert.equal(element,form);this.values={...element.values}}get(name){return this.values[name]??null}},
   setTimeout(callback,delay){timers.push({callback,delay})}
- },{filename:'app/admin/change-password/page.tsx'})
+ },{filename:'components/auth/AdminPasswordForm.tsx'})
  function findForm(node){
   if(!node||typeof node!=='object')return null
   if(node.type==='form')return node
@@ -71,7 +71,7 @@ function harness(options={}){
   for(const child of Array.isArray(children)?children:[children]){const found=findForm(child);if(found)return found}
   return null
  }
- const renderedForm=findForm(module.exports.default())
+ const renderedForm=findForm(module.exports.default({required:options.required!==false,onComplete:options.required===false?undefined:()=>calls.push('complete')}))
  assert.ok(renderedForm?.props.onSubmit,'The password form must expose its submit handler')
  return {
   calls,state,timers,
@@ -86,26 +86,24 @@ function harness(options={}){
  }
 }
 
-test('first login includes current password and completes before redirecting',async()=>{
+test('first login includes current password and completes before advancing the login flow',async()=>{
  const h=harness()
  await h.submit()
  assert.equal(h.passwordUpdated,true)
  assert.equal(h.mustChangePassword,false)
  assert.equal(h.state[0],false)
  assert.equal(h.state[2],true)
- assert.deepEqual(h.calls,['getUser','updateUser','complete_initial_password_change','signOut','reset'])
- assert.equal(h.timers.length,1)
- h.timers[0].callback()
- assert.equal(h.calls.at(-1),'redirect:/admin')
+ assert.deepEqual(h.calls,['getUser','updateUser','complete_initial_password_change','signOut','reset','complete'])
+ assert.equal(h.timers.length,0)
+ assert.equal(h.calls.at(-1),'complete')
 })
 
 test('successful save resets the captured form after React clears currentTarget',async()=>{
  const h=harness({requireCurrent:false})
  await assert.doesNotReject(()=>h.submit())
  assert.ok(h.calls.includes('reset'))
- assert.equal(h.timers.length,1)
- h.timers[0].callback()
- assert.equal(h.calls.at(-1),'redirect:/admin')
+ assert.equal(h.timers.length,0)
+ assert.equal(h.calls.at(-1),'complete')
 })
 
 test('normal password change preserves the current session and stays on the page',async()=>{
