@@ -12,8 +12,10 @@ export default function ChangePassword(){
 
   async function submit(e:FormEvent<HTMLFormElement>){
     e.preventDefault()
+    // React clears currentTarget after dispatch; retain the form across awaits.
+    const formElement=e.currentTarget
     setBusy(true);setMessage('');setSuccess(false)
-    const form=new FormData(e.currentTarget)
+    const form=new FormData(formElement)
     const current=String(form.get('current')||'')
     const next=String(form.get('next')||'')
     const confirm=String(form.get('confirm')||'')
@@ -24,13 +26,14 @@ export default function ChangePassword(){
     if(!user?.email){setBusy(false);setMessage('Session expired. Sign in again.');return}
     const {error:signInError}=await supabase.auth.signInWithPassword({email:user.email,password:current})
     if(signInError){setBusy(false);setMessage('Current password is incorrect.');return}
-    const {error}=await supabase.auth.updateUser({password:next})
+    // Supabase requires the current password in this request, even after sign-in.
+    const {error}=await supabase.auth.updateUser({password:next,current_password:current})
     if(error){setBusy(false);setMessage(error.message);return}
     const {error:completeError}=await supabase.rpc('complete_initial_password_change')
     if(completeError){setBusy(false);setMessage(completeError.message);return}
     await supabase.auth.signOut({scope:'others'})
     setBusy(false);setSuccess(true);setMessage('Password changed successfully. Other device sessions were signed out.')
-    e.currentTarget.reset()
+    formElement.reset()
     if(required)setTimeout(()=>router.replace('/admin'),900)
   }
 
