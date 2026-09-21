@@ -1,0 +1,128 @@
+/* New India Solar admin design system — visually aligned with the secure login. */
+.adminV3{
+  --a-navy:#07131f;--a-navy2:#0b1d2c;--a-deep-green:#123727;--a-green:#1d9b54;
+  --a-green-dark:#157944;--a-orange:#f77f00;--a-bg:#f2f7f4;--a-surface:#fff;
+  --a-line:#dce7e0;--a-muted:#6c7c75;--a-text:#10202f;
+  background:radial-gradient(circle at 92% 2%,rgba(29,155,84,.10),transparent 24%),linear-gradient(145deg,#f7faf8 0%,#eef5f1 100%);
+}
+.adminV3 .adminV2Sidebar{
+  background:radial-gradient(circle at 10% 0,rgba(29,155,84,.18),transparent 28%),linear-gradient(165deg,#07131f 0%,#0b1d2c 58%,#123727 100%);
+  border-right:1px solid rgba(123,220,158,.12);box-shadow:18px 0 55px rgba(7,19,31,.13);
+}
+.adminV3 .adminV2BrandRow{border-color:rgba(255,255,255,.07);background:rgba(255,255,255,.018)}
+.adminV3 .adminV2LogoBox{border:1px solid rgba(255,255,255,.8);border-radius:17px;box-shadow:0 16px 35px rgba(0,0,0,.22)}
+.adminV3 .adminV2Environment{border-color:rgba(118,223,157,.16);background:rgba(62,195,111,.07);color:#a7bdb2;border-radius:999px}
+.adminV3 .adminV2GroupLabel{color:#718b7e;letter-spacing:.15em}
+.adminV3 .adminV2NavItem{height:44px;border-radius:12px;color:#aabdb4;font-weight:720}
+.adminV3 .adminV2NavItem:hover{background:rgba(255,255,255,.065);color:#fff;transform:translateX(2px)}
+.adminV3 .adminV2NavItem.active{background:linear-gradient(90deg,rgba(29,155,84,.3),rgba(29,155,84,.08));box-shadow:inset 3px 0 0 #57d387,0 8px 18px rgba(0,0,0,.08)}
+.adminV3 .adminV2NavItem.active:after{content:'';position:absolute;right:10px;width:5px;height:5px;border-radius:50%;background:var(--a-orange);box-shadow:0 0 0 4px rgba(247,127,0,.1)}
+.adminV3 .adminV2NavIcon{color:#79988a}.adminV3 .adminV2NavItem.active .adminV2NavIcon{color:#75e29d}
+.adminV3 .adminV2SidebarFooter{border-color:rgba(255,255,255,.08)}
+.adminV3 .adminV2StoreLink,.adminV3 .adminV2Collapse{border-radius:11px;color:#9eb2a8}
+.adminV3 .adminV2Topbar{
+  height:76px;padding:0 28px;background:rgba(255,255,255,.88);border-bottom:1px solid rgba(205,221,212,.86);
+  box-shadow:0 9px 28px rgba(7,31,20,.045);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.adminV3 .adminV2Topbar:after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--a-orange) 0 7%,var(--a-green) 7% 34%,transparent 70%);opacity:.72}
+.adminV3 .adminV2PageIdentity small{color:#788d82;font-weight:850;letter-spacing:.11em}.adminV3 .adminV2PageIdentity b{color:#10202f;font-size:16px}
+.adminV3 .adminV2SearchButton{height:42px;min-width:245px;border-color:#d6e2db;border-radius:12px;background:#f7faf8;color:#75887e}
+.adminV3 .adminV2SearchButton:hover{border-color:#9bc9ad;box-shadow:0 0 0 4px rgba(29,155,84,.07)}
+.adminV3 .adminV2QuickButton{height:42px;border-radius:12px;background:linear-gradient(135deg,var(--a-green),var(--a-green-dark));box-shadow:0 10px 24px rgba(29,155,84,.17)}
+.adminV3 .adminV2QuickButton:hover{background:linear-gradient(135deg,#24a85e,#126c3b);transform:translateY(-1px)}
+.adminV3 .adminV2IconButton{width:42px;height:42px;border-color:#d9e4de;border-radius:12px}.adminV3 .adminV2IconButton:hover{border-color:#a9ceb7;background:#f0f8f3;color:#167943}
+.adminV3 .adminV2ProfileButton{height:46px;border:1px solid transparent;padding-right:8px}.adminV3 .adminV2ProfileButton:hover{border-color:#dce7e0;background:#f7faf8}
+.adminV3 .adminV2Avatar{width:35px;height:35px;border-radius:11px;background:linear-gradient(145deg,#1fa55a,#116b3a);box-shadow:0 7px 16px rgba(29,155,84,.18)}
+.adminV3 .adminV2Dropdown{border-color:#dce7e0;border-radius:16px;box-shadow:0 24px 65px rgba(7,27,18,.16);padding:9px}
+.adminV3 .adminV2Dropdown a,.adminV3 .adminV2Dropdown button{border-radius:10px}.adminV3 .adminV2Dropdown a:hover,.adminV3 .adminV2Dropdown button:hover{background:#eef8f2;color:#126f3d}
+.adminV3 .adminV2Content{padding:32px clamp(18px,2.4vw,38px) 70px}
+
+/* Page titles and hero bands. */
+.adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead){
+  position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.11);border-radius:24px;padding:25px 27px;
+  background:radial-gradient(circle at 88% -20%,rgba(247,127,0,.16),transparent 31%),linear-gradient(145deg,#07131f,#0c2431 62%,#123727);
+  color:#fff;box-shadow:0 18px 48px rgba(7,19,31,.13);margin-bottom:19px;
+}
+.adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead):after{
+  content:'';position:absolute;width:240px;height:240px;border:36px solid rgba(255,255,255,.027);border-radius:50%;right:-115px;bottom:-155px;pointer-events:none;
+}
+.adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead) h1{color:#fff;margin-top:6px;letter-spacing:-.04em}
+.adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead) p{color:#b8c9c0!important;line-height:1.55}
+.adminV3 .adminV2Content .adminEyebrow{display:inline-flex;align-items:center;color:#ff9b33!important;font-size:9px;font-weight:950;letter-spacing:.16em}
+.adminV3 .adminV2Content .adminEyebrow:before{content:'';width:22px;height:2px;background:var(--a-orange);margin-right:8px;border-radius:2px}
+.adminV3 .dashV2HeadActions>span{color:#a8beb3}.adminV3 .dashV2HeadActions button{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff}.adminV3 .dashV2HeadActions button:hover{background:rgba(255,255,255,.14)}
+
+/* Shared cards, stat tiles and panels. */
+.adminV3 .adminV2Content :where(.adminPanel,.dashV2Panel,.dashV2Attention,.themePanel,.themePresetSection,.cfgPanel,.accessPanel,.acctPanel,.coPanel,.cataloguePanel,.customerTablePanel,.rfqTablePanel,.adminSecurityCard){
+  border:1px solid #dfe9e3;border-radius:20px;background:rgba(255,255,255,.95);box-shadow:0 12px 34px rgba(12,39,25,.055);
+}
+.adminV3 .adminV2Content :where(.adminPanel,.dashV2Panel,.themePanel,.cfgPanel,.accessPanel,.acctPanel,.coPanel,.cataloguePanel){padding:20px}
+.adminV3 .adminV2Content :where(.dashV2Metric,.customerStats>div,.rfqStats>div,.financeStats>div,.reportsStats>div,.importsStats>div,.acctStats>div,.catalogueStats>div,.accessStats>div,.coKpis>div,.cfgAdminStats>div){
+  border:1px solid #dfe9e3;border-radius:17px;background:linear-gradient(145deg,#fff,#f8fbf9);box-shadow:0 10px 28px rgba(12,39,25,.045);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.adminV3 .adminV2Content :where(.dashV2Metric,.customerStats>div,.rfqStats>div,.financeStats>div,.reportsStats>div,.importsStats>div,.acctStats>div,.catalogueStats>div,.accessStats>div,.coKpis>div,.cfgAdminStats>div):hover{transform:translateY(-2px);border-color:#bdd8c7;box-shadow:0 16px 35px rgba(12,39,25,.08)}
+.adminV3 .dashV2Metric.tone-navy{background:radial-gradient(circle at 90% 0,rgba(247,127,0,.14),transparent 32%),linear-gradient(145deg,#07131f,#123727);border-color:#1b4432}
+.adminV3 .dashV2Metric.tone-green{background:linear-gradient(145deg,#edf9f1,#fff);border-color:#cfe5d7}
+.adminV3 .dashV2PanelHead small,.adminV3 .adminPanelHead small{color:#f77f00;font-weight:950;letter-spacing:.12em}
+.adminV3 .dashV2ChartArea{background:linear-gradient(180deg,#f2faf5,#fff);border:1px solid #e5eee8}
+.adminV3 .dashV2QuickStrip{padding:15px 17px;border-radius:17px;background:radial-gradient(circle at 90% 0,rgba(247,127,0,.13),transparent 32%),linear-gradient(135deg,#07131f,#123727);box-shadow:0 15px 35px rgba(7,19,31,.12)}
+
+/* Forms and controls. */
+.adminV3 .adminV2Content :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),select,textarea){
+  border-color:#d7e3dc!important;border-radius:11px!important;background:#fff;color:#10202f;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.adminV3 .adminV2Content :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),select,textarea):focus{
+  border-color:#1d9b54!important;box-shadow:0 0 0 4px rgba(29,155,84,.10)!important;background:#fff;outline:0!important;
+}
+.adminV3 .adminV2Content :where(input,textarea)::placeholder{color:#9aa8a0}
+.adminV3 .adminV2Content :where(.adminSearch,.customerSearch,.rfqSearch,.financeSearch,.catalogueSearch,.cmsSearch){border-color:#d8e4dd;border-radius:12px;background:#f9fbfa}
+.adminV3 .adminV2Content :where(.adminBtn,.btn.btnPrimary,.adminPrimary,.accessPrimary){
+  border:1px solid var(--a-green)!important;border-radius:11px!important;background:linear-gradient(135deg,var(--a-green),var(--a-green-dark))!important;color:#fff!important;box-shadow:0 9px 20px rgba(29,155,84,.15);font-weight:850;transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+}
+.adminV3 .adminV2Content :where(.adminBtn,.btn.btnPrimary,.adminPrimary,.accessPrimary):hover{transform:translateY(-1px);box-shadow:0 13px 26px rgba(29,155,84,.22);filter:saturate(1.08)}
+.adminV3 .adminV2Content :where(.adminBtn.ghost,.adminBtn.secondary,.btn:not(.btnPrimary)){background:#fff!important;color:#173f2a!important;border-color:#cfe0d6!important;box-shadow:none}
+.adminV3 .adminV2Content :where(.adminBtn.danger,.cmsDanger){background:#fff4f2!important;color:#b42318!important;border-color:#f0c8c3!important;box-shadow:none}
+.adminV3 .adminV2Content :where(button,a){-webkit-tap-highlight-color:transparent}
+
+/* Navigation tabs and segmented controls. */
+.adminV3 .adminV2Content :where(.financeTabs,.customerTabs,.reportsTabs,.cmsTabs,.catalogueTabs,.importsTabs,.acctTabs,.accessTabs){gap:7px;border-bottom:0;padding:7px;border:1px solid #dfe9e3;border-radius:14px;background:rgba(255,255,255,.82)}
+.adminV3 .adminV2Content :where(.financeTabs,.customerTabs,.reportsTabs,.cmsTabs,.catalogueTabs,.importsTabs,.acctTabs,.accessTabs) button{border:0!important;border-radius:10px!important;color:#63756b;background:transparent;min-height:38px}
+.adminV3 .adminV2Content :where(.financeTabs,.customerTabs,.reportsTabs,.cmsTabs,.catalogueTabs,.importsTabs,.acctTabs,.accessTabs) button.active{background:linear-gradient(135deg,#123727,#0b1d2c)!important;color:#fff!important;box-shadow:0 8px 18px rgba(7,19,31,.12)}
+
+/* Data tables. */
+.adminV3 .adminTableWrap,.adminV3 .catalogueTableWrap,.adminV3 .acctTableWrap,.adminV3 .bulkProductTableWrap{border:1px solid #e0e9e4;border-radius:15px;background:#fff;overflow:auto}
+.adminV3 .adminV2Content :where(.adminTable,.catalogueTable,.customerTable,.componentTable,.acctTable,.coTable){border-collapse:separate;border-spacing:0;width:100%}
+.adminV3 .adminV2Content :where(.adminTable,.catalogueTable,.customerTable,.componentTable,.acctTable,.coTable) th{background:#f0f6f2!important;color:#50675a;border-bottom:1px solid #dce7e0;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;padding-top:13px;padding-bottom:13px}
+.adminV3 .adminV2Content :where(.adminTable,.catalogueTable,.customerTable,.componentTable,.acctTable,.coTable) td{border-bottom-color:#edf2ef;color:#263a30}
+.adminV3 .adminV2Content :where(.adminTable,.catalogueTable,.customerTable,.componentTable,.acctTable,.coTable) tbody tr{transition:background .14s ease}
+.adminV3 .adminV2Content :where(.adminTable,.catalogueTable,.customerTable,.componentTable,.acctTable,.coTable) tbody tr:hover{background:#f5faf7}
+.adminV3 .adminV2Content .tableSub{color:#819087}
+
+/* Drawers, dialogs and loading states. */
+.adminV3 :where(.adminDrawerBackdrop,.catalogueDrawerBackdrop,.financeModalBackdrop,.financePreviewBackdrop,.acctModalBackdrop,.cmsModalBackdrop,.cfgModalWrap){background:rgba(4,15,10,.64);backdrop-filter:blur(5px)}
+.adminV3 :where(.catalogueDrawer,.customerDrawer,.rfqDrawer,.componentDrawer,.costCalculationDrawer){background:#f3f8f5;border-left:1px solid #dce7e0;box-shadow:-24px 0 65px rgba(7,19,31,.18)}
+.adminV3 :where(.financeModal,.acctModal,.cmsModal,.cfgModal){border:1px solid #dce7e0;border-radius:22px;box-shadow:0 34px 90px rgba(4,20,11,.25)}
+.adminV3 .adminLoading,.adminV3 .dashV2Loading>div,.adminV3 .dashV2Loading>section{background:linear-gradient(90deg,#e7efe9,#f6faf7,#e7efe9);background-size:200% 100%;animation:adminV3Shimmer 1.35s linear infinite}
+@keyframes adminV3Shimmer{to{background-position:-200% 0}}
+
+.adminV3 :focus-visible{outline:3px solid rgba(29,155,84,.25)!important;outline-offset:2px}
+.adminV3 ::selection{background:rgba(29,155,84,.2);color:#07131f}
+
+@media(max-width:1120px){.adminV3 .adminV2SearchButton{min-width:185px}}
+@media(max-width:860px){
+  .adminV3 .adminV2Topbar{height:68px;padding:0 16px}.adminV3 .adminV2Content{padding:22px 15px 56px}
+  .adminV3 .adminV2Sidebar{box-shadow:24px 0 65px rgba(0,0,0,.28)}
+}
+@media(max-width:700px){
+  .adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead){padding:21px 19px;border-radius:19px}
+  .adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead) h1{font-size:26px!important}
+  .adminV3 .adminV2Content :where(.adminPanel,.dashV2Panel,.themePanel,.cfgPanel,.accessPanel,.acctPanel,.coPanel,.cataloguePanel){padding:15px}
+  .adminV3 .adminV2Content :where(.financeTabs,.customerTabs,.reportsTabs,.cmsTabs,.catalogueTabs,.importsTabs,.acctTabs,.accessTabs){overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start}
+  .adminV3 .adminV2Content :where(.financeTabs,.customerTabs,.reportsTabs,.cmsTabs,.catalogueTabs,.importsTabs,.acctTabs,.accessTabs) button{white-space:nowrap;flex:0 0 auto}
+}
+@media(max-width:600px){
+  .adminV3 .adminV2Topbar{height:64px;padding:0 11px}.adminV3 .adminV2Content{padding:16px 11px 48px}
+  .adminV3 .adminV2MobileBrand{border-color:#d7e4dc;border-radius:10px}
+  .adminV3 .adminV2Content :where(.adminPageHead,.dashV2Head,.customerHero,.rfqHero,.reportsHero,.cmsHero,.catalogueV2Hero,.bulkProductHero,.acctHero,.coHead){padding:19px 16px}
+}
+@media(prefers-reduced-motion:reduce){.adminV3 *{scroll-behavior:auto!important}.adminV3 .adminV2Content :where(.dashV2Metric,.customerStats>div,.rfqStats>div,.financeStats>div,.reportsStats>div):hover{transform:none}.adminV3 .adminLoading,.adminV3 .dashV2Loading>div,.adminV3 .dashV2Loading>section{animation:none}}

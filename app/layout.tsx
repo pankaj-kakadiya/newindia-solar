@@ -46,10 +46,18 @@ import './manufacturing-v2.css'
 import './product-cost-v2.css'
 import './storefront-v3.css'
 import './storefront-polish-v4.css'
+import './admin-login-v2.css'
+import './admin-panel-v3.css'
+import './storefront-visual-v5.css'
+import './product-responsive-v6.css'
+import './storefront-fixes-v7.css'
+import './support-chat-v8.css'
+import './support-chat-controls-v8.css'
 import type {Metadata} from 'next'
 import {CartProvider} from '../components/CartProvider'
 import ThemeProvider from '../components/ThemeProvider'
 import {SiteContentProvider} from '../components/SiteContentProvider'
+import SupportLauncher from '../components/support/SupportLauncher'
 
 export const metadata:Metadata={
  title:'New India Solar | ACDB, DCDB & Solar Components',
@@ -57,5 +65,5 @@ export const metadata:Metadata={
 }
 
 export default function RootLayout({children}:{children:React.ReactNode}){
- return <html lang="en"><body><ThemeProvider><SiteContentProvider><CartProvider>{children}</CartProvider></SiteContentProvider></ThemeProvider></body></html>
+ return <html lang="en"><body><ThemeProvider><SiteContentProvider><CartProvider>{children}<SupportLauncher/></CartProvider></SiteContentProvider></ThemeProvider></body></html>
 }

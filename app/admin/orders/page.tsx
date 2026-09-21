@@ -36,7 +36,7 @@ const tabs:{key:TabKey;label:string}[]=[
   {key:'payment_pending',label:'Payment Pending'},
 ]
 
-const activeProductionStatuses=new Set(['new','bom_ready','material_reserved','assembly','testing','qc_passed','packing','in_progress','pending'])
+const activeProductionStatuses=new Set(['new','bom_ready','materials_reserved','assembly','testing','qc_passed','packing','ready_to_dispatch'])
 
 function money(v:any){return `₹${Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2})}`}
 function norm(v:any){return String(v||'').toLowerCase().trim()}

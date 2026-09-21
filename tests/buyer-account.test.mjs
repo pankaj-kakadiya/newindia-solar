@@ -26,7 +26,14 @@ test('address validation and redirects reject unsafe inputs',()=>{
 test('downloads escape untrusted text and never label order summaries as tax invoices',()=>{
  const html=buyerDocument({order:{order_number:'<script>alert(1)</script>',shipping_address:{address_line1:'<img onerror=bad>'}},items:[{name_snapshot:'<script>bad</script>',quantity:1}],seller:{}})
  assert.ok(!html.includes('<script>'));assert.ok(html.includes('&lt;script&gt;'));assert.ok(html.includes('not a tax invoice'))
+ assert.ok(html.includes('PURCHASE ORDER'));assert.ok(html.includes('VERIFIED'));assert.ok(html.includes('new-india-solar-full-logo.webp'))
  assert.ok(!/admin_notes|configuration_snapshot|cost_price/.test(ORDER_FIELDS+ORDER_ITEM_FIELDS))
+})
+
+test('issued invoice renders as a branded verified tax document',()=>{
+ const data={order:{order_number:'NIS-ORDER-1'},items:[],seller:{legal_name:'New India Solar Components Pvt Ltd'}}
+ const html=buyerDocument(data,{document_type:'tax_invoice',invoice_number:'NIS/26-27/1',status:'issued',items:[]},'https://newindiasolar.com/new-india-solar-full-logo.webp')
+ assert.ok(html.includes('TAX INVOICE'));assert.ok(html.includes('VERIFIED'));assert.ok(html.includes('New India Solar Components Pvt Ltd'));assert.ok(!html.includes('Download invoice (.html)'))
 })
 
 function queryDB(resolve){const calls=[];return {calls,from(table){let op='select',filters=[],values;const q={select(){return q},update(v){op='update';values=v;return q},insert(v){op='insert';values=v;return q},delete(){op='delete';return q},eq(k,v){filters.push([k,v]);return q},order(){return q},range(){return q},limit(){return q},not(){return q},in(k,v){filters.push([k,v]);return q},maybeSingle(){return q},single(){return q},throwOnError(){return q},then(ok,no){const c={table,op,filters,values};calls.push(c);return Promise.resolve(resolve(c)).then(ok,no)}};return q}}}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -23,6 +24,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageCircle,
   Package,
   Palette,
   ReceiptText,
@@ -38,7 +40,7 @@ import {
 import { supabase } from "../../lib/supabase";
 import { AdminAccess, adminRoleLabels, canAdmin } from "../../lib/adminAccess";
 
-type BadgeKey = "orders" | "production" | "rfqs" | "alerts";
+type BadgeKey = "orders" | "production" | "rfqs" | "alerts" | "support";
 type NavItem = {
   href: string;
   label: string;
@@ -122,6 +124,13 @@ const navGroups: NavGroup[] = [
         label: "Customer CRM",
         icon: Users,
         module: "customers",
+      },
+      {
+        href: "/admin/support",
+        label: "Secure Support",
+        icon: MessageCircle,
+        badge: "support",
+        module: "support",
       },
     ],
   },
@@ -324,6 +333,7 @@ export default function AdminShell({
       production: 0,
       rfqs: 0,
       alerts: 0,
+      support: 0,
     }),
     [access, setAccess] = useState<AdminAccess | null>(null),
     [workflowAlerts, setWorkflowAlerts] = useState<WorkflowAlert[]>([]),
@@ -340,7 +350,7 @@ export default function AdminShell({
     setEnvironment(
       host.includes("vercel.app") || host.includes("localhost")
         ? "STAGING"
-        : "PRODUCTION",
+        : "LIVE",
     );
   }, [isLogin]);
   useEffect(() => {
@@ -360,6 +370,7 @@ export default function AdminShell({
         production: 0,
         rfqs: 0,
         alerts: 0,
+        support: 0,
       };
       const tasks: Promise<void>[] = [];
       if (canAdmin(a, "orders"))
@@ -401,6 +412,12 @@ export default function AdminShell({
           ).then(({ count }) => {
             next.rfqs = count || 0;
           }),
+        );
+      if (canAdmin(a, "support"))
+        tasks.push(
+          Promise.resolve(
+            supabase.from("support_conversations").select("*", { count: "exact", head: true }).in("status", ["open", "pending_team"]),
+          ).then(({ count }) => { next.support = count || 0; }),
         );
       if (canAdmin(a, "notifications"))
         tasks.push(
@@ -567,7 +584,7 @@ export default function AdminShell({
   if (isLogin) return <>{children}</>;
 
   return (
-    <div className={`adminV2 ${collapsed ? "isCollapsed" : ""}`}>
+    <div className={`adminV2 adminV3 ${collapsed ? "isCollapsed" : ""}`}>
       <button
         className={`adminV2Overlay ${mobileOpen ? "show" : ""}`}
         aria-label="Close navigation"
@@ -580,15 +597,9 @@ export default function AdminShell({
             className="adminV2Brand"
             aria-label="New India Solar admin dashboard"
           >
-            <span className="adminV2LogoBox">
-              <img
-                src="/new-india-solar-full-logo.webp"
-                alt="New India Solar"
-              />
-            </span>
-            <span className="adminV2BrandCopy">
-              <b>Control Center</b>
-              <small>New India Solar</small>
+            <span className="adminV2LogoBox" aria-hidden="true">
+              <Image className="adminV2LogoFull" src="/new-india-solar-full-logo.webp" alt="" fill sizes="238px" priority />
+              <Image className="adminV2LogoCompact" src="/new-india-solar-logo.webp" alt="" fill sizes="54px" priority />
             </span>
           </Link>
           <button
@@ -600,7 +611,7 @@ export default function AdminShell({
           </button>
         </div>
         <div className="adminV2Environment">
-          <span className={environment === "PRODUCTION" ? "live" : "stage"} />
+          <span className={environment === "LIVE" ? "live" : "stage"} />
           <span>{environment}</span>
         </div>
         <nav className="adminV2Nav" aria-label="Admin navigation">
@@ -664,6 +675,9 @@ export default function AdminShell({
             >
               <Menu size={20} />
             </button>
+            <Link className="adminV2MobileBrand" href="/admin" aria-label="New India Solar admin dashboard">
+              <Image src="/new-india-solar-logo.webp" alt="" width={34} height={34} priority />
+            </Link>
             <div className="adminV2PageIdentity">
               <small>New India Solar</small>
               <b>{routeTitle(pathname)}</b>

@@ -1,0 +1,40 @@
+/* Storefront fixes V7 — keep high-contrast callouts and combo totals stable
+   when route CSS chunks are evaluated after the shared visual theme. */
+.comboPage .comboSummary{
+  display:block;
+  align-self:start;
+  min-height:0;
+  background:linear-gradient(160deg,#071923,#103a2b)!important;
+  border-color:rgba(90,188,129,.28)!important;
+  color:#fff!important;
+  box-shadow:0 22px 55px rgba(7,25,19,.18);
+}
+.comboPage .comboSummary h2,
+.comboPage .comboSummaryLine b,
+.comboPage .comboSummaryLine>strong,
+.comboPage .comboTotal strong,
+.comboPage .comboCustom b{color:#fff}
+.comboPage .comboSummaryLine{border-color:rgba(255,255,255,.12)}
+.comboPage .comboSummaryLine i{background:rgba(255,255,255,.09);color:#70dfa0}
+.comboPage .comboSummaryLine small,
+.comboPage .comboTotal>span,
+.comboPage .comboTotal small,
+.comboPage .comboCustom p{color:#a9beb5}
+.comboPage .comboTotal{background:rgba(255,255,255,.085)}
+.comboPage .comboCustom{border-color:rgba(255,255,255,.12)}
+
+.cvPage .cvBottomCta{
+  background:radial-gradient(circle at 88% 10%,rgba(76,215,129,.18),transparent 28%),linear-gradient(120deg,#07131f,#10432d)!important;
+  border-color:rgba(75,178,116,.35)!important;
+  color:#fff!important;
+  box-shadow:0 22px 55px rgba(7,19,31,.13);
+}
+.cvPage .cvBottomCta h2{color:#fff}
+.cvPage .cvBottomCta p{color:#c8d8d1}
+.cvPage .cvBottomCta .nisEyebrow{color:#72e09f}
+
+@media(max-width:600px){
+  .comboPage .comboSummaryLine{grid-template-columns:40px minmax(0,1fr)}
+  .comboPage .comboSummaryLine>strong{grid-column:2;margin-top:2px;font-size:13px}
+  .cvPage .cvBottomCta{padding:24px 20px}
+}
