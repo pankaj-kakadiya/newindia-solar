@@ -60,6 +60,28 @@ export async function PATCH(request:NextRequest){
  if(userError||!userData.user)return response({error:'Auth user not found.'},404)
  if(profileReadError)return response({error:profileReadError.message},503)
  if(profile?.role==='admin')return response({error:'Owner Admin credentials and access must be managed from their own account.'},403)
+ if(body.action==='reset_mfa'){
+  if(auth.access.aal!=='aal2')return response({error:'Verify your own authenticator in Account Security before recovering another account.'},403)
+  if(profile?.role!=='staff'||profile.staff_status!=='active')return response({error:'Only active staff accounts can be recovered here.'},403)
+  const reason=String(body.reason||'').trim(),password=String(body.temporary_password||'')
+  if(body.identity_confirmed!==true||reason.length<10||reason.length>500)return response({error:'Confirm the employee identity and provide a recovery reason (10–500 characters).'},400)
+  const passwordError=validateTemporaryPassword(password);if(passwordError)return response({error:passwordError},400)
+  // Record who authorized recovery before changing credentials. Never log passwords.
+  const {error:auditError}=await admin.from('admin_audit_logs').insert({actor_user_id:auth.access.user_id,action:'mfa_recovery_requested',module_key:'security',entity_table:'profiles',entity_id:userId,description:'Identity-confirmed staff authenticator recovery',metadata:{reason}})
+  if(auditError)return response({error:'Recovery could not be audited. No credentials were changed.'},503)
+  const {error:passwordErrorResult}=await admin.auth.admin.updateUserById(userId,{password})
+  if(passwordErrorResult)return response({error:passwordErrorResult.message},422)
+  const {error:flagError}=await admin.from('profiles').update({mfa_required:true,must_change_password:true,updated_at:new Date().toISOString()}).eq('id',userId)
+  if(flagError)return response({error:'Recovery stopped after the password reset. Retry recovery to finish securing the account.'},500)
+  const {data:factors,error:factorError}=await admin.auth.admin.mfa.listFactors({userId})
+  if(factorError)return response({error:'Recovery settings saved, but authenticators could not be listed. Retry recovery.'},503)
+  for(const factor of factors.factors){
+   const {error}=await admin.auth.admin.mfa.deleteFactor({userId,id:factor.id})
+   if(error)return response({error:'Recovery is incomplete. Retry to remove the remaining authenticator.'},503)
+  }
+  // Supabase revokes the target user's sessions when verified factors are deleted.
+  return response({message:'Authenticator recovery completed. Give the employee the new temporary password privately. They must set a private password and activate a new authenticator before entering the dashboard.'})
+ }
  if(body.action==='reset_password'){
   const password=String(body.temporary_password||''),passwordError=validateTemporaryPassword(password)
   if(passwordError)return response({error:passwordError},400)
