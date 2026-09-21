@@ -24,13 +24,11 @@ function harness(options={}){
  const supabase={auth:{
   async getUser(){calls.push('getUser');return {data:{user:options.expired?null:{email:'finance@example.invalid'}}}},
   async signInWithPassword(input){
-   calls.push('signInWithPassword')
-   assert.equal(input.email,'finance@example.invalid')
-   assert.equal(input.password,expectedCurrent)
-   return {error:options.signInError?{message:'Invalid login credentials'}:null}
+   assert.fail('Password updates must not replace an AAL2 session with a new password-only sign-in')
   },
   async updateUser(input){
    calls.push('updateUser')
+   if(options.signInError)return {error:{message:'Current password is incorrect.'}}
    if(options.updateError)return {error:{message:options.updateError}}
    if(options.requireCurrent!==false&&input.current_password!==expectedCurrent){
     return {error:{message:'Current password required when setting new password.'}}
@@ -94,7 +92,7 @@ test('first login includes current password and completes before redirecting',as
  assert.equal(h.mustChangePassword,false)
  assert.equal(h.state[0],false)
  assert.equal(h.state[2],true)
- assert.deepEqual(h.calls,['getUser','signInWithPassword','updateUser','complete_initial_password_change','signOut','reset'])
+ assert.deepEqual(h.calls,['getUser','updateUser','complete_initial_password_change','signOut','reset'])
  assert.equal(h.timers.length,1)
  h.timers[0].callback()
  assert.equal(h.calls.at(-1),'redirect:/admin')
@@ -121,7 +119,7 @@ test('normal password change preserves the current session and stays on the page
 test('incorrect temporary password cannot save or unlock the account',async()=>{
  const h=harness({signInError:true})
  await h.submit()
- assert.deepEqual(h.calls,['getUser','signInWithPassword'])
+ assert.deepEqual(h.calls,['getUser','updateUser'])
  assert.equal(h.state[1],'Current password is incorrect.')
  assert.equal(h.mustChangePassword,true)
  assert.equal(h.state[0],false)
@@ -152,7 +150,7 @@ test('password validation rejects weak or mismatched values before authenticatio
 test('failed password update cannot clear first-login restriction or redirect',async()=>{
  const h=harness({updateError:'New password should be different from the old password.'})
  await h.submit()
- assert.deepEqual(h.calls,['getUser','signInWithPassword','updateUser'])
+ assert.deepEqual(h.calls,['getUser','updateUser'])
  assert.equal(h.passwordUpdated,false)
  assert.equal(h.mustChangePassword,true)
  assert.equal(h.state[2],false)
@@ -162,7 +160,7 @@ test('failed password update cannot clear first-login restriction or redirect',a
 test('failed first-login completion cannot report success or redirect',async()=>{
  const h=harness({completeError:'Account update failed.'})
  await h.submit()
- assert.deepEqual(h.calls,['getUser','signInWithPassword','updateUser','complete_initial_password_change'])
+ assert.deepEqual(h.calls,['getUser','updateUser','complete_initial_password_change'])
  assert.equal(h.passwordUpdated,true)
  assert.equal(h.mustChangePassword,true)
  assert.equal(h.state[1],'Account update failed.')

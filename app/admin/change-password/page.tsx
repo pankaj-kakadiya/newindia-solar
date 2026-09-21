@@ -24,15 +24,14 @@ export default function ChangePassword(){
     if(next!==confirm){setBusy(false);setMessage('New passwords do not match.');return}
     const {data:{user}}=await supabase.auth.getUser()
     if(!user?.email){setBusy(false);setMessage('Session expired. Sign in again.');return}
-    const {error:signInError}=await supabase.auth.signInWithPassword({email:user.email,password:current})
-    if(signInError){setBusy(false);setMessage('Current password is incorrect.');return}
-    // Supabase requires the current password in this request, even after sign-in.
+    // Validate the current password within the update. A second password sign-in
+    // would replace the verified AAL2 session with a password-only AAL1 session.
     const {error}=await supabase.auth.updateUser({password:next,current_password:current})
     if(error){setBusy(false);setMessage(error.message);return}
     const {error:completeError}=await supabase.rpc('complete_initial_password_change')
     if(completeError){setBusy(false);setMessage(completeError.message);return}
-    await supabase.auth.signOut({scope:'others'})
-    setBusy(false);setSuccess(true);setMessage('Password changed successfully. Other device sessions were signed out.')
+    const {error:signOutError}=await supabase.auth.signOut({scope:'others'})
+    setBusy(false);setSuccess(true);setMessage(signOutError?'Password changed. Other devices could not be signed out; retry from Account Security.':'Password changed successfully. Other device sessions were signed out.')
     formElement.reset()
     if(required)setTimeout(()=>router.replace('/admin'),900)
   }

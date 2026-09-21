@@ -9,6 +9,7 @@ export type AdminAccess={
   must_change_password?:boolean
   mfa_required?:boolean
   aal?:string
+  session_ready?:boolean
   permissions:Record<string,ModulePermission>
 }
 

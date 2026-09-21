@@ -1,50 +1,88 @@
 'use client'
-
-import {useEffect,useState} from 'react'
+import {FormEvent,useEffect,useState} from 'react'
 import Link from 'next/link'
-import {KeyRound,LogOut,RefreshCw,ShieldCheck,Smartphone} from 'lucide-react'
+import {useRouter,useSearchParams} from 'next/navigation'
 import {supabase} from '../../../lib/supabase'
+import {MfaState,needsMfaChallenge,readMfaState} from '../../../lib/mfa'
+import MfaChallenge from '../../../components/auth/MfaChallenge'
 
-type Factor={id:string;friendly_name?:string;status:string;factor_type:string}
-
-export default function AccountSecurityPage(){
- const [factors,setFactors]=useState<Factor[]>([]),[aal,setAal]=useState('aal1'),[qr,setQr]=useState(''),[secret,setSecret]=useState(''),[pendingId,setPendingId]=useState(''),[code,setCode]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false)
- async function load(){
-  const [{data:list,error},{data:levels}]=await Promise.all([supabase.auth.mfa.listFactors(),supabase.auth.mfa.getAuthenticatorAssuranceLevel()])
-  if(error){setMessage(error.message);return}
-  setFactors((list?.all||[]) as Factor[]);setAal(levels?.currentLevel||'aal1')
- }
- useEffect(()=>{load()},[])
- async function enroll(){
-  setBusy(true);setMessage('')
-  const {data,error}=await supabase.auth.mfa.enroll({factorType:'totp',friendlyName:'New India Solar Authenticator'})
-  setBusy(false)
-  if(error){setMessage(error.message);return}
-  setPendingId(data.id);setQr(data.totp.qr_code);setSecret(data.totp.secret);setMessage('Scan the QR code, then enter the 6-digit code to finish setup.')
- }
- async function verify(){
-  if(!pendingId||!/^[0-9]{6}$/.test(code))return
-  setBusy(true);const {error}=await supabase.auth.mfa.challengeAndVerify({factorId:pendingId,code});setBusy(false)
-  if(error){setMessage(error.message);return}
-  setQr('');setSecret('');setPendingId('');setCode('');setMessage('Authenticator verified. This session now has high-assurance access.');await load()
- }
- async function remove(id:string){
-  if(!confirm('Remove this authenticator from your account?'))return
-  setBusy(true);const {error}=await supabase.auth.mfa.unenroll({factorId:id});setBusy(false)
-  if(error){setMessage(error.message);return}setMessage('Authenticator removed.');await load()
- }
- async function signOutOthers(){setBusy(true);const {error}=await supabase.auth.signOut({scope:'others'});setBusy(false);setMessage(error?error.message:'All other device sessions were signed out. This device remains signed in.')}
- return <section>
-  <div className="adminPageHead"><div><span className="adminEyebrow">ACCOUNT SECURITY</span><h1>Login & Device Security</h1><p>Protect your admin account with an authenticator and control active device sessions.</p></div><button className="btn" onClick={load}><RefreshCw size={15}/> Refresh</button></div>
-  {message&&<div className="accessMessage" role="status"><ShieldCheck size={16}/>{message}</div>}
-  <div className="accessStats"><article><span><ShieldCheck/></span><div><small>Current Session</small><strong>{aal==='aal2'?'Verified':'Password only'}</strong><p>{aal==='aal2'?'Two-factor assurance active':'Complete authenticator verification'}</p></div></article><article><span><Smartphone/></span><div><small>Authenticators</small><strong>{factors.filter(f=>f.status==='verified').length}</strong><p>Verified TOTP factors</p></div></article></div>
-  <div className="accessTeamLayout">
-   <section className="accessPanel"><div className="accessPanelHead"><div><h2>Authenticator App</h2><p>Use Google Authenticator, Microsoft Authenticator, 1Password, Authy, or another TOTP app.</p></div><Smartphone/></div>
-    {factors.length?<div className="overrideRows">{factors.map(f=><div key={f.id}><span><b>{f.friendly_name||'Authenticator'}</b><small>{f.factor_type.toUpperCase()} · {f.status}</small></span><em className={f.status==='verified'?'allow':'deny'}>{f.status.toUpperCase()}</em><button onClick={()=>remove(f.id)} disabled={busy}>Remove</button></div>)}</div>:<p className="overrideEmpty">No authenticator is enrolled yet.</p>}
-    {!pendingId&&<button className="accessPrimary" onClick={enroll} disabled={busy}><Smartphone size={15}/> Add Authenticator</button>}
-    {qr&&<div className="adminSecurityForm"><img src={qr} alt="Authenticator setup QR code" width={220} height={220}/><label>Manual setup key<input readOnly value={secret}/></label><label>6-digit verification code<input inputMode="numeric" value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,'').slice(0,6))}/></label><button className="accessPrimary" onClick={verify} disabled={busy||code.length!==6}>Verify & Activate</button></div>}
-   </section>
-   <section className="accessPanel"><div className="accessPanelHead"><div><h2>Session Controls</h2><p>Immediately invalidate refresh sessions on every other browser and device.</p></div><LogOut/></div><button className="accessPrimary" onClick={signOutOthers} disabled={busy}><LogOut size={15}/> Sign Out Other Devices</button><div className="accessSecurityNote"><KeyRound size={17}/><span>For best protection, also use a unique 12+ character password and never share an authenticator code.</span></div><Link className="accessPrimary" href="/admin/change-password"><KeyRound size={15}/> Change Password</Link></section>
-  </div>
- </section>
+export default function AccountSecurity(){
+  const router=useRouter(),required=useSearchParams().get('required')==='1'
+  const [state,setState]=useState<MfaState|null>(null),[policy,setPolicy]=useState(false),[mustChange,setMustChange]=useState(false)
+  const [pending,setPending]=useState<{id:string;qr:string;secret:string}|null>(null),[code,setCode]=useState(''),[name,setName]=useState('')
+  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[failed,setFailed]=useState(false)
+  async function load(){
+    const {data:{user},error}=await supabase.auth.getUser()
+    if(error||!user)throw Error('Your session expired. Sign in again.')
+    const [mfa,profile]=await Promise.all([readMfaState(supabase),supabase.from('profiles').select('mfa_required,must_change_password').eq('id',user.id).single()])
+    if(profile.error)throw profile.error
+    setState(mfa);setPolicy(Boolean(profile.data.mfa_required));setMustChange(Boolean(profile.data.must_change_password));setFailed(false)
+    return {mfa,policy:Boolean(profile.data.mfa_required),mustChange:Boolean(profile.data.must_change_password)}
+  }
+  async function refresh(){try{await load()}catch(error:any){setFailed(true);setMessage(error.message)}}
+  useEffect(()=>{refresh()},[])
+  async function verified(){
+    const next=await load()
+    if(next.mfa.currentLevel!=='aal2')throw Error('Verification did not complete. Please try again.')
+    setMessage('Authenticator verified. This session is protected.')
+    if(required||next.mustChange)router.replace(next.mustChange?'/admin/change-password?required=1':'/admin')
+  }
+  async function enroll(){
+    setBusy(true);setMessage('')
+    try{
+      const current=await load()
+      if(needsMfaChallenge(current.mfa))throw Error('Verify your existing authenticator before adding another.')
+      const {data,error}=await supabase.auth.mfa.enroll({factorType:'totp',friendlyName:name.trim()||`New India Solar ${Date.now()}`})
+      if(error)throw error
+      setPending({id:data.id,qr:data.totp.qr_code,secret:data.totp.secret});setCode('');await load()
+    }catch(error:any){setMessage(error.message)}finally{setBusy(false)}
+  }
+  async function activate(event:FormEvent){
+    event.preventDefault();setBusy(true);setMessage('')
+    try{
+      if(!pending||!/^\d{6}$/.test(code))throw Error('Enter the 6-digit code from your authenticator.')
+      const {error}=await supabase.auth.mfa.challengeAndVerify({factorId:pending.id,code})
+      if(error)throw error
+      setPending(null);setCode('');setName('');await verified()
+    }catch(error:any){setMessage(error.message);setCode('')}finally{setBusy(false)}
+  }
+  async function remove(id:string){
+    if(!window.confirm('Remove this authenticator from your account?'))return
+    setBusy(true);setMessage('')
+    try{
+      const current=await load(),factor=current.mfa.factors.find(f=>f.id===id)
+      if(factor?.status==='verified'&&current.mfa.currentLevel!=='aal2')throw Error('Verify your authenticator before removing it.')
+      if(factor?.status==='verified'&&current.policy&&current.mfa.factors.filter(f=>f.status==='verified').length<=1)throw Error('2FA is required. Add and verify a replacement before removing the last authenticator.')
+      const {error}=await supabase.auth.mfa.unenroll({factorId:id});if(error)throw error
+      if(pending?.id===id){setPending(null);setCode('')}
+      const {error:refreshError}=await supabase.auth.refreshSession();if(refreshError)throw refreshError
+      await load();setMessage('Authenticator removed.')
+    }catch(error:any){setMessage(error.message)}finally{setBusy(false)}
+  }
+  async function signOut(others:boolean){
+    setBusy(true);setMessage('')
+    try{const {error}=await supabase.auth.signOut({scope:others?'others':'local'});if(error)throw error;if(others)setMessage('Other device refresh sessions signed out.');else router.replace('/admin/login')}
+    catch(error:any){setMessage(error.message)}finally{setBusy(false)}
+  }
+  const challenge=state&&needsMfaChallenge(state),verifiedCount=state?.factors.filter(f=>f.status==='verified').length||0
+  return <section><div className="adminPageHead"><div><span className="adminEyebrow">ACCOUNT SECURITY</span><h1>Login & Device Security</h1><p>{required?'Complete account security to continue.':'Protect your account with an authenticator and manage device sessions.'}</p></div><button className="btn" disabled={busy} onClick={refresh}>Refresh</button></div>
+    {message&&<p className="adminError" role="status">{message}</p>}
+    {failed?<button className="btn" onClick={refresh}>Retry security check</button>:!state?<p>Loading account security…</p>:<>
+      <div className="adminSecurityCard"><h2>{state.currentLevel==='aal2'?'Session protected by 2FA':'Password-only session'}</h2><p>{verifiedCount} verified authenticator{verifiedCount===1?'':'s'}{policy?' · 2FA required by your administrator':''}</p></div>
+      {challenge?<MfaChallenge factors={state.factors} onVerified={verified}/>:<>
+        <div className="adminSecurityCard"><h2>Authenticator apps</h2><p>Use Google Authenticator, Microsoft Authenticator, 1Password, Authy or another TOTP app. Add a second authenticator as a backup.</p>
+          {state.factors.map(factor=><div className="adminSecurityFactor" key={factor.id}><span><b>{factor.friendly_name||'Authenticator'}</b><small> {factor.status==='verified'?'Verified':'Setup incomplete — cancel and start again if you no longer see the QR code'}</small></span><button className="btn" disabled={busy||(policy&&factor.status==='verified'&&verifiedCount<=1)} onClick={()=>remove(factor.id)}>{factor.status==='verified'?'Remove':'Cancel setup'}</button></div>)}
+          {pending?<form className="adminSecurityForm" onSubmit={activate}>
+            <p>1. Scan this QR code. Keep the setup key private.</p><img src={pending.qr} width={220} height={220} alt="Scan with your authenticator app"/>
+            <details><summary>Enter a setup key manually</summary><code style={{overflowWrap:'anywhere'}}>{pending.secret}</code></details>
+            <label>2. Enter the 6-digit code<input value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,'').slice(0,6))} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required/></label>
+            <button className="btn btnPrimary" disabled={busy}>{busy?'Verifying…':'Verify & activate'}</button><button type="button" className="btn" disabled={busy} onClick={()=>remove(pending.id)}>Cancel setup</button>
+          </form>:<div className="adminSecurityForm"><label>Device name (optional)<input value={name} maxLength={60} onChange={e=>setName(e.target.value)} placeholder="My phone or backup device"/></label><button className="btn btnPrimary" disabled={busy} onClick={enroll}>Add authenticator</button></div>}
+          {policy&&verifiedCount===1&&<p>Add and verify a replacement before removing your last authenticator.</p>}
+        </div>
+        <div className="adminSecurityCard"><h2>Session controls</h2><button className="btn btnPrimary" disabled={busy} onClick={()=>signOut(true)}>Sign out other devices</button> <Link className="btn" href={mustChange?'/admin/change-password?required=1':'/admin/change-password'}>Change password</Link> {(!policy||state.currentLevel==='aal2')&&<Link className="btn" href="/admin">Continue to dashboard</Link>}</div>
+      </>}
+    </>}
+    <button className="btn" disabled={busy} onClick={()=>signOut(false)}>Sign out</button>
+  </section>
 }
