@@ -9,7 +9,7 @@ async function ready(page){
 }
 async function loaded(page,code){await page.goto('/customize/'+code.toLowerCase());await ready(page)}
 async function assetsReady(page){await stage(page).evaluate(async el=>{await Promise.all([...el.querySelectorAll('image')].map(el=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve();i.onerror=()=>reject(new Error('Asset failed: '+el.getAttribute('href')));i.src=el.getAttribute('href')})))})}
-for(const code of ['ACDB','DCDB'])for(const width of [390,1440])test(`${code} at ${width}: all 24 SPD and breaker previews`,async({page})=>{
+for(const code of ['ACDB','DCDB'])for(const width of [390,1440])test(`${code} at ${width}: all SPD and breaker previews`,async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(String(e)))
  await isolated(page);await page.setViewportSize({width,height:960});await loaded(page,code)
  const data=starter[code],sg=data.groups.find(g=>g.option_key==='spd'),mg=data.groups.find(g=>['protection','dc_mcb'].includes(g.option_key));let n=0
@@ -24,14 +24,14 @@ for(const code of ['ACDB','DCDB'])for(const width of [390,1440])test(`${code} at
   expect(spd.right).toBeLessThan(mcb.left);expect(mcb.right).toBeLessThan(terminal.left)
   await stage(page).screenshot({path:`test-results/${code}-${width}-${String(++n).padStart(2,'0')}.png`})
  }
- expect(n).toBe(24);expect(errors).toEqual([]);await page.screenshot({path:`test-results/${code}-${width}-buyer-page.png`,fullPage:true})
+ expect(n).toBe(code==='ACDB'?36:24);expect(errors).toEqual([]);await page.screenshot({path:`test-results/${code}-${width}-buyer-page.png`,fullPage:true})
 })
 for(const code of ['ACDB','DCDB'])test(`${code}: uploaded reference choices preserve BOM and never mix AC/DC`,async({page})=>{
  await isolated(page);await loaded(page,code)
  const options=await page.locator('#builder-reference option:not(:disabled)').evaluateAll(nodes=>nodes.map(n=>n.value).filter(Boolean))
- expect(options.length).toBe(code==='ACDB'?20:16)
+ expect(options.length).toBe(code==='ACDB'?21:17)
  for(const id of options){await page.locator('#builder-reference').selectOption(id);await expect(page.locator('.bbIssues')).toHaveCount(0);await expect(page.locator('.bbNotice')).toContainText(`${code}-${id}`);const all=await stage(page).locator('.bbLayer').evaluateAll(nodes=>nodes.map(n=>n.dataset.asset));expect(all.some(s=>s.startsWith(code==='ACDB'?'dc-':'ac-'))).toBe(false)}
- if(code==='ACDB')await expect(page.locator('#builder-reference option[value="14"]')).toBeDisabled()
+ if(code==='ACDB')await expect(page.locator('#builder-reference option[value="14"]')).toBeEnabled()
 })
 test('optional layers, gland quantities, save, reload, restore and reset',async({page})=>{
  await isolated(page);await loaded(page,'ACDB')
