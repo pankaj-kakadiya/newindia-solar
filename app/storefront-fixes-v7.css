@@ -59,3 +59,6 @@
 .cvPage{min-height:100vh}
 .cvResultsHead p,.cvPagination>span,.emptyCart>p{color:#52616c}
 .cartPageHead .darkEye{color:#146d3b}
+
+.homeV3 .hvBuildAssurance small{color:#52616c}
+.emptyCart .btnRow .btn{background:#146d3b;color:#fff}
