@@ -29,7 +29,7 @@ for(const code of ['ACDB','DCDB'])for(const width of [390,1440])test(`${code} at
 for(const code of ['ACDB','DCDB'])test(`${code}: uploaded reference choices preserve BOM and never mix AC/DC`,async({page})=>{
  await isolated(page);await loaded(page,code)
  const options=await page.locator('#builder-reference option:not(:disabled)').evaluateAll(nodes=>nodes.map(n=>n.value).filter(Boolean))
- expect(options.length).toBe(code==='ACDB'?21:17)
+ expect(options.length).toBe(21)
  for(const id of options){await page.locator('#builder-reference').selectOption(id);await expect(page.locator('.bbIssues')).toHaveCount(0);await expect(page.locator('.bbNotice')).toContainText(`${code}-${id}`);const all=await stage(page).locator('.bbLayer').evaluateAll(nodes=>nodes.map(n=>n.dataset.asset));expect(all.some(s=>s.startsWith(code==='ACDB'?'dc-':'ac-'))).toBe(false)}
  if(code==='ACDB')await expect(page.locator('#builder-reference option[value="14"]')).toBeEnabled()
 })

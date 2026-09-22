@@ -10,9 +10,17 @@ for(const code of ['ACDB','DCDB']){
  test(`${code}: over-capacity and unmapped selections fail visibly`,()=>{const p=lib.defaults(d);p.cable_gland[0].qty=3;assert.ok(lib.selectionIssues(d,p,code).length);p.cable_gland[0].qty=2;const broken={...d,slots:d.slots.filter(s=>s.slot_key!=='nis_v1_glandRight')};assert.ok(lib.selectionIssues(broken,p,code).some(x=>x.includes('insufficient mapped')))})
 }
 test('AC14 uses new AC components and 07/16 retain their existing references',()=>{assert.equal(lib.references('ACDB').length,21);const ref=lib.references('ACDB').find(r=>r.id==='14');assert.equal(ref.spd,'ac-spd-orbit');assert.equal(ref.mcb,'ac-mcb-empower-c20a');const a=lib.references('ACDB').find(x=>x.id==='07'),b=lib.references('ACDB').find(x=>x.id==='16');assert.equal(a.spd,b.spd);assert.equal(a.mcb,b.mcb)})
-test('unrecovered DC17-20 are never fabricated as reviewed references',()=>{assert.equal(lib.references('DCDB').length,17);assert.equal(lib.presetSelection(lib.uploadedCatalog('DCDB'),'DCDB','17'),null)})
 test('SVG and PNG top alignment uses the same undistorted rectangle',()=>{const r=visual.fitRectangle([0,0,633,1194],[477,487,225,435],'contain-top');assert.equal(r[1],487);assert.ok(Math.abs(r[2]/r[3]-633/1194)<1e-8)})
 test('unsafe asset URL schemes and credential URLs are rejected',()=>{for(const s of ['javascript:a','//evil.com','/\\evil.com','https://user:pass@evil.com/image','https://example.com/a b'])assert.equal(visual.safeImageSource(s),false);assert.equal(visual.safeImageSource('/configurator/a.png'),true)})
 test('expired and corrupt drafts are not restored',()=>{const d=lib.uploadedCatalog('ACDB');for(const raw of ['{}','bad',JSON.stringify({version:2,code:'ACDB',selection:lib.defaults(d),savedAt:Date.now()-31*86400000})])assert.equal(lib.readDraft(raw,d,'ACDB'),null)})
 
 test('DC21 uses the photographed WinSurge and Siemens DC components',()=>{const ref=lib.references('DCDB').find(r=>r.id==='21');assert.equal(ref.spd,'dc-spd-winsurge');assert.equal(ref.mcb,'dc-mcb-siemens-32a')})
+
+for(const code of ['ACDB','DCDB'])test(`${code}: all 21 catalogue numbers are present exactly once`,()=>{assert.deepEqual(Array.from(lib.references(code),r=>r.id),Array.from({length:21},(_,i)=>String(i+1).padStart(2,'0')))})
+for(const [id,spd,mcb] of [['17','finder','lauritz-knudsen-c32'],['18','sighter','empower-c32a'],['19','schutz','lauritz-knudsen-c32'],['20','winsurge','empower-c32a'],['21','winsurge','siemens-32a']])test(`DCDB-${id}: catalogue components survive preview, BOM and saved draft`,()=>{
+ const d=lib.uploadedCatalog('DCDB'),p=lib.presetSelection(d,'DCDB',id),layers=lib.previewLayers(d,p),ids=layers.map(l=>l.component.visual_settings.asset_id)
+ assert.ok(ids.includes('dc-spd-'+spd));assert.ok(ids.includes('dc-mcb-'+mcb));assert.ok(ids.every(x=>!x.startsWith('ac-')));assert.equal(layers.length,11)
+ const bom=lib.summary(d,p,'DCDB',id);assert.ok(bom.includes('DCDB-'+id));assert.ok(bom.includes('dc-spd-'+spd));assert.ok(bom.includes('dc-mcb-'+mcb))
+ const restored=lib.readDraft(JSON.stringify({version:2,code:'DCDB',selection:p,reference:id,savedAt:Date.now()}),d,'DCDB');assert.equal(restored.reference,id)
+})
+test('AC01 and AC11 match the listed ORBIT AC SPD',()=>{for(const id of ['01','11'])assert.equal(lib.references('ACDB').find(r=>r.id===id).spd,'ac-spd-orbit')})

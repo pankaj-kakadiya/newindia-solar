@@ -28,3 +28,11 @@ Catalogue records and builder option links are already in the live database. Buy
 The separate admin integration PR #33 also edits `ConfiguratorBuilder.tsx`. Resolve that overlap while preserving its publication controls and this change's reference mappings; do not replace the entire file with the older builder version.
 
 Validation: 117 builder/asset tests passed; production build passed. Live database readback confirms both active listings, two images each, zero stock, and the new AC component option links. Browser suite expectations have been updated; it was not run locally because Playwright is not installed.
+
+## Complete buyer catalogue follow-up
+
+The buyer reference menus now contain every number 01–21 for both ACDB and DCDB. DCDB-17 uses Finder + Lauritz Knudsen; 18 uses Sighter + EMPOWER; 19 uses SCHUTZ + Lauritz Knudsen; 20 uses WinSurge + EMPOWER; 21 uses WinSurge + SIEMENS. These are assembled dynamically from existing component sprites, so selection, component lists, saved drafts and PNG export share the same preview layers. No additional static image is required.
+
+Mappings 17–20 were verified from live product specifications. ACDB-01 and ACDB-11 now use the ORBIT AC asset to match their listed SPD. The old ZIP-recovery message has been replaced by a catalogue count and useful selection guidance.
+
+Follow-up validation: 128 builder/asset tests passed, including continuous numbering, exact component mappings, preview layers, component-list output and saved-draft restoration for DCDB-17–21.
