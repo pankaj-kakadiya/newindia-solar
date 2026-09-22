@@ -39,7 +39,7 @@ test('database deletion guards preserve stock and historical references atomical
  insert into product_variants values(1,1,0),(2,2,0);
  insert into product_images values(1);
  `);
- await db.exec(await readFile(new URL('../supabase/migrations/20260922124334_protect_product_recipe_deletion.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/20260922124548_protect_product_recipe_deletion.sql',import.meta.url),'utf8'));
  const scenario=async(name,run)=>t.test(name,async()=>{await db.exec('begin');try{await run();}finally{await db.exec('rollback');}});
  await scenario('unused product deletion cascades its variants and image links',async()=>{
   await db.exec('delete from products where id=1');
