@@ -21,11 +21,12 @@ Reports:
 
 ## Findings and changes
 
-- Buyer root imported 21 admin stylesheets totaling 206,438 uncompressed source bytes. Scope these styles to the admin layout. This is source weight removed from the buyer root, not a measured network-byte reduction.
+- Buyer root imported 26 admin stylesheets totaling 251,084 uncompressed source bytes. Scope these styles to the admin layout. This is source weight removed from the buyer root, not a measured network-byte reduction.
 - Catalogue and homepage bypassed responsive optimization for full-sized product photos. Enable Next image optimization for the existing public Supabase storage host only; retain direct delivery for other CMS-approved sources. Product detail now uses responsive images and prioritizes its main image.
 - Root metadata omitted `metadataBase`, producing an invalid relative homepage and catalogue canonical. Set the production origin explicitly.
 - Mobile quotation icon lacked an accessible name when its text was hidden. Add an explicit name; fix footer heading order and the small-text contrast findings.
 - Support mounted authentication effects even on hidden admin routes. Keep hidden routes unmounted; resolve support identity only when the popup opens and suspend its realtime subscription while closed.
+- Storefront navigation no longer speculatively loads many catalogue destinations during initial rendering.
 - Admin navigation prefetched every visible workspace. Disable automatic sidebar prefetch; destinations load on navigation.
 - Admin imports loaded the spreadsheet parser at startup. Import it only during file parsing or Excel template export.
 - Add reproducible mobile/desktop Lighthouse reports against the production build in CI. Report invalid/redirected/failed audits as errors. Do not impose a false 100-score assertion or remove functionality to improve scores.
@@ -41,5 +42,7 @@ Private admin/account/cart/checkout routes must retain their indexing restrictio
 The homepage still performs live database reads and client-side theme/CMS loading. Further improvements should use measured production traces, preserve CMS updates, and avoid caching user-specific or stock/price data globally. Authenticated admin data waterfalls require a real session before changing behavior.
 
 ## Release
+
+The first commit passed all 380 regression tests and the complete production build in GitHub CI. Its Lighthouse results prompted additional fixes for the favicon, logo delivery, loading-state shifts, product tab semantics and contrast. Final-commit scores are recorded in the workflow artifacts.
 
 Run existing regression tests and the production build, inspect CI Lighthouse reports, complete responsive staging QA, and then follow `DEPLOYMENT_WORKFLOW.md`. No production deployment or database change is performed by the audit workflow.

@@ -1,3 +1,8 @@
+import '../theme-admin.css'
+import '../product-admin.css'
+import '../product-admin-pro.css'
+import '../configurator-admin.css'
+import '../configurator-editor-v2.css'
 import '../admin-shell-v2.css'
 import '../admin-dashboard-v2.css'
 import '../orders-v2.css'

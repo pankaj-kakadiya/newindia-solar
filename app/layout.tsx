@@ -6,19 +6,14 @@ import './upgrade2.css'
 import './upgrade3.css'
 import './upgrade4.css'
 import './upgrade5.css'
-import './theme-admin.css'
 import './upgrade6.css'
-import './product-admin.css'
 import './product-detail-flow.css'
 import './upgrade7.css'
-import './product-admin-pro.css'
 import './homepage-v2.css'
 import './header-v2.css'
 import './product-page-v3.css'
 import './product-image-fit.css'
 import './configurator-v2.css'
-import './configurator-admin.css'
-import './configurator-editor-v2.css'
 import './production-fixes.css'
 import './responsive-final.css'
 import './responsive-hotfix.css'
@@ -39,6 +34,7 @@ import {SiteContentProvider} from '../components/SiteContentProvider'
 import SupportLauncher from '../components/support/SupportLauncher'
 
 export const metadata:Metadata={
+ icons:{icon:'/new-india-solar-logo.webp'},
  metadataBase:new URL('https://newindiasolar.com'),
  title:'New India Solar | ACDB, DCDB & Solar Components',
  description:'Shop ACDB, DCDB, MCB, SPD, solar cable, earthing kits and customize ACDB/DCDB boxes for solar installations.'

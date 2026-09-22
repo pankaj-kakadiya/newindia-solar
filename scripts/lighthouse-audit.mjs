@@ -24,7 +24,7 @@ for (const [name, path] of routes) {
     ], {stdio: 'inherit', timeout: 120000})
     try {
       const report = JSON.parse(readFileSync(`${output}.report.json`, 'utf8'))
-      if (result.status !== 0 || report.runtimeError || new URL(report.finalDisplayedUrl).pathname !== path) {
+      if (result.status !== 0 || report.runtimeError || report.audits['http-status-code']?.score === 0 || new URL(report.finalDisplayedUrl).pathname !== path) {
         throw Error(report.runtimeError?.message || 'Audit failed or navigated to a different route')
       }
       const scores = ['performance', 'accessibility', 'best-practices', 'seo'].map(key => {
