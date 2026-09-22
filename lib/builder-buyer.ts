@@ -54,6 +54,7 @@ export function selectionIssues(data:Catalog,selection:Selection,code:BuilderCod
  if(selectedEnclosure.supported_types?.length&&!selectedEnclosure.supported_types.includes(code.toLowerCase()))issues.push('This enclosure does not support this builder type.')
  const slots=data.slots.filter(s=>s.enclosure_id===enclosureIds[0]&&s.is_active!==false),layers=buildLayers(data.groups,selection,values,data.components,slots)
  for(const list of Object.values(selection))for(const s of list){const v=values[s.id];if(v?.component_id&&layers.filter(l=>l.key.startsWith(`${s.id}-`)).length!==s.qty)issues.push(`The preview has insufficient mapped positions for ${v.label}.`)}
+ for(const slot of slots){const [x,y,w,h]=[slot.x_pct,slot.y_pct,slot.width_pct,slot.height_pct].map(Number);if(![x,y,w,h].every(Number.isFinite)||x<0||y<0||w<=0||h<=0||x+w>100||y+h>100)issues.push('A preview slot is outside the enclosure. Ask our team to review the layout.')}
  for(const rule of data.rules||[]){
   if(rule.enclosure_id&&rule.enclosure_id!==enclosureIds[0])continue
   let qty=0
