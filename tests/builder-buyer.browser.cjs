@@ -7,7 +7,7 @@ async function ready(page){
  await expect(stage(page)).toHaveCount(1);await expect(stage(page)).toBeVisible();await expect(stage(page).locator('.bbLayer')).toHaveCount(11)
  await expect(page.locator('.bbStatus button')).toBeEnabled()
 }
-async function loaded(page,code){await page.goto('/customize/'+code.toLowerCase());await ready(page)}
+async function loaded(page,code){await page.goto('/customize/'+code.toLowerCase()+'?preview=components-v1');await ready(page)}
 async function assetsReady(page){await stage(page).evaluate(async el=>{await Promise.all([...el.querySelectorAll('image')].map(el=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve();i.onerror=()=>reject(new Error('Asset failed: '+el.getAttribute('href')));i.src=el.getAttribute('href')})))})}
 for(const code of ['ACDB','DCDB'])for(const width of [390,1440])test(`${code} at ${width}: all 24 SPD and breaker previews`,async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(String(e)))
@@ -63,10 +63,30 @@ test('missing image shows failure and refresh restores it; PNG failure is visibl
  await isolated(page);let fail=true;await page.route('**/ac-spd-oreit.png',route=>fail?route.fulfill({status:404,body:'Unavailable'}):route.continue());await loaded(page,'ACDB');await expect(stage(page).locator('.cvAssetMissing')).toBeVisible();await page.locator('.bbPreviewFoot').getByRole('button',{name:'Download PNG'}).click();await expect(page.locator('.bbNotice')).toContainText('could not be loaded');fail=false;await page.locator('.bbStatus').getByRole('button').click();await expect(stage(page).locator('.cvAssetMissing')).toHaveCount(0);await assetsReady(page)
 })
 test('normal landing links open both quotation builders',async({page})=>{
- await isolated(page);await page.goto('/customize');await page.getByRole('link',{name:'Open ACDB Builder'}).click();await ready(page);await page.goto('/customize');await page.getByRole('link',{name:'Open DCDB Builder'}).click();await ready(page)
+ await isolated(page);await page.goto('/customize');await page.getByRole('link',{name:'Open ACDB Builder'}).click();await expect(page.getByRole('alert').filter({hasText:'not published'})).toBeVisible();await page.goto('/customize');await page.getByRole('link',{name:'Open DCDB Builder'}).click();await expect(page.getByRole('alert').filter({hasText:'not published'})).toBeVisible()
 })
 test('live domain baseline is inspected read-only and recorded separately',async({page})=>{
  test.setTimeout(90000);const results=[];await page.route('**/*',async route=>['GET','HEAD','OPTIONS'].includes(route.request().method())?route.continue():route.abort())
  for(const code of ['acdb','dcdb']){try{const response=await page.goto(`https://newindiasolar.com/customize/${code}`,{waitUntil:'domcontentloaded',timeout:30000});await page.waitForTimeout(2500);results.push({code,status:response?.status(),title:await page.title(),text:(await page.locator('body').innerText()).slice(0,12000)});await page.screenshot({path:`test-results/live-before-${code}.png`,fullPage:true})}catch(e){results.push({code,error:String(e)})}}
  fs.mkdirSync('test-results',{recursive:true});fs.writeFileSync('test-results/live-before.json',JSON.stringify(results,null,2))
+})
+
+test('admin catalogue edits reach buyers after selection and refresh; unpublish blocks submission',async({page})=>{
+ await isolated(page)
+ let published=true,changed=false
+ const d=structuredClone(starter.ACDB)
+ await page.route('**/rest/v1/**',async route=>{
+  if(!['GET','OPTIONS'].includes(route.request().method()))throw new Error('Unexpected write')
+  const name=new URL(route.request().url()).pathname.split('/').pop()
+  const table={configurator_templates:published?{...d.template,is_active:true}:null,configurator_options:d.groups.map(g=>({...g,configurator_option_values:g.configurator_option_values.map(v=>({...v,is_active:true,label:changed&&g.option_key==='spd'?'Admin updated '+v.label:v.label}))})),components:Object.values(d.components),enclosures:Object.values(d.enclosures),configurator_visual_slots:d.slots,configurator_component_compatibility:[]}
+  await route.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(table[name]??(name==='configurator_templates'?null:[]))})
+ })
+ await page.goto('/customize/acdb');await ready(page)
+ await expect(page.locator('.bbStatus')).toContainText('Published component catalogue')
+ const option=d.groups.find(g=>g.option_key==='spd').configurator_option_values[1]
+ await page.locator(`button[data-value="${option.id}"]`).click();changed=true
+ await page.locator('.bbStatus button').click();await expect(page.locator(`button[data-value="${option.id}"]`)).toContainText('Admin updated')
+ await expect(page.locator(`button[data-value="${option.id}"]`)).toHaveAttribute('aria-pressed','true')
+ published=false;await page.locator('.bbStatus button').click();await expect(page.getByRole('alert').filter({hasText:'not published'})).toBeVisible()
+ await expect(page.locator('.bbSummary').getByRole('button',{name:'Request quotation',exact:true})).toBeDisabled()
 })
