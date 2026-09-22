@@ -10,7 +10,7 @@ export function HomeProductImage({src, alt, priority = false}: {src?: string; al
   const [failed, setFailed] = useState<string>()
   const url = publicAssetUrl(src)
   if (!url || failed === url) return <span className="hvImagePlaceholder" role="img" aria-label={alt}><PackageSearch aria-hidden="true"/></span>
-  return <Image src={url} alt={alt} width={900} height={700} sizes="(max-width: 560px) 46vw, (max-width: 1100px) 30vw, 300px" priority={priority} unoptimized={url.startsWith('https://')} onError={() => setFailed(url)}/>
+  return <Image src={url} alt={alt} width={900} height={700} sizes="(max-width: 560px) 46vw, (max-width: 1100px) 30vw, 300px" priority={priority} unoptimized={url.startsWith('https://')&&!url.startsWith('https://cdtbwuagqxkknkccpkcr.supabase.co/storage/v1/object/public/')} onError={() => setFailed(url)}/>
 }
 
 const money = (value: number) => new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 2}).format(value)

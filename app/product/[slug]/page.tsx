@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import QuantityControl from '../../../components/buyer/QuantityControl'
 import {useEffect,useRef,useState} from 'react'
 import {useParams} from 'next/navigation'
@@ -19,10 +20,10 @@ import StoreFooter from '../../../components/StoreFooter'
 const money=(n:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n)
 const gstPrice=(price:number,gst=18)=>{const paise=Math.round((price+Number.EPSILON)*100);return (paise+Math.round(paise*gst/100))/100}
 
-function SafeProductImage({src,alt,className}:{src?:string|null;alt:string;className?:string}){
+function SafeProductImage({src,alt,className,priority=false}:{src?:string|null;alt:string;className?:string;priority?:boolean}){
   const safe=safeAssetUrl(src),[failed,setFailed]=useState(false)
   useEffect(()=>setFailed(false),[safe])
-  return safe&&!failed?<img className={className} src={safe} alt={alt} loading="lazy" onError={()=>setFailed(true)}/>:<span className={`pdImageFallback ${className||''}`}><ImageIcon/><small>Image unavailable</small></span>
+  return safe&&!failed?<Image className={className} src={safe} alt={alt} width={900} height={900} priority={priority} sizes={priority?'(max-width: 760px) 100vw, 50vw':'(max-width: 760px) 40vw, 240px'} unoptimized={safe.startsWith('https://')&&!safe.startsWith('https://cdtbwuagqxkknkccpkcr.supabase.co/storage/v1/object/public/')} onError={()=>setFailed(true)}/>:<span className={`pdImageFallback ${className||''}`}><ImageIcon/><small>Image unavailable</small></span>
 }
 
 export default function Product(){
@@ -105,7 +106,7 @@ export default function Product(){
         <div className="pdGalleryBadges">{(p.product_badges?.length?p.product_badges:['IP65','Solar Ready','EPC Ready']).slice(0,3).map((b:string,i:number)=><span key={b}>{i===0?<ShieldCheck/>:i===1?<Zap/>:<PackageCheck/>}<b>{b}</b></span>)}</div>
         <div className="pdGallery" tabIndex={0} onKeyDown={keySlide} onTouchStart={e=>{touchStart.current=e.touches[0].clientX}} onTouchEnd={touchEnd} aria-label={`${p.name} image gallery`}>
           <div className="pdImageStage">
-            {activeImg?<SafeProductImage src={activeImg.image_url} alt={activeImg.alt_text||`${p.name} image ${activeIndex+1}`}/>:<div className="pdNoImage"><ImageIcon/><span>Product image</span></div>}
+            {activeImg?<SafeProductImage priority src={activeImg.image_url} alt={activeImg.alt_text||`${p.name} image ${activeIndex+1}`}/>:<div className="pdNoImage"><ImageIcon/><span>Product image</span></div>}
             {imgs.length>1&&<><button className="pdArrow prev" onClick={previous} aria-label="Previous product image"><ChevronLeft/></button><button className="pdArrow next" onClick={next} aria-label="Next product image"><ChevronRight/></button></>}
             {imgs.length>1&&<span className="pdImageCount">{activeIndex+1}/{imgs.length}</span>}
           </div>
