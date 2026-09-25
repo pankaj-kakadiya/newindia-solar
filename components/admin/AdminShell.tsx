@@ -248,6 +248,12 @@ const navGroups: NavGroup[] = [
         module: "content",
       },
       {
+        href: "/admin/catalogues",
+        label: "PDF Catalogues",
+        icon: Globe2,
+        module: "content",
+      },
+      {
         href: "/admin/theme",
         label: "Brand & Theme",
         icon: Palette,

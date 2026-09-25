@@ -35,6 +35,7 @@ export const hrefModule:Record<string,string>={
   '/admin/configurator':'configurator',
   '/admin/production':'production',
   '/admin/content':'content',
+  '/admin/catalogues':'content',
   '/admin/theme':'theme',
   '/admin/settings':'settings',
   '/admin/integrations':'integrations',
