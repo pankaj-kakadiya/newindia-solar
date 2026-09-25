@@ -2,7 +2,7 @@ import starter from './builder-starter.json'
 import {buildLayers, imageSource, spriteFor} from './configurator-visuals'
 export type BuilderCode='ACDB'|'DCDB'
 export type Selection=Record<string,{id:string;qty:number}[]>
-export type Catalog={template:any;groups:any[];components:Record<string,any>;enclosures:Record<string,any>;slots:any[]}
+export type Catalog={template:any;groups:any[];components:Record<string,any>;enclosures:Record<string,any>;slots:any[];rules?:any[]}
 export const AC_REFERENCES=[['01','oreit','grey-c32'],['02','schutz','siemens-c32'],['03','empower','grey-c32'],['04','schutz','empower-c32a'],['05','finder','siemens-c32'],['06','sighter','siemens-c32'],['07','winsurge','grey-c32'],['08','fonix','grey-c32'],['09','sighter','grey-c32'],['10','fonix','empower-c32a'],['11','oreit','siemens-c32'],['12','empower','siemens-c32'],['13','sighter','empower-c32a'],['15','schutz','grey-c32'],['16','winsurge','grey-c32'],['17','empower','empower-c32a'],['18','finder','grey-c32'],['19','finder','empower-c32a'],['20','fonix','siemens-c32'],['21','itally','siemens-c32']]
 // Only the sixteen complete, CRC-verified members of the uploaded DCDB ZIP.
 export const DC_REFERENCES=[['01','finder','empower-c32a'],['02','empower','empower-c32a'],['03','empower','siemens-32a'],['04','finder','siemens-32a'],['05','sighter','siemens-32a'],['06','orbit','empower-c32a'],['07','fonix','siemens-32a'],['08','empower','lauritz-knudsen-c32'],['09','orbit','siemens-32a'],['10','sighter','lauritz-knudsen-c32'],['11','schutz','empower-c32a'],['12','orbit','lauritz-knudsen-c32'],['13','schutz','siemens-32a'],['14','fonix','lauritz-knudsen-c32'],['15','itally','siemens-32a'],['16','fonix','empower-c32a']]
@@ -40,7 +40,7 @@ export function selectionIssues(data:Catalog,selection:Selection,code:BuilderCod
    const v=values[s?.id]
    if(!v||v.group.option_key!==g.option_key||seen.has(s.id)){issues.push('An option is missing, duplicated or in the wrong group.');continue}seen.add(s.id)
    const item=data.components[v.component_id]||data.enclosures[v.enclosure_id]
-   if(!item||!imageSource(item))issues.push(`Image or component missing: ${v.label}.`)
+   if((v.component_id||v.enclosure_id)&&(!item||!imageSource(item)))issues.push(`Image or component missing: ${v.label}.`)
    const asset=spriteFor(item?.visual_settings) as any
    if(asset?.domain&&asset.domain!=='shared'&&asset.domain!==(code==='ACDB'?'AC':'DC'))issues.push(`Wrong AC/DC visual category: ${v.label}.`)
    if(!Number.isInteger(s.qty)||s.qty<(Number(g.min_quantity)||1)||s.qty>(Number(g.max_quantity)||1)||(!g.allow_quantity&&s.qty!==1))issues.push(`Invalid quantity: ${v.label}.`)
@@ -50,8 +50,17 @@ export function selectionIssues(data:Catalog,selection:Selection,code:BuilderCod
  const enclosureIds=(selection.enclosure||[]).map(s=>values[s.id]?.enclosure_id).filter(Boolean)
  if(enclosureIds.length!==1||!data.enclosures[enclosureIds[0]])issues.push('Select one available enclosure.')
  if(issues.length)return [...new Set(issues)]
+ const selectedEnclosure=data.enclosures[enclosureIds[0]]
+ if(selectedEnclosure.supported_types?.length&&!selectedEnclosure.supported_types.includes(code.toLowerCase()))issues.push('This enclosure does not support this builder type.')
  const slots=data.slots.filter(s=>s.enclosure_id===enclosureIds[0]&&s.is_active!==false),layers=buildLayers(data.groups,selection,values,data.components,slots)
  for(const list of Object.values(selection))for(const s of list){const v=values[s.id];if(v?.component_id&&layers.filter(l=>l.key.startsWith(`${s.id}-`)).length!==s.qty)issues.push(`The preview has insufficient mapped positions for ${v.label}.`)}
+ for(const slot of slots){const [x,y,w,h]=[slot.x_pct,slot.y_pct,slot.width_pct,slot.height_pct].map(Number);if(![x,y,w,h].every(Number.isFinite)||x<0||y<0||w<=0||h<=0||x+w>100||y+h>100)issues.push('A preview slot is outside the enclosure. Ask our team to review the layout.')}
+ for(const rule of data.rules||[]){
+  if(rule.enclosure_id&&rule.enclosure_id!==enclosureIds[0])continue
+  let qty=0
+  for(const [key,list] of Object.entries(selection)){if(rule.option_key&&rule.option_key!==key)continue;if(rule.slot_key&&!slots.some(s=>s.slot_key===rule.slot_key&&s.option_key===key))continue;for(const pick of list)if(values[pick.id]?.component_id===rule.component_id)qty+=pick.qty}
+  if(qty>0&&(!rule.allowed||qty<Number(rule.min_qty)||qty>Number(rule.max_qty)))issues.push('A selected component violates the admin compatibility or quantity rules.')
+ }
  return [...new Set(issues)]
 }
 export function previewLayers(data:Catalog,selection:Selection){
