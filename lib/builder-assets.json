@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "title": "New India Solar 2D Builder \u2014 visual asset starter kit",
+  "title": "New India Solar 2D Builder — visual asset starter kit",
   "coordinateSpace": {
     "width": 1086,
     "height": 1448,
@@ -12,7 +12,7 @@
     "depth": 100,
     "verified": false
   },
-  "assetCount": 32,
+  "assetCount": 34,
   "assets": [
     {
       "id": "ac-spd-oreit",
@@ -608,7 +608,7 @@
     },
     {
       "id": "ac-mcb-grey-c32",
-      "label": "Grey C32 AC \u2014 source 01",
+      "label": "Grey C32 AC — source 01",
       "domain": "AC",
       "category": "mcb",
       "src": "/configurator/components-v1/ac-mcb-grey-c32.png",
@@ -955,7 +955,7 @@
     },
     {
       "id": "wire-red-left",
-      "label": "Red wire \u2014 left short arch",
+      "label": "Red wire — left short arch",
       "domain": "shared",
       "category": "wire",
       "src": "/configurator/components-v1/wire-red-left.png",
@@ -976,7 +976,7 @@
     },
     {
       "id": "wire-grey-left",
-      "label": "Grey wire \u2014 left short arch",
+      "label": "Grey wire — left short arch",
       "domain": "shared",
       "category": "wire",
       "src": "/configurator/components-v1/wire-grey-left.png",
@@ -997,7 +997,7 @@
     },
     {
       "id": "wire-red-right",
-      "label": "Red wire \u2014 right tall arch",
+      "label": "Red wire — right tall arch",
       "domain": "shared",
       "category": "wire",
       "src": "/configurator/components-v1/wire-red-right.png",
@@ -1018,7 +1018,7 @@
     },
     {
       "id": "wire-grey-right",
-      "label": "Grey wire \u2014 right tall arch",
+      "label": "Grey wire — right tall arch",
       "domain": "shared",
       "category": "wire",
       "src": "/configurator/components-v1/wire-grey-right.png",
@@ -1078,6 +1078,85 @@
       "physicalSizeMm": null,
       "engineeringVerified": false,
       "sha256": "1c34ba8a2bfcf980e96df292e35e4890f86e6f56e60d8df340267987af1fa5f3"
+    },
+    {
+      "id": "ac-mcb-empower-c20a",
+      "label": "EMPOWER EM60-C20A AC — 20A",
+      "domain": "AC",
+      "category": "mcb",
+      "src": "/configurator/components-v1/ac-mcb-empower-c20a.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        340,
+        79,
+        573,
+        1113
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "bottom-left",
+          "x": 0.25,
+          "y": 0.985
+        },
+        {
+          "id": "bottom-right",
+          "x": 0.75,
+          "y": 0.985
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "2e516bce735faaa40de282f3d99712f31f7b1664dbb2cd2e57539ef6dc26b65b"
+    },
+    {
+      "id": "ac-spd-orbit",
+      "label": "ORBIT OT-SPD-40 AC",
+      "domain": "AC",
+      "category": "spd",
+      "src": "/configurator/components-v1/ac-spd-orbit.png",
+      "imageSizePx": {
+        "width": 1254,
+        "height": 1254
+      },
+      "sourceRectPx": [
+        362,
+        48,
+        532,
+        1159
+      ],
+      "visualPortsNormalized": [
+        {
+          "id": "top-left",
+          "x": 0.25,
+          "y": 0.015
+        },
+        {
+          "id": "top-right",
+          "x": 0.75,
+          "y": 0.015
+        },
+        {
+          "id": "lower-terminal",
+          "x": 0.75,
+          "y": 0.94
+        }
+      ],
+      "physicalSizeMm": null,
+      "engineeringVerified": false,
+      "sha256": "a747ce022fa7b1271ea0400d7b8896435bc0e1417b18e18f4a75c14e7abc12a7"
     }
   ],
   "slots": {
