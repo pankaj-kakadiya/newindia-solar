@@ -2,7 +2,7 @@ import type {Category, Product} from './catalogue'
 import {activeVariants, categoryScope, publishedProducts} from './catalogue'
 export type PdfCatalogue = {id?:string; title:string; description:string; scope:'all'|'categories'|'products'; category_ids:string[]; product_ids:string[]; show_prices:boolean; is_published:boolean; sort_order:number}
 export const emptyCatalogue = ():PdfCatalogue => ({title:'',description:'',scope:'all',category_ids:[],product_ids:[],show_prices:false,is_published:false,sort_order:0})
-export const PDF_PRODUCT_SELECT='id,name,slug,status,category_id,product_type,short_description,gst_rate,min_order_qty,sort_order,specifications,categories(name,slug,is_active),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,unit,is_active,attributes)'
+export const PDF_PRODUCT_SELECT='id,name,slug,status,category_id,product_type,short_description,warranty_months,inclusions,gst_rate,min_order_qty,sort_order,specifications,categories(name,slug,is_active),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,unit,is_active,attributes)'
 export function validateCatalogue(c:PdfCatalogue){
  if(!c.title.trim()||c.title.length>120)return 'Enter a title of 1–120 characters.'
  if(c.description.length>1000)return 'Description must be 1,000 characters or fewer.'

@@ -18,9 +18,13 @@ Merge the feature PR and deploy main to Hostinger. No VPS, scheduled job, additi
 
 ## Validation
 
-- 10 automated tests: selection scope, descendants, excluded products/variants, pagination, invalid definitions, multipage PDF, safe public projection, links, empty exports and database RLS.
+- 11 automated tests: selection scope, descendants, excluded products/variants, pagination, invalid definitions, multipage PDF, safe public projection, links, empty exports and database RLS.
 - Production build passed.
 - Sample cover/product pages rendered with Poppler and visually inspected; embedded fonts eliminate dependence on PDF viewer fallback fonts.
 - Live DB verified three drafts and zero rows visible to anon; security advisor returned no findings referencing `product_catalogues`.
 - No authenticated live admin browser test performed before deployment.
 - Dependency audit reports existing Next.js, PostCSS and XLSX advisories; no jsPDF advisory was reported for the pinned 4.2.1 dependency. Those pre-existing dependency upgrades are outside this feature.
+
+## Buyer selection redesign
+
+The default PDF now uses the supplied buyer-catalogue reference: four product cards per A4 page, official logo, green title band, product image, SKU, component brands, compact specifications, current price strip and clickable Request quote button. The same layout serves admin previews and buyer downloads across every catalogue scope. Longer content and additional variants are retained in an appendix. Warranty text is shown only from positive recorded warranty_months; no QC certification or guarantee is fabricated. Reference-image prices are not copied. The optional price setting remains in effect.
