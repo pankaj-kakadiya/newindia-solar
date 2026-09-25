@@ -628,6 +628,7 @@ export default function AdminShell({
                 const count = item.badge ? badges[item.badge] : 0;
                 return (
                   <Link
+                    prefetch={false}
                     href={item.href}
                     key={item.href}
                     className={`adminV2NavItem ${active ? "active" : ""}`}

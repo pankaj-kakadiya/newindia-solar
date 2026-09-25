@@ -74,7 +74,7 @@ function CatalogueImage({product}: {product: Product}) {
   const image = productImage(product), src = safeAssetUrl(image?.image_url)
   const [failed, setFailed] = useState(false)
   useEffect(() => setFailed(false), [src])
-  return src && !failed ? <Image src={src} alt={image?.alt_text || product.name} fill unoptimized sizes="(max-width: 600px) 100vw, (max-width: 1023px) 50vw, 320px" onError={() => setFailed(true)}/> : <div className="cvImagePlaceholder"><Package size={40}/><span>Product image pending</span></div>
+  return src && !failed ? <Image src={src} alt={image?.alt_text || product.name} fill unoptimized={src.startsWith('https://')&&!src.startsWith('https://cdtbwuagqxkknkccpkcr.supabase.co/storage/v1/object/public/')} sizes="(max-width: 600px) 100vw, (max-width: 1023px) 50vw, 320px" onError={() => setFailed(true)}/> : <div className="cvImagePlaceholder"><Package size={40}/><span>Product image pending</span></div>
 }
 
 function ProductCard({result}: {result: CatalogueResult}) {

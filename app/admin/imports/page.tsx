@@ -18,7 +18,6 @@ import {
   Warehouse,
   RefreshCw,
 } from "lucide-react";
-import * as XLSX from "xlsx";
 import { supabase } from "../../../lib/supabase";
 import "./imports-v2.css";
 
@@ -334,6 +333,7 @@ export default function ImportCenter() {
     setBusy(true);
     setMsg("");
     try {
+      const XLSX = await import("xlsx");
       const ext = (file.name.split(".").pop() || "").toLowerCase();
       let parsed: any[] = [];
       if (ext === "csv") {
@@ -456,7 +456,7 @@ export default function ImportCenter() {
     });
     return [row];
   }
-  function downloadTemplate(type: ImportType, format: "csv" | "xlsx") {
+  async function downloadTemplate(type: ImportType, format: "csv" | "xlsx") {
     const c = typeConfig[type],
       data = templateRows(type);
     if (format === "csv") {
@@ -469,6 +469,7 @@ export default function ImportCenter() {
       downloadBlob(csv, `new-india-solar-${type}-template.csv`);
       return;
     }
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(data, { header: c.columns });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Import Template");

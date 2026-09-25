@@ -31,6 +31,7 @@ const securityHeaders=[
 const nextConfig={
  reactStrictMode:true,
  poweredByHeader:false,
+ images:{remotePatterns:[{protocol:'https',hostname:'cdtbwuagqxkknkccpkcr.supabase.co',pathname:'/storage/v1/object/public/**'}]},
  async headers(){
   return [
    {source:'/:path*',headers:securityHeaders},
