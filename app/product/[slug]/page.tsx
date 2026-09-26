@@ -11,12 +11,11 @@ import {
 } from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import {BUYER_VARIANT_FIELDS} from '../../../lib/catalogue-projections'
-import {safeAssetUrl} from '../../../lib/catalogue'
+import {safeAssetUrl, money} from '../../../lib/catalogue'
 import {useCart} from '../../../components/CartProvider'
 import StoreHeader from '../../../components/StoreHeader'
 import StoreFooter from '../../../components/StoreFooter'
 
-const money=(n:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n)
 const gstPrice=(price:number,gst=18)=>{const paise=Math.round((price+Number.EPSILON)*100);return (paise+Math.round(paise*gst/100))/100}
 
 function SafeProductImage({src,alt,className}:{src?:string|null;alt:string;className?:string}){
@@ -36,20 +35,25 @@ export default function Product(){
   const [wish,setWish]=useState(false)
   const [copied,setCopied]=useState(false)
   const [loading,setLoading]=useState(true)
+  const [loadError,setLoadError]=useState(false)
+  const [retryToken,setRetryToken]=useState(0)
   const touchStart=useRef<number|null>(null)
   const {add}=useCart()
 
   useEffect(()=>{
     let alive=true
+    setLoading(true)
+    setLoadError(false)
     ;(async()=>{
-      const {data}=await supabase.from('products').select(`*,categories(name,slug),product_images(*),product_variants(${BUYER_VARIANT_FIELDS})`).eq('slug',slug).eq('status','active').single()
+      const {data,error}=await supabase.from('products').select(`*,categories(name,slug),product_images(*),product_variants(${BUYER_VARIANT_FIELDS})`).eq('slug',slug).eq('status','active').abortSignal(AbortSignal.timeout(10000)).single()
       if(!alive)return
+      if(error&&error.code!=='PGRST116'){setLoadError(true);setLoading(false);return}
       setP(data)
       setQty(Math.max(1,Math.ceil(Number(data?.min_order_qty)||1)))
       setVariantId(data?.product_variants?.[0]?.id||'')
       setActiveIndex(0)
       if(data){
-        const {data:more}=await supabase.from('products').select('id,name,slug,category_id,gst_rate,short_description,categories(name,slug),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,mrp,stock_qty,unit)').eq('status','active').neq('id',data.id).limit(10)
+        const {data:more}=await supabase.from('products').select('id,name,slug,category_id,gst_rate,short_description,categories(name,slug),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,mrp,stock_qty,unit)').eq('status','active').neq('id',data.id).abortSignal(AbortSignal.timeout(10000)).limit(10)
         if(!alive)return
         const sorted=[...(more||[])].sort((a:any,b:any)=>Number(b.category_id===data.category_id)-Number(a.category_id===data.category_id)).slice(0,4)
         setRelated(sorted)
@@ -57,7 +61,7 @@ export default function Product(){
       setLoading(false)
     })()
     return()=>{alive=false}
-  },[slug])
+  },[slug,retryToken])
 
   const variants=p?.product_variants||[]
   const v=variants.find((x:any)=>x.id===variantId)||variants[0]
@@ -79,6 +83,7 @@ export default function Product(){
   const features=[...(p?.product_badges||[]),...(p?.inclusions||[])].filter(Boolean).slice(0,5)
 
   if(loading)return <><StoreHeader/><main className="container productLoading"><div/><div/></main></>
+  if(loadError)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Couldn&apos;t load this product.</h1><p>Check your connection and try again.</p><button className="btn btnPrimary" onClick={()=>setRetryToken(t=>t+1)}>Retry</button></main></>
   if(!p)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Product not found.</h1><Link className="btn btnPrimary" href="/shop">Back to Products</Link></main></>
 
   function addToCart(){if(!v||price<=0||qty<minQty||qty>stock||!Number.isSafeInteger(qty))return;const image=imgs[0];add({id:v.id,kind:'standard',productVariantId:v.id,productSlug:p.slug,imageUrl:safeAssetUrl(image?.image_url)||undefined,imageAlt:image?.alt_text||p.name,name:p.name,variant:v.title||v.sku,price,qty,minQty})}
