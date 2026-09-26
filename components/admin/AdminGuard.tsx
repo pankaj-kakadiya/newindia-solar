@@ -3,61 +3,56 @@ import {useEffect,useState} from 'react'
 import {usePathname,useRouter} from 'next/navigation'
 import {supabase} from '../../lib/supabase'
 import {AdminAccess,canAdmin,moduleForAdminPath} from '../../lib/adminAccess'
+import {adminSecurityRedirect,readMfaState} from '../../lib/mfa'
 
 export default function AdminGuard({children}:{children:React.ReactNode}){
-  const router=useRouter()
-  const path=usePathname()
-  const [ok,setOk]=useState(false)
+  const router=useRouter(),path=usePathname()
+  const [allowedPath,setAllowedPath]=useState(''),[revision,setRevision]=useState(0),[error,setError]=useState('')
   const isLogin=path==='/admin/login'
-  const isPassword=path==='/admin/change-password'
-  const isSecurity=path==='/admin/account-security'
-
+  useEffect(()=>{
+    const {data}=supabase.auth.onAuthStateChange(event=>{
+      // Do not await another Auth call inside the auth event lock.
+      if(['SIGNED_OUT','TOKEN_REFRESHED','MFA_CHALLENGE_VERIFIED'].includes(event)){setAllowedPath('');setRevision(v=>v+1)}
+    })
+    return()=>data.subscription.unsubscribe()
+  },[])
   useEffect(()=>{
     let alive=true
+    setAllowedPath('');setError('')
+    // Login owns password, first-login setup and MFA; never bounce it to admin
+    // just because a password-only Supabase session exists.
+    if(isLogin)return
     ;(async()=>{
-      const {data:{user}}=await supabase.auth.getUser()
-      if(!user){
-        if(!isLogin)router.replace('/admin/login')
-        else if(alive)setOk(true)
-        return
-      }
-
-      const {data:profile}=await supabase.from('profiles').select('role,staff_status,must_change_password,mfa_required').eq('id',user.id).maybeSingle()
-      const internal=['admin','staff'].includes(profile?.role||'')&&profile?.staff_status!=='suspended'&&profile?.staff_status!=='inactive'
-      if(!internal){
-        await supabase.auth.signOut()
-        router.replace('/admin/login?access=denied')
-        return
-      }
-      if(isLogin){router.replace('/admin');return}
-
-      if(profile?.must_change_password&&!isPassword){router.replace('/admin/change-password?required=1');return}
-      if(profile?.mfa_required&&!isPassword&&!isSecurity){
-        const {data:aal}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-        if(aal?.currentLevel!=='aal2'){router.replace('/admin/account-security?required=1');return}
-      }
-
-      const {data:accessData}=await supabase.rpc('get_my_admin_access')
-      const access=(accessData||null) as AdminAccess|null
-      const moduleKey=moduleForAdminPath(path)
-      if(moduleKey&&!canAdmin(access,moduleKey,'view')){
-        router.replace('/admin?access=denied')
-        return
-      }
-
       try{
-        const key=`nis-admin-session-${user.id}`
-        if(!window.sessionStorage.getItem(key)){
-          await supabase.rpc('record_admin_session')
-          window.sessionStorage.setItem(key,'1')
+        const {data:{user},error:userError}=await supabase.auth.getUser()
+        if(!alive)return
+        if(userError||!user){if(!isLogin)router.replace('/admin/login');return}
+        const {data:profile,error:profileError}=await supabase.from('profiles').select('role,staff_status,must_change_password,mfa_required').eq('id',user.id).maybeSingle()
+        if(profileError)throw profileError
+        if(!['admin','staff'].includes(profile?.role||'')||profile?.staff_status!=='active'){
+          await supabase.auth.signOut();if(alive)router.replace('/admin/login?access=denied');return
         }
-      }catch{}
-      if(alive)setOk(true)
+        const mfa=await readMfaState(supabase)
+        if(!alive)return
+        const redirect=adminSecurityRedirect(profile,mfa,path)
+        if(redirect){router.replace(redirect);return}
+        const {data:accessData,error:accessError}=await supabase.rpc('get_my_admin_access')
+        if(accessError)throw accessError
+        const access=(accessData||null) as AdminAccess|null
+        if(access?.session_ready===false){await supabase.auth.signOut({scope:'local'});if(alive)router.replace('/admin/login');return}
+        const moduleKey=moduleForAdminPath(path)
+        if(!access||(moduleKey&&!canAdmin(access,moduleKey,'view'))){router.replace('/admin?access=denied');return}
+        try{
+          const key=`nis-admin-session-${user.id}`
+          if(!window.sessionStorage.getItem(key)){await supabase.rpc('record_admin_session');window.sessionStorage.setItem(key,'1')}
+        }catch{}
+        if(alive)setAllowedPath(path)
+      }catch(error:any){if(alive)setError(error.message||'Could not verify account security.')}
     })()
     return()=>{alive=false}
-  },[router,isLogin,isPassword,isSecurity,path])
-
+  },[router,path,isLogin,revision])
   if(isLogin)return <>{children}</>
-  if(!ok)return <div className="adminLoading">Checking secure access…</div>
+  if(error)return <div className="adminLoading" role="alert">{error} <button onClick={()=>setRevision(v=>v+1)}>Retry</button></div>
+  if(allowedPath!==path)return <div className="adminLoading">Checking secure access…</div>
   return <>{children}</>
 }

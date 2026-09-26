@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Archive,
+  Trash2,
   Calculator,
   Check,
   Copy,
@@ -23,6 +24,9 @@ import { supabase } from "../../../lib/supabase";
 import { loadAdminCosts } from "../../../lib/admin-catalogue-costs";
 import { VARIANT_FIELDS } from "../../../lib/catalogue-projections";
 import { calculateGstBreakdown } from "../../../lib/manufacturing-costs";
+
+import { deleteAdminRecords } from "../../../lib/admin-delete";
+import { useDeletePermission } from "../../../lib/use-delete-permission";
 
 type Variant = {
   id?: string;
@@ -119,6 +123,21 @@ const parseJson = (s: string) => {
 const csvCell = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 export default function Products() {
+  const canDelete = useDeletePermission('products');
+  const [deleting, setDeleting] = useState(false);
+  async function removeProducts(ids: string[]) {
+    if (!canDelete || deleting || !ids.length) return;
+    const names = rows.filter(p => ids.includes(p.id)).map(p => p.name).join(', ');
+    if (!confirm(`Permanently delete ${ids.length} product(s): ${names}? All their variants, catalogue image links and cart entries will also be removed. Products with stock or transaction history cannot be deleted. This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      const result = await deleteAdminRecords(supabase, 'products', ids);
+      setSelected(s => s.filter(id => !result.deleted.includes(id)));
+      setMsg(`${result.deleted.length} product(s) deleted.${result.missing.length ? ' Some records were not deleted. Check your delete permission or refresh the list.' : ''}`);
+      await load();
+    } catch (error) { setMsg(error instanceof Error ? error.message : 'Deletion failed.'); }
+    finally { setDeleting(false); }
+  }
   const [rows, setRows] = useState<any[]>([]),
     [cats, setCats] = useState<any[]>([]),
     [brands, setBrands] = useState<any[]>([]),
@@ -732,7 +751,8 @@ export default function Products() {
             <option value="draft">Set Draft</option>
             <option value="inactive">Set Inactive</option>
           </select>
-          <button onClick={applyBulk}>Apply</button>
+          <button onClick={applyBulk} disabled={deleting}>Apply</button>
+          {canDelete && <button disabled={deleting || saving} onClick={() => removeProducts(selected)}><Trash2 size={15} />{deleting ? 'Deleting…' : 'Delete selected products'}</button>}
           <button className="ghost" onClick={() => setSelected([])}>
             Clear
           </button>
@@ -840,6 +860,7 @@ export default function Products() {
                       </td>
                       <td>
                         <div className="rowActions">
+                          {canDelete && <button title={`Delete ${p.name}`} aria-label={`Delete ${p.name}`} disabled={deleting || saving} onClick={() => removeProducts([p.id])}><Trash2 size={15} /></button>}
                           <button
                             title="Quick view / edit"
                             onClick={() => edit(p)}
