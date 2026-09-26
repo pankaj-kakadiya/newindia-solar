@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Archive,
+  Trash2,
   Calculator,
   Check,
   Copy,
@@ -22,6 +23,10 @@ import {
 import { supabase } from "../../../lib/supabase";
 import { loadAdminCosts } from "../../../lib/admin-catalogue-costs";
 import { VARIANT_FIELDS } from "../../../lib/catalogue-projections";
+import { calculateGstBreakdown } from "../../../lib/manufacturing-costs";
+
+import { deleteAdminRecords } from "../../../lib/admin-delete";
+import { useDeletePermission } from "../../../lib/use-delete-permission";
 
 type Variant = {
   id?: string;
@@ -118,6 +123,21 @@ const parseJson = (s: string) => {
 const csvCell = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 export default function Products() {
+  const canDelete = useDeletePermission('products');
+  const [deleting, setDeleting] = useState(false);
+  async function removeProducts(ids: string[]) {
+    if (!canDelete || deleting || !ids.length) return;
+    const names = rows.filter(p => ids.includes(p.id)).map(p => p.name).join(', ');
+    if (!confirm(`Permanently delete ${ids.length} product(s): ${names}? All their variants, catalogue image links and cart entries will also be removed. Products with stock or transaction history cannot be deleted. This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      const result = await deleteAdminRecords(supabase, 'products', ids);
+      setSelected(s => s.filter(id => !result.deleted.includes(id)));
+      setMsg(`${result.deleted.length} product(s) deleted.${result.missing.length ? ' Some records were not deleted. Check your delete permission or refresh the list.' : ''}`);
+      await load();
+    } catch (error) { setMsg(error instanceof Error ? error.message : 'Deletion failed.'); }
+    finally { setDeleting(false); }
+  }
   const [rows, setRows] = useState<any[]>([]),
     [cats, setCats] = useState<any[]>([]),
     [brands, setBrands] = useState<any[]>([]),
@@ -134,7 +154,8 @@ export default function Products() {
     [stock, setStock] = useState("all"),
     [selected, setSelected] = useState<string[]>([]),
     [bulkStatus, setBulkStatus] = useState("active"),
-    [costView, setCostView] = useState<any>(null);
+    [costView, setCostView] = useState<any>(null),
+    [savingCost, setSavingCost] = useState(false);
   useEffect(() => {
     load();
   }, []);
@@ -478,7 +499,7 @@ export default function Products() {
     setMsg("");
     const { data: recipe, error } = await supabase
       .from("manufacturing_recipes")
-      .select("id,name,version,status,box_type")
+      .select("*,manufacturing_recipe_items(*)")
       .eq("variant_id", v.id)
       .eq("status", "active")
       .maybeSingle();
@@ -492,7 +513,65 @@ export default function Products() {
       supabase.rpc("manufacturing_recipe_cost_lines", { p_recipe_id: recipe.id }),
     ]);
     if (summary.error || lines.error) { setMsg(summary.error?.message || lines.error?.message || "Unable to calculate box cost."); return; }
-    setCostView({ product: p, variant: v, recipe, summary: summary.data?.[0], lines: lines.data || [] });
+    setCostView({
+      product: p,
+      variant: v,
+      recipe,
+      summary: summary.data?.[0],
+      lines: lines.data || [],
+      draft: {
+        labour_cost: Number(recipe.labour_cost || 0),
+        overhead_cost: Number(recipe.overhead_cost || 0),
+        packaging_cost: Number(recipe.packaging_cost || 0),
+        target_margin_percent: Number(recipe.target_margin_percent || 0),
+      },
+    });
+  }
+  function setCostDraft(key: string, value: any) {
+    setCostView((current: any) => ({
+      ...current,
+      draft: { ...current.draft, [key]: value },
+    }));
+  }
+  async function saveManufacturingCost() {
+    if (!costView) return;
+    const d = costView.draft;
+    setSavingCost(true);
+    setMsg("");
+    const items = [...(costView.recipe.manufacturing_recipe_items || [])]
+      .sort((a: any, b: any) => Number(a.sort_order) - Number(b.sort_order))
+      .map((item: any, index: number) => ({
+        item_type: item.component_id ? "component" : item.enclosure_id ? "enclosure" : "variant",
+        item_id: item.component_id || item.enclosure_id || item.variant_id,
+        quantity: Number(item.quantity),
+        wastage_percent: Number(item.wastage_percent || 0),
+        unit: item.unit || "pcs",
+        notes: item.notes || "",
+        sort_order: index,
+      }));
+    const { data, error } = await supabase.rpc("save_manufacturing_recipe", {
+      p_recipe_id: costView.recipe.id,
+      p_variant_id: costView.variant.id,
+      p_name: costView.recipe.name,
+      p_box_type: costView.recipe.box_type,
+      p_status: costView.recipe.status,
+      p_labour_cost: Number(d.labour_cost || 0),
+      p_overhead_cost: Number(d.overhead_cost || 0),
+      p_packaging_cost: Number(d.packaging_cost || 0),
+      p_target_margin_percent: Number(d.target_margin_percent || 0),
+      p_notes: costView.recipe.notes || null,
+      p_items: items,
+    });
+    setSavingCost(false);
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
+    const changedVersion = data !== costView.recipe.id;
+    const savedCost = Number(costView.summary?.material_cost || 0) + Number(d.labour_cost || 0) + Number(d.overhead_cost || 0) + Number(d.packaging_cost || 0);
+    setCostView(null);
+    setMsg(`Box cost updated to ${money(savedCost)} ex GST${changedVersion ? " in a new protected recipe version" : ""}.`);
+    await load();
   }
   function toggle(id: string) {
     setSelected((s) =>
@@ -565,6 +644,14 @@ export default function Products() {
     a.click();
     URL.revokeObjectURL(a.href);
   }
+  const previewCost = costView
+    ? Number(costView.summary?.material_cost || 0) + Number(costView.draft?.labour_cost || 0) + Number(costView.draft?.overhead_cost || 0) + Number(costView.draft?.packaging_cost || 0)
+    : 0;
+  const previewMargin = Math.min(Math.max(Number(costView?.draft?.target_margin_percent || 0), 0), 99);
+  const previewRecommended = previewCost / (1 - previewMargin / 100);
+  const costGst = calculateGstBreakdown(previewCost, costView?.product?.gst_rate);
+  const sellingGst = calculateGstBreakdown(costView?.summary?.current_selling_price, costView?.product?.gst_rate);
+  const recommendedGst = calculateGstBreakdown(previewRecommended, costView?.product?.gst_rate);
   return (
     <div className="catalogueV2Page">
       <div className="catalogueV2Hero">
@@ -664,7 +751,8 @@ export default function Products() {
             <option value="draft">Set Draft</option>
             <option value="inactive">Set Inactive</option>
           </select>
-          <button onClick={applyBulk}>Apply</button>
+          <button onClick={applyBulk} disabled={deleting}>Apply</button>
+          {canDelete && <button disabled={deleting || saving} onClick={() => removeProducts(selected)}><Trash2 size={15} />{deleting ? 'Deleting…' : 'Delete selected products'}</button>}
           <button className="ghost" onClick={() => setSelected([])}>
             Clear
           </button>
@@ -742,7 +830,7 @@ export default function Products() {
                         <span className="cellSub">{brandName(p.brand_id)}</span>
                       </td>
                       <td>
-                        <b className="cellMain">{money(v.selling_price)}</b>
+                        <b className="cellMain">{money(v.selling_price)} ex GST</b>
                         <span className="cellSub">
                           {money(incl(v.selling_price, p.gst_rate))} incl. GST
                         </span>
@@ -772,6 +860,7 @@ export default function Products() {
                       </td>
                       <td>
                         <div className="rowActions">
+                          {canDelete && <button title={`Delete ${p.name}`} aria-label={`Delete ${p.name}`} disabled={deleting || saving} onClick={() => removeProducts([p.id])}><Trash2 size={15} /></button>}
                           <button
                             title="Quick view / edit"
                             onClick={() => edit(p)}
@@ -1051,7 +1140,7 @@ export default function Products() {
                               />
                             </label>
                             <label>
-                              <span>Cost Price</span>
+                              <span>Cost Price Ex GST</span>
                               <input
                                 type="number"
                                 step="0.01"
@@ -1344,18 +1433,25 @@ export default function Products() {
               <button onClick={() => setCostView(null)}><X /></button>
             </div>
             <div className="catalogueDrawerBody">
+              <div className="costTaxNotice">GST is shown for reference and stays separate from manufacturing COGS. Saving here updates the linked recipe and the product variant cost together.</div>
+              <div className="costEditableGrid">
+                <label><span>Labour / box</span><input type="number" min="0" step="0.01" value={costView.draft.labour_cost} onChange={(e)=>setCostDraft("labour_cost",e.target.value)}/></label>
+                <label><span>Factory overhead / box</span><input type="number" min="0" step="0.01" value={costView.draft.overhead_cost} onChange={(e)=>setCostDraft("overhead_cost",e.target.value)}/></label>
+                <label><span>Packaging / box</span><input type="number" min="0" step="0.01" value={costView.draft.packaging_cost} onChange={(e)=>setCostDraft("packaging_cost",e.target.value)}/></label>
+                <label><span>Target margin %</span><input type="number" min="0" max="99" step="0.1" value={costView.draft.target_margin_percent} onChange={(e)=>setCostDraft("target_margin_percent",e.target.value)}/></label>
+              </div>
               <div className="costCalculationStats">
                 <div><small>Material</small><b>{money(costView.summary?.material_cost)}</b></div>
-                <div><small>Labour</small><b>{money(costView.summary?.labour_cost)}</b></div>
-                <div><small>Overhead + pack</small><b>{money(Number(costView.summary?.overhead_cost || 0) + Number(costView.summary?.packaging_cost || 0))}</b></div>
-                <div><small>Full unit cost</small><b>{money(costView.summary?.total_cost)}</b></div>
-                <div><small>Current selling</small><b>{money(costView.summary?.current_selling_price)}</b></div>
-                <div><small>Gross margin</small><b>{Number(costView.summary?.gross_margin_percent || 0).toFixed(1)}%</b></div>
+                <div><small>Cost ex GST</small><b>{money(costGst.exclusive)}</b></div>
+                <div><small>GST {costGst.gst_rate}%</small><b>{money(costGst.gst_amount)}</b></div>
+                <div><small>Cost incl. GST</small><b>{money(costGst.inclusive)}</b></div>
+                <div><small>Selling ex GST</small><b>{money(sellingGst.exclusive)}</b></div>
+                <div><small>Selling incl. GST</small><b>{money(sellingGst.inclusive)}</b></div>
               </div>
-              <div className="costRecommendation"><Calculator size={20}/><div><b>Recommended selling price: {money(costView.summary?.recommended_selling_price)}</b><p>Based on a {Number(costView.summary?.target_margin_percent || 0).toFixed(1)}% target margin. {Number(costView.summary?.buildable_qty || 0)} finished unit(s) can be built now.</p></div></div>
+              <div className="costRecommendation"><Calculator size={20}/><div><b>Recommended: {money(recommendedGst.exclusive)} ex GST · {money(recommendedGst.inclusive)} incl. GST</b><p>GST {recommendedGst.gst_rate}% is {money(recommendedGst.gst_amount)}. Based on a {previewMargin.toFixed(1)}% target margin. {Number(costView.summary?.buildable_qty || 0)} finished unit(s) can be built now.</p></div></div>
               <div className="costLineTable"><table><thead><tr><th>Material</th><th>Qty + wastage</th><th>Stock</th><th>Unit cost</th><th>Line cost</th></tr></thead><tbody>{costView.lines.map((line:any)=><tr key={line.item_id}><td><b>{line.item_name}</b><small>{line.sku || line.item_type}</small></td><td>{Number(line.required_qty)} {line.unit}<small>{Number(line.wastage_percent)>0?`${line.wastage_percent}% wastage`:"No wastage"}</small></td><td className={Number(line.shortage)>0?"stockLow":""}>{Number(line.stock_qty)}<small>{Number(line.shortage)>0?`Short ${line.shortage}`:"Available"}</small></td><td>{money(line.unit_cost)}</td><td><b>{money(line.line_cost)}</b></td></tr>)}</tbody></table></div>
             </div>
-            <div className="catalogueDrawerFoot"><Link className="catalogueBtn ghost" href="/admin/manufacturing">Edit Recipe</Link><button className="catalogueBtn" onClick={() => setCostView(null)}>Done</button></div>
+            <div className="catalogueDrawerFoot"><Link className="catalogueBtn ghost" href="/admin/manufacturing">Edit Full Recipe</Link><button className="catalogueBtn ghost" onClick={() => setCostView(null)}>Cancel</button><button className="catalogueBtn" onClick={saveManufacturingCost} disabled={savingCost}><Save size={15}/>{savingCost?"Saving…":"Save Box Cost"}</button></div>
           </aside>
         </div>
       )}

@@ -9,6 +9,7 @@ export type AdminAccess={
   must_change_password?:boolean
   mfa_required?:boolean
   aal?:string
+  session_ready?:boolean
   permissions:Record<string,ModulePermission>
 }
 
@@ -23,6 +24,7 @@ export const hrefModule:Record<string,string>={
   '/admin/reports':'reports',
   '/admin/orders':'orders',
   '/admin/rfqs':'rfqs',
+  '/admin/support':'support',
   '/admin/customers':'customers',
   '/admin/products':'products',
   '/admin/components':'components',
@@ -33,6 +35,7 @@ export const hrefModule:Record<string,string>={
   '/admin/configurator':'configurator',
   '/admin/production':'production',
   '/admin/content':'content',
+  '/admin/catalogues':'content',
   '/admin/theme':'theme',
   '/admin/settings':'settings',
   '/admin/integrations':'integrations',

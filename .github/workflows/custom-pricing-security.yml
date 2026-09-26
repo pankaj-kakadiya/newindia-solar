@@ -6,6 +6,10 @@ on:
       - 'tests/*cost*.test.mjs'
       - 'lib/*catalogue*.ts'
       - 'app/**'
+      - 'components/**'
+      - 'lib/mfa.ts'
+      - 'lib/serverAdminAuth.ts'
+      - 'tests/admin-*.test.mjs'
       - 'tests/custom-pricing.test.mjs'
       - 'tests/fixtures/*.sql'
       - 'package*.json'
@@ -17,6 +21,10 @@ on:
       - 'tests/*cost*.test.mjs'
       - 'lib/*catalogue*.ts'
       - 'app/**'
+      - 'components/**'
+      - 'lib/mfa.ts'
+      - 'lib/serverAdminAuth.ts'
+      - 'tests/admin-*.test.mjs'
       - 'tests/custom-pricing.test.mjs'
       - 'tests/fixtures/*.sql'
       - 'package*.json'
@@ -37,4 +45,3 @@ jobs:
       - run: npm ci
       - run: node --experimental-strip-types --test tests/*.test.mjs tests/*.test.cjs
       - run: npm run build
-

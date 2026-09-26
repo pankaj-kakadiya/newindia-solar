@@ -1,7 +1,7 @@
 import type {SupabaseClient} from '@supabase/supabase-js'
 
 type ItemType = 'variant' | 'component' | 'enclosure'
-type CostModule = 'products' | 'components' | 'configurator' | 'pricing' | 'inventory' | 'purchasing' | 'workflows'
+type CostModule = 'products' | 'components' | 'configurator' | 'pricing' | 'inventory' | 'purchasing' | 'workflows' | 'production'
 type Row = {id: string; [key: string]: any}
 type Result = {data: Row[] | null; error: {message: string} | null}
 

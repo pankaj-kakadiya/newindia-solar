@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Download, Save, Search } from "lucide-react";
+import { ArrowLeft, Check, Download, Save, Search, Trash2 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase";
 import { loadAdminCosts } from "../../../../lib/admin-catalogue-costs";
 import { VARIANT_FIELDS } from "../../../../lib/catalogue-projections";
+
+import { deleteAdminRecords, productIdsForRows } from "../../../../lib/admin-delete";
+import { useDeletePermission } from "../../../../lib/use-delete-permission";
 
 type Row = {
   id: string;
@@ -26,6 +29,23 @@ const money = (v: any) =>
   `₹${Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 const csv = (v: any) => `"${String(v ?? "").replaceAll('"', '""')}"`;
 export default function BulkProductEditor() {
+  const canDelete = useDeletePermission('products');
+  async function removeSelectedProducts() {
+    if (!canDelete || busy) return;
+    const ids = productIdsForRows(rows, selected);
+    if (!ids.length) return;
+    const variants = rows.filter(r => ids.includes(r.product_id));
+    const names = [...new Set(variants.map(r => r.name))].join(', ');
+    if (!confirm(`Permanently delete ${ids.length} entire product(s): ${names}? This includes ALL ${variants.length} loaded variants of these products, including unselected variants, catalogue image links and cart entries. Products with stock or history cannot be deleted. This cannot be undone.`)) return;
+    setBusy(true);
+    try {
+      const result = await deleteAdminRecords(supabase, 'products', ids);
+      setRows(all => all.filter(r => !result.deleted.includes(r.product_id)));
+      setSelected(all => all.filter(id => !variants.some(r => r.id === id && result.deleted.includes(r.product_id))));
+      setMsg(`${result.deleted.length} product(s) deleted.${result.missing.length ? ' Some records were not deleted. Check your delete permission or refresh the list.' : ''}`);
+    } catch (error) { setMsg(error instanceof Error ? error.message : 'Deletion failed.'); }
+    finally { setBusy(false); }
+  }
   const [rows, setRows] = useState<Row[]>([]),
     [selected, setSelected] = useState<string[]>([]),
     [q, setQ] = useState(""),
@@ -113,6 +133,7 @@ export default function BulkProductEditor() {
     );
   }
   async function save() {
+    if (busy) return;
     if (!dirty.length) return setMsg("No changed rows to save.");
     if (!confirm(`Apply ${dirty.length} product variant update(s)?`)) return;
     setBusy(true);
@@ -253,6 +274,7 @@ export default function BulkProductEditor() {
         {selected.length > 0 && (
           <div>
             <b>{selected.length} selected</b>
+            {canDelete && <button disabled={busy} onClick={removeSelectedProducts}><Trash2 size={15} />Delete selected products</button>}
             <select
               onChange={(e) =>
                 e.target.value && applySelected("status", e.target.value)
