@@ -20,6 +20,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { insertProductWithSlug, productSaveError, productSlug } from "../../../lib/product-slug";
 import { saveProductImages } from "../../../lib/product-images";
 import { supabase } from "../../../lib/supabase";
 import { loadAdminCosts } from "../../../lib/admin-catalogue-costs";
@@ -90,12 +91,7 @@ const blank = {
   variants: [blankVariant] as Variant[],
   images: [] as Img[],
 };
-const slugify = (s: string) =>
-  s
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+const slugify = productSlug;
 const lines = (s: string) =>
   s
     .split("\n")
@@ -256,7 +252,7 @@ export default function Products() {
     setForm((f: any) => ({
       ...f,
       [k]: v,
-      slug: k === "name" && !f.slug ? slugify(v) : f.slug,
+      slug: k === "slug" ? v : k === "name" && (!f.slug || f.slug === slugify(f.name)) ? slugify(v) : f.slug,
     }));
   }
   function setV(i: number, k: string, v: any) {
@@ -375,7 +371,7 @@ export default function Products() {
     setMsg("");
     const payload = {
       name: form.name,
-      slug: form.slug || slugify(form.name),
+      slug: slugify(form.slug || form.name),
       short_description: form.short_description || null,
       description: form.description || null,
       product_type: form.product_type,
@@ -400,6 +396,10 @@ export default function Products() {
       seo_title: form.seo_title || null,
       seo_description: form.seo_description || null,
     };
+    if (!payload.slug) {
+      setMsg("Enter a URL slug using letters or numbers in Overview.");
+      return;
+    }
     let productId = form.id;
     let err: any = null;
     if (productId) {
@@ -407,21 +407,18 @@ export default function Products() {
         await supabase.from("products").update(payload).eq("id", productId)
       ).error;
     } else {
-      const res = await supabase
-        .from("products")
-        .insert(payload)
-        .select("id")
-        .single();
+      const res = await insertProductWithSlug(supabase, payload);
       err = res.error;
       productId = res.data?.id;
       if (productId) {
         form.id = productId;
-        setForm((current: any) => ({ ...current, id: productId }));
+        form.slug = res.data.slug;
+        setForm((current: any) => ({ ...current, id: productId, slug: res.data.slug }));
       }
     }
     if (err || !productId) {
       setSaving(false);
-      setMsg(err?.message || "Unable to save product.");
+      setMsg(productSaveError(err));
       return;
     }
     const current =
@@ -934,6 +931,7 @@ export default function Products() {
                 <X />
               </button>
             </div>
+            {msg && <div role="status" aria-live="polite" className="catalogueMessage">{msg}</div>}
             <div className="catalogueTabs">
               {[
                 ["overview", "Overview"],
