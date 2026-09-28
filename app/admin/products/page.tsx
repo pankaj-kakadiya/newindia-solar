@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Archive,
   Trash2,
@@ -20,6 +20,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { saveProductImages } from "../../../lib/product-images";
 import { supabase } from "../../../lib/supabase";
 import { loadAdminCosts } from "../../../lib/admin-catalogue-costs";
 import { VARIANT_FIELDS } from "../../../lib/catalogue-projections";
@@ -123,6 +124,8 @@ const parseJson = (s: string) => {
 const csvCell = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 export default function Products() {
+  const saveInFlight = useRef(false);
+  const originalImages = useRef<Img[]>([]);
   const canDelete = useDeletePermission('products');
   const [deleting, setDeleting] = useState(false);
   async function removeProducts(ids: string[]) {
@@ -273,12 +276,14 @@ export default function Products() {
     }));
   }
   function addNew() {
+    originalImages.current = [];
     setForm({ ...blank, variants: [{ ...blankVariant }], images: [] });
     setTab("overview");
     setShow(true);
     setMsg("");
   }
   function edit(p: any, duplicate = false) {
+    originalImages.current = duplicate ? [] : (p.product_images || []).map((image: Img) => ({ ...image }));
     setForm({
       id: duplicate ? "" : p.id,
       name: duplicate ? `${p.name} Copy` : p.name || "",
@@ -363,7 +368,10 @@ export default function Products() {
   }
   async function save(e: FormEvent) {
     e.preventDefault();
+    if (saveInFlight.current || uploading) return;
+    saveInFlight.current = true;
     setSaving(true);
+    try {
     setMsg("");
     const payload = {
       name: form.name,
@@ -406,6 +414,10 @@ export default function Products() {
         .single();
       err = res.error;
       productId = res.data?.id;
+      if (productId) {
+        form.id = productId;
+        setForm((current: any) => ({ ...current, id: productId }));
+      }
     }
     if (err || !productId) {
       setSaving(false);
@@ -441,7 +453,11 @@ export default function Products() {
         err = (
           await supabase.from("product_variants").update(vp).eq("id", v.id)
         ).error;
-      else err = (await supabase.from("product_variants").insert(vp)).error;
+      else {
+        const inserted = await supabase.from("product_variants").insert(vp).select("id").single();
+        err = inserted.error;
+        if (inserted.data?.id) v.id = inserted.data.id;
+      }
       if (err) break;
     }
     if (!err) {
@@ -457,28 +473,18 @@ export default function Products() {
       setMsg(err.message);
       return;
     }
-    await supabase.from("product_images").delete().eq("product_id", productId);
-    const images = form.images
-      .filter((img: Img) => img.image_url)
-      .map((img: Img, i: number) => ({
-        product_id: productId,
-        image_url: img.image_url,
-        alt_text: img.alt_text || form.name,
-        sort_order: i,
-      }));
-    if (images.length) {
-      err = (await supabase.from("product_images").insert(images)).error;
-      if (err) {
-        setSaving(false);
-        setMsg(err.message);
-        return;
-      }
-    }
+    await saveProductImages(supabase, productId, originalImages.current, form.images);
     setSaving(false);
     setShow(false);
     setForm({ ...blank, variants: [{ ...blankVariant }], images: [] });
     setMsg("Product saved. Catalogue, price and stock are updated.");
     load();
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : "Unable to save product.");
+    } finally {
+      saveInFlight.current = false;
+      setSaving(false);
+    }
   }
   async function archive(p: any) {
     if (
@@ -914,7 +920,7 @@ export default function Products() {
         <div
           className="catalogueDrawerBackdrop"
           onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setShow(false);
+            if (!saving && !uploading && e.target === e.currentTarget) setShow(false);
           }}
         >
           <form className="catalogueDrawer" onSubmit={save}>
@@ -924,7 +930,7 @@ export default function Products() {
                 <h2>{form.name || "Product master"}</h2>
                 <p>All commercial and storefront data in one place.</p>
               </div>
-              <button type="button" onClick={() => setShow(false)}>
+              <button type="button" disabled={saving || uploading} onClick={() => setShow(false)}>
                 <X />
               </button>
             </div>
@@ -946,7 +952,7 @@ export default function Products() {
                 </button>
               ))}
             </div>
-            <div className="catalogueDrawerBody">
+            <fieldset disabled={saving || uploading} className="catalogueDrawerBody" style={{ border: 0, margin: 0, minWidth: 0 }}>
               {tab === "overview" && (
                 <div className="catalogueFormGrid">
                   <label className="wide">
@@ -1408,16 +1414,16 @@ export default function Products() {
                   </div>
                 </div>
               )}
-            </div>
+            </fieldset>
             <div className="catalogueDrawerFoot">
               <button
                 type="button"
                 className="catalogueBtn ghost"
-                onClick={() => setShow(false)}
+                disabled={saving || uploading} onClick={() => setShow(false)}
               >
                 Cancel
               </button>
-              <button className="catalogueBtn" disabled={saving}>
+              <button className="catalogueBtn" disabled={saving || uploading}>
                 <Save size={16} />
                 {saving ? "Saving…" : "Save Product"}
               </button>
@@ -1458,3 +1464,4 @@ export default function Products() {
     </div>
   );
 }
+
