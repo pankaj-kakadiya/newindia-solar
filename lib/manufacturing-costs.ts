@@ -99,7 +99,15 @@ export function calculateLiveManufacturingCost(
     overhead_cost: overheadCost,
     packaging_cost: packagingCost,
     total_cost: totalCost,
-    recommended_selling_price: totalCost / (1 - margin / 100),
+    recommended_selling_price: recipeSellingPrice(totalCost, margin),
     missing_cost_count: lines.filter(line => line.missing_cost).length,
   }
+}
+
+/** Preview the server's gross-margin price; the save RPC remains authoritative. */
+export function recipeSellingPrice(cost:unknown,margin:unknown):number {
+ const roundedCost=Math.round(Number(cost||0)*100)/100
+ const target=Number(margin??25)
+ if(!Number.isFinite(roundedCost)||!Number.isFinite(target)||target<0||target>99)return 0
+ return Math.ceil(roundedCost/(1-target/100)*100-1e-8)/100
 }
