@@ -1037,3 +1037,13 @@
     display: grid;
   }
 }
+
+/* Product table sorting */
+.catalogueSortBar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;padding:14px 18px;background:#f7faf8;border:1px solid #dce7e0;border-radius:12px}
+.catalogueSortBar label{display:grid;gap:6px;flex:0 1 230px;min-width:0}.catalogueSortBar label>span{font-size:12px;font-weight:750;color:#465b4e}
+.catalogueSortBar select{width:100%;min-height:42px;padding:9px 12px;border:1px solid #cfddd3;border-radius:9px;background:#fff;color:#183627;font:inherit}
+.catalogueSortBar p{flex:1 1 250px;margin:0;padding-bottom:9px;font-size:12px;color:#63776a}
+.catalogueSortHeader{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:5px 0;border:0;background:transparent;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer;text-align:left}
+.catalogueSortHeader span{font-size:15px}.catalogueSortHeader:hover,.catalogueTable th[aria-sort="ascending"],.catalogueTable th[aria-sort="descending"]{color:#176f42}
+.catalogueSortHeader:focus-visible,.catalogueSortBar select:focus-visible{outline:2px solid #176f42;outline-offset:3px;border-radius:3px}
+@media(max-width:680px){.catalogueSortBar label{flex:1 1 150px}.catalogueSortBar p{flex-basis:100%;padding-bottom:0}}
