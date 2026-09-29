@@ -92,7 +92,7 @@ function loadPaymentRoute(name,db,fetch){
  const source=readFileSync(new URL(`../app/api/payments/razorpay/${name}/route.ts`,import.meta.url),'utf8')
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
  const module={exports:{}}
- const require=id=>id==='next/server'?{NextResponse:{json:(body,options={})=>({body,status:options.status??200})}}:id==='@supabase/supabase-js'?{createClient:()=>({auth:{getUser:async()=>({data:{user:{id:'buyer'}}})}})}:id.includes('payment-security')?security:id.includes('transactionRuntime')?{serviceClient:()=>db}:nativeRequire(id)
+ const require=id=>id==='next/server'?{NextResponse:{json:(body,options={})=>({body,status:options.status??200})}}:id==='@supabase/supabase-js'?{createClient:()=>({auth:{getUser:async()=>({data:{user:{id:'buyer'}}})}})}:id.includes('payment-security')?security:id.includes('transactionRuntime')?{serviceClient:()=>db}:id.includes('rate-limit')?{rateLimit:()=>({allowed:true,retryAfterMs:0})}:nativeRequire(id)
  new Function('require','module','exports','process','fetch',code)(require,module,module.exports,{env:{...env,NEXT_PUBLIC_SUPABASE_URL:'https://fixture.invalid',NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'fixture'}},fetch)
  return module.exports.POST
 }

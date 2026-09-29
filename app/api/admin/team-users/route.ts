@@ -22,10 +22,10 @@ export async function GET(request:NextRequest){
  const auth=await ownerAdmin(request,'view');if(auth instanceof NextResponse)return auth
  const admin=serviceAdmin();if(!admin)return response({error:'Secure user-management service is not configured.'},503)
  const authUsers:any[]=[]
- for(let page=1;page<=20;page++){const {data,error}=await admin.auth.admin.listUsers({page,perPage:1000});if(error)return response({error:error.message||'Could not load Auth users.'},503);authUsers.push(...data.users);if(data.users.length<1000)break}
+ for(let page=1;page<=20;page++){const {data,error}=await admin.auth.admin.listUsers({page,perPage:1000});if(error){console.error('admin/team-users listUsers failed',error);return response({error:'Could not load Auth users.'},503)}authUsers.push(...data.users);if(data.users.length<1000)break}
  const ids=authUsers.map(user=>user.id)
  const profiles:any[]=[]
- for(let i=0;i<ids.length;i+=200){const part=ids.slice(i,i+200);const {data:rows,error:profileError}=await admin.from('profiles').select('id,full_name,email,phone,role,admin_role,staff_status,job_title,account_status,must_change_password,password_changed_at,mfa_required,access_reviewed_at,created_at,updated_at').in('id',part);if(profileError)return response({error:profileError.message},503);profiles.push(...(rows||[]))}
+ for(let i=0;i<ids.length;i+=200){const part=ids.slice(i,i+200);const {data:rows,error:profileError}=await admin.from('profiles').select('id,full_name,email,phone,role,admin_role,staff_status,job_title,account_status,must_change_password,password_changed_at,mfa_required,access_reviewed_at,created_at,updated_at').in('id',part);if(profileError){console.error('admin/team-users profile load failed',profileError);return response({error:'Could not load team profiles.'},503)}profiles.push(...(rows||[]))}
  const {data:securityRows}=await auth.client.rpc('admin_user_security_summary')
  const securityById=new Map<string,any>((securityRows||[]).map((row:any)=>[row.user_id,row]))
  const profileById=new Map(profiles.map(profile=>[profile.id,profile]))
@@ -45,7 +45,7 @@ export async function POST(request:NextRequest){
  const {data:roleDef}=await admin.from('admin_role_definitions').select('role_key').eq('role_key',input.admin_role).neq('role_key','admin').maybeSingle()
  if(!roleDef)return response({error:'Selected department role no longer exists.'},400)
  const {data:created,error:createError}=await admin.auth.admin.createUser({email:input.email,password:input.temporary_password,email_confirm:true,user_metadata:{full_name:input.full_name,phone:input.phone||undefined},app_metadata:{must_change_password:true}})
- if(createError||!created.user){const duplicate=/already|registered|exists/i.test(createError?.message||'');return response({error:duplicate?'This email already has an account. Use “Promote existing account” below.':createError?.message||'Could not create the team user.'},duplicate?409:422)}
+ if(createError||!created.user){const duplicate=/already|registered|exists/i.test(createError?.message||'');if(createError&&!duplicate)console.error('admin/team-users createUser failed',createError);return response({error:duplicate?'This email already has an account. Use “Promote existing account” below.':'Could not create the team user.'},duplicate?409:422)}
  const {data:profile,error:profileError}=await admin.from('profiles').upsert({id:created.user.id,full_name:input.full_name,email:input.email,phone:input.phone,role:'staff',admin_role:input.admin_role,staff_status:'active',job_title:input.job_title,must_change_password:true,updated_at:new Date().toISOString()},{onConflict:'id'}).select('id').single()
  if(profileError||!profile){await admin.auth.admin.deleteUser(created.user.id);return response({error:'The login was rolled back because the staff profile could not be created.'},500)}
  return response({user:{id:created.user.id,email:input.email,full_name:input.full_name,admin_role:input.admin_role,job_title:input.job_title},message:'Team user created successfully.'},201)
@@ -86,9 +86,10 @@ export async function PATCH(request:NextRequest){
   const password=String(body.temporary_password||''),passwordError=validateTemporaryPassword(password)
   if(passwordError)return response({error:passwordError},400)
   const {error}=await admin.auth.admin.updateUserById(userId,{password,email_confirm:true,app_metadata:{...(userData.user.app_metadata||{}),must_change_password:true}})
-  if(error)return response({error:error.message},422)
+  if(error){console.error('admin/team-users reset_password failed',error);return response({error:'Could not update the password.'},422)}
   const {error:flagError}=await admin.from('profiles').update({must_change_password:true,updated_at:new Date().toISOString()}).eq('id',userId)
-  return flagError?response({error:flagError.message},500):response({message:'Temporary password updated. The user must change it at next login.'})
+  if(flagError)console.error('admin/team-users reset_password flag update failed',flagError)
+  return flagError?response({error:'Password updated but the must-change-password flag could not be saved.'},500):response({message:'Temporary password updated. The user must change it at next login.'})
  }
  if(body.action!=='update_user')return response({error:'Unsupported user-management action.'},400)
  const fullName=String(body.full_name||'').trim().replace(/\s+/g,' '),email=String(body.email||'').trim().toLowerCase(),phone=String(body.phone||'').trim().replace(/[\s()-]/g,''),role=String(body.role||''),adminRole=String(body.admin_role||'general'),status=String(body.staff_status||'active'),jobTitle=String(body.job_title||'').trim().replace(/\s+/g,' ')
@@ -103,7 +104,7 @@ export async function PATCH(request:NextRequest){
  const authUpdate:any={email,email_confirm:true,ban_duration:status==='active'?'none':'876000h',user_metadata:{...(original.user_metadata||{}),full_name:fullName}}
  if(phone)authUpdate.phone=phone
  const {error:authError}=await admin.auth.admin.updateUserById(userId,authUpdate)
- if(authError)return response({error:authError.message},422)
+ if(authError){console.error('admin/team-users update_user auth update failed',authError);return response({error:'Could not update the login account.'},422)}
  const mfaRequired=role==='staff'&&Boolean(body.mfa_required),mustChange=role==='staff'&&Boolean(body.must_change_password)
  const {data:saved,error:profileError}=await admin.from('profiles').upsert({id:userId,full_name:fullName,email,phone:phone||null,role,admin_role:role==='staff'?adminRole:null,staff_status:status,account_status:status,job_title:role==='staff'?(jobTitle||null):null,mfa_required:mfaRequired,must_change_password:mustChange,access_reviewed_at:new Date().toISOString(),access_reviewed_by:auth.access.user_id,updated_at:new Date().toISOString()},{onConflict:'id'}).select('id').single()
  if(profileError||!saved){await admin.auth.admin.updateUserById(userId,{email:original.email||undefined,phone:original.phone||undefined,ban_duration:original.banned_until?'876000h':'none'});return response({error:'Auth changes were rolled back because the profile could not be updated.'},500)}

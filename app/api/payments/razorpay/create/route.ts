@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {paymentPaise,paymentReady} from '../../../../../lib/payment-security'
 import {serviceClient} from '../../../../../lib/transactionRuntime'
+import {rateLimit} from '../../../../../lib/rate-limit'
 
 async function currentUser(request:NextRequest){
  const auth=request.headers.get('authorization')||'',token=auth.toLowerCase().startsWith('bearer ')?auth.slice(7).trim():''
@@ -15,6 +16,8 @@ function authHeader(keyId:string,keySecret:string){return `Basic ${Buffer.from(`
 
 async function handleRequest(request:NextRequest){
  const user=await currentUser(request);if(!user)return NextResponse.json({error:'Authentication required.'},{status:401})
+ const limit=rateLimit(`razorpay-create:${user.id}`,10,5*60*1000)
+ if(!limit.allowed)return NextResponse.json({error:'Too many payment attempts. Please wait a few minutes and try again.'},{status:429,headers:{'Retry-After':String(Math.ceil(limit.retryAfterMs/1000))}})
  const db=serviceClient();if(!db)return NextResponse.json({error:'Secure payment backend is not configured.'},{status:503})
  const keyId=process.env.RAZORPAY_KEY_ID,keySecret=process.env.RAZORPAY_KEY_SECRET
  if(!keyId||!keySecret)return NextResponse.json({error:'Razorpay credentials are not configured.'},{status:503})
