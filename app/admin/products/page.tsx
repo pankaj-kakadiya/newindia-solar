@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import {productFirstVariant,productSortOptions,sortProducts,type ProductSortKey,type ProductSortDirection} from "../../../lib/product-sorting";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Archive,
@@ -155,6 +156,8 @@ export default function Products() {
     [bulkStatus, setBulkStatus] = useState("active"),
     [costView, setCostView] = useState<any>(null),
     [savingCost, setSavingCost] = useState(false);
+  const [sortKey,setSortKey]=useState<ProductSortKey>("catalogue");
+  const [sortDirection,setSortDirection]=useState<ProductSortDirection>("asc");
   useEffect(() => {
     load();
   }, []);
@@ -204,10 +207,7 @@ export default function Products() {
     [...(p.product_images || [])].sort(
       (a: any, b: any) => a.sort_order - b.sort_order,
     )[0]?.image_url;
-  const firstVar = (p: any) =>
-    (p.product_variants || []).find((v: any) => v.is_active) ||
-    (p.product_variants || [])[0] ||
-    {};
+  const firstVar = productFirstVariant;
   const isLow = (p: any) =>
     (p.product_variants || []).some(
       (v: any) =>
@@ -233,6 +233,16 @@ export default function Products() {
       }),
     [rows, q, cat, status, stock],
   );
+  const sorted=useMemo(()=>sortProducts(filtered,brands,sortKey,sortDirection),[filtered,brands,sortKey,sortDirection]);
+  function changeSort(key:ProductSortKey){
+    setSortKey(key);setSortDirection(key==='catalogue'?'asc':key==='updated'||productSortOptions.find(option=>option.key===key)?.numeric?'desc':'asc');
+  }
+  function sortHeader(label:string,key:ProductSortKey){
+    return <th scope="col" aria-sort={sortKey===key?(sortDirection==='asc'?'ascending':'descending'):'none'}><button type="button" className="catalogueSortHeader" onClick={()=>{if(sortKey===key)setSortDirection(sortDirection==='asc'?'desc':'asc');else changeSort(key)}} title={`Sort by ${productSortOptions.find(option=>option.key===key)?.label}`}>{label}<span aria-hidden="true">{sortKey===key?(sortDirection==='asc'?'↑':'↓'):'↕'}</span></button></th>;
+  }
+  const sortLabels=sortKey==='updated'?['Oldest first','Newest first']:productSortOptions.find(option=>option.key===sortKey)?.numeric?['Low to high','High to low']:['A to Z','Z to A'];
+  const filtersApplied=!!q||cat!=='all'||status!=='all'||stock!=='all';
+  function clearFilters(){setQ('');setCat('all');setStatus('all');setStock('all');}
   const stats = {
     total: rows.length,
     active: rows.filter((x) => x.status === "active").length,
@@ -605,7 +615,7 @@ export default function Products() {
     load();
   }
   function exportCsv() {
-    const data = filtered.flatMap((p) =>
+    const data = sorted.flatMap((p) =>
       (p.product_variants?.length ? p.product_variants : [{}]).map((v: any) => [
         p.name,
         p.slug,
@@ -719,10 +729,11 @@ export default function Products() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            aria-label="Search product, SKU or category"
             placeholder="Search product, SKU, category…"
           />
         </div>
-        <select value={cat} onChange={(e) => setCat(e.target.value)}>
+        <select aria-label="Filter by category" value={cat} onChange={(e) => setCat(e.target.value)}>
           <option value="all">All categories</option>
           {cats.map((c) => (
             <option value={c.id} key={c.id}>
@@ -730,18 +741,24 @@ export default function Products() {
             </option>
           ))}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="all">All statuses</option>
           <option value="active">Active</option>
           <option value="draft">Draft</option>
           <option value="inactive">Inactive</option>
         </select>
-        <select value={stock} onChange={(e) => setStock(e.target.value)}>
+        <select aria-label="Filter by stock" value={stock} onChange={(e) => setStock(e.target.value)}>
           <option value="all">All stock</option>
           <option value="low">Low stock</option>
           <option value="out">Out of stock</option>
         </select>
+        <button type="button" className="catalogueBtn ghost" onClick={clearFilters} disabled={!filtersApplied}>Clear filters</button>
         <span>{filtered.length} results</span>
+      </div>
+      <div className="catalogueSortBar" aria-label="Product sorting">
+        <label><span>Sort by</span><select value={sortKey} onChange={e=>changeSort(e.target.value as ProductSortKey)}>{productSortOptions.map(option=><option key={option.key} value={option.key}>{option.label}</option>)}</select></label>
+        <label><span>Sort order</span><select value={sortDirection} onChange={e=>setSortDirection(e.target.value as ProductSortDirection)}><option value="asc">{sortLabels[0]}</option><option value="desc">{sortLabels[1]}</option></select></label>
+        <p role="status" aria-live="polite">Sorted by {productSortOptions.find(option=>option.key===sortKey)?.label} · {sortLabels[sortDirection==='asc'?0:1]}. Price, margin and stock use the variant shown in each row.</p>
       </div>
       {selected.length > 0 && (
         <div className="catalogueBulk">
@@ -776,13 +793,13 @@ export default function Products() {
                     onChange={toggleAll}
                   />
                 </th>
-                <th>Product</th>
-                <th>Category / Brand</th>
-                <th>Pricing</th>
-                <th>Margin</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th></th>
+                {sortHeader('Product',sortKey==='sku'?'sku':'name')}
+                {sortHeader('Category / Brand',sortKey==='brand'?'brand':'category')}
+                {sortHeader('Pricing',sortKey==='cost'?'cost':'selling')}
+                {sortHeader('Margin','margin')}
+                {sortHeader('Stock','stock')}
+                {sortHeader('Status','status')}
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -793,7 +810,7 @@ export default function Products() {
                   </td>
                 </tr>
               ) : filtered.length ? (
-                filtered.map((p) => {
+                sorted.map((p) => {
                   const v = firstVar(p);
                   const m = margin(v.selling_price, v.cost_price);
                   const low = isLow(p);
