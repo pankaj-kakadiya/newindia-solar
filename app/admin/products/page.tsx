@@ -752,13 +752,10 @@ export default function Products() {
           <option value="low">Low stock</option>
           <option value="out">Out of stock</option>
         </select>
+        <label className="catalogueInlineSort"><span>Sort by</span><select value={sortKey} onChange={e=>changeSort(e.target.value as ProductSortKey)}>{productSortOptions.map(option=><option key={option.key} value={option.key}>{option.label}</option>)}</select></label>
+        <label className="catalogueInlineSort"><span>Sort order</span><select value={sortDirection} onChange={e=>setSortDirection(e.target.value as ProductSortDirection)}><option value="asc">{sortLabels[0]}</option><option value="desc">{sortLabels[1]}</option></select></label>
         <button type="button" className="catalogueBtn ghost" onClick={clearFilters} disabled={!filtersApplied}>Clear filters</button>
-        <span>{filtered.length} results</span>
-      </div>
-      <div className="catalogueSortBar" aria-label="Product sorting">
-        <label><span>Sort by</span><select value={sortKey} onChange={e=>changeSort(e.target.value as ProductSortKey)}>{productSortOptions.map(option=><option key={option.key} value={option.key}>{option.label}</option>)}</select></label>
-        <label><span>Sort order</span><select value={sortDirection} onChange={e=>setSortDirection(e.target.value as ProductSortDirection)}><option value="asc">{sortLabels[0]}</option><option value="desc">{sortLabels[1]}</option></select></label>
-        <p role="status" aria-live="polite">Sorted by {productSortOptions.find(option=>option.key===sortKey)?.label} · {sortLabels[sortDirection==='asc'?0:1]}. Price, margin and stock use the variant shown in each row.</p>
+        <span role="status" aria-live="polite">{filtered.length} results<span className="catalogueSortAnnouncement">. Sorted by {productSortOptions.find(option=>option.key===sortKey)?.label}, {sortLabels[sortDirection==='asc'?0:1]}.</span></span>
       </div>
       {selected.length > 0 && (
         <div className="catalogueBulk">
