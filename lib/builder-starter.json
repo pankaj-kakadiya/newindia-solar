@@ -39,7 +39,7 @@
             "id": "ea147ecd-ce63-5355-8925-a668eabdaf1f",
             "option_id": "f935d3d4-6320-4063-90be-17d2a9f5b0c0",
             "value": "enclosure-empty",
-            "label": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+            "label": "New India Solar — 180 × 130 × 100 mm",
             "component_id": null,
             "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
             "price_adjustment": 0,
@@ -72,7 +72,7 @@
             "id": "bff39ef7-75d4-523c-9a76-d688aecb7084",
             "option_id": "fff7f039-bc58-46a9-8ea9-ed958861888f",
             "value": "ac-mcb-grey-c32",
-            "label": "Lauritz Knudsen C32 AC \u2014 double pole",
+            "label": "Lauritz Knudsen C32 AC — double pole",
             "component_id": "c4da1cb4-0200-5324-84ec-4d1967d9989b",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -114,6 +114,23 @@
               "default_quantity": 1
             },
             "sort_order": 2,
+            "is_active": true
+          },
+          {
+            "id": "41e88476-b618-5c8d-b94f-9078a04b7aa6",
+            "option_id": "fff7f039-bc58-46a9-8ea9-ed958861888f",
+            "value": "ac-mcb-empower-c20a",
+            "label": "EMPOWER EM60-C20A AC — 20A",
+            "component_id": "0b6828b6-447d-54d9-b002-b5673e7a2f4a",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1,
+              "source_reference": "user-photo-20260922"
+            },
+            "sort_order": 3,
             "is_active": true
           }
         ]
@@ -260,6 +277,23 @@
             },
             "sort_order": 7,
             "is_active": true
+          },
+          {
+            "id": "06c6943a-7f97-5ef3-a959-356192cfd2c5",
+            "option_id": "cf54cb1e-d58b-4550-b24e-8caf5498fa51",
+            "value": "ac-spd-orbit",
+            "label": "ORBIT OT-SPD-40 AC",
+            "component_id": "9d6f6815-ae42-5802-b05c-2935b9b04413",
+            "enclosure_id": null,
+            "price_adjustment": 0,
+            "metadata": {
+              "asset_pack": "components-v1",
+              "default": false,
+              "default_quantity": 1,
+              "source_reference": "user-photo-20260922"
+            },
+            "sort_order": 8,
+            "is_active": true
           }
         ]
       },
@@ -315,7 +349,7 @@
             "id": "8ee53d57-64f9-5128-b4ff-c4b84aeabbc6",
             "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
             "value": "wire-red-left",
-            "label": "Red wire \u2014 left short arch",
+            "label": "Red wire — left short arch",
             "component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -331,7 +365,7 @@
             "id": "11640a98-a996-5711-a966-c087ec1ce7ad",
             "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
             "value": "wire-grey-left",
-            "label": "Grey wire \u2014 left short arch",
+            "label": "Grey wire — left short arch",
             "component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -347,7 +381,7 @@
             "id": "89a359a3-baf1-55d3-9a31-2a7c630618bc",
             "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
             "value": "wire-red-right",
-            "label": "Red wire \u2014 right tall arch",
+            "label": "Red wire — right tall arch",
             "component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -363,7 +397,7 @@
             "id": "3ad42654-ea9a-5195-864d-b7aadb60434e",
             "option_id": "5be0f517-41d1-4679-ae46-e318173fe9aa",
             "value": "wire-grey-right",
-            "label": "Grey wire \u2014 right tall arch",
+            "label": "Grey wire — right tall arch",
             "component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -815,7 +849,7 @@
       },
       "c4da1cb4-0200-5324-84ec-4d1967d9989b": {
         "id": "c4da1cb4-0200-5324-84ec-4d1967d9989b",
-        "name": "Lauritz Knudsen C32 AC \u2014 double pole",
+        "name": "Lauritz Knudsen C32 AC — double pole",
         "category": "AC MCB",
         "sku": "NIS-VIS-AC-MCB-GREY-C32",
         "model": null,
@@ -1013,7 +1047,7 @@
       },
       "79a48e14-1d94-5853-afab-cc82ae935239": {
         "id": "79a48e14-1d94-5853-afab-cc82ae935239",
-        "name": "Red wire \u2014 left short arch",
+        "name": "Red wire — left short arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-RED-LEFT",
         "model": null,
@@ -1035,7 +1069,7 @@
       },
       "4d0ed45d-d27b-5b99-a4a8-cf4880b84385": {
         "id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
-        "name": "Grey wire \u2014 left short arch",
+        "name": "Grey wire — left short arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-GREY-LEFT",
         "model": null,
@@ -1057,7 +1091,7 @@
       },
       "dde95cac-082c-52fb-a175-0cc0056e928e": {
         "id": "dde95cac-082c-52fb-a175-0cc0056e928e",
-        "name": "Red wire \u2014 right tall arch",
+        "name": "Red wire — right tall arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-RED-RIGHT",
         "model": null,
@@ -1079,7 +1113,7 @@
       },
       "5fbcf9b3-9490-5b15-b274-43319272bb0f": {
         "id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
-        "name": "Grey wire \u2014 right tall arch",
+        "name": "Grey wire — right tall arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-GREY-RIGHT",
         "model": null,
@@ -1142,14 +1176,68 @@
         "specifications": {
           "artwork_review_required": true
         }
+      },
+      "0b6828b6-447d-54d9-b002-b5673e7a2f4a": {
+        "id": "0b6828b6-447d-54d9-b002-b5673e7a2f4a",
+        "name": "EMPOWER EM60-C20A AC — 20A",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-EMPOWER-C20A",
+        "model": "EM60-C20A AC",
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-empower-c20a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-empower-c20a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false,
+          "source_reference": "user-photo-20260922"
+        },
+        "specifications": {
+          "artwork_review_required": true,
+          "source_photo": "ACDB-14 uploaded 22 September 2026",
+          "device_type": "AC",
+          "marked_current": "20A",
+          "marked_voltage": "415V AC"
+        }
+      },
+      "9d6f6815-ae42-5802-b05c-2935b9b04413": {
+        "id": "9d6f6815-ae42-5802-b05c-2935b9b04413",
+        "name": "ORBIT OT-SPD-40 AC",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-ORBIT",
+        "model": "OT-SPD-40",
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-orbit.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-orbit",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false,
+          "source_reference": "user-photo-20260922"
+        },
+        "specifications": {
+          "artwork_review_required": true,
+          "source_photo": "ACDB-14 uploaded 22 September 2026",
+          "device_type": "AC",
+          "marked_current": null,
+          "marked_voltage": "320V AC"
+        }
       }
     },
     "enclosures": {
       "171b055e-52ad-56c3-91ae-10f654e6d5b3": {
         "id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
-        "name": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+        "name": "New India Solar — 180 × 130 × 100 mm",
         "sku": "NIS-VIS-ENCLOSURE-180",
-        "dimensions_mm": "180 H \u00d7 130 W \u00d7 100 D",
+        "dimensions_mm": "180 H × 130 W × 100 D",
         "material": null,
         "ip_rating": null,
         "module_capacity": null,
@@ -1370,7 +1458,7 @@
           "fit": "fill",
           "preview_component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
           "preview_image_url": "/configurator/components-v1/wire-red-left.png",
-          "preview_name": "Red wire \u2014 left short arch",
+          "preview_name": "Red wire — left short arch",
           "match_asset": true
         }
       },
@@ -1395,7 +1483,7 @@
           "fit": "fill",
           "preview_component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
           "preview_image_url": "/configurator/components-v1/wire-grey-left.png",
-          "preview_name": "Grey wire \u2014 left short arch",
+          "preview_name": "Grey wire — left short arch",
           "match_asset": true
         }
       },
@@ -1420,7 +1508,7 @@
           "fit": "fill",
           "preview_component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
           "preview_image_url": "/configurator/components-v1/wire-red-right.png",
-          "preview_name": "Red wire \u2014 right tall arch",
+          "preview_name": "Red wire — right tall arch",
           "match_asset": true
         }
       },
@@ -1445,7 +1533,7 @@
           "fit": "fill",
           "preview_component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
           "preview_image_url": "/configurator/components-v1/wire-grey-right.png",
-          "preview_name": "Grey wire \u2014 right tall arch",
+          "preview_name": "Grey wire — right tall arch",
           "match_asset": true
         }
       }
@@ -1491,7 +1579,7 @@
             "id": "a95f1e7f-78aa-5844-a8d7-36ea9191ad79",
             "option_id": "8798c80c-c6bc-4f9f-9849-35ce71acb3bb",
             "value": "enclosure-empty",
-            "label": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+            "label": "New India Solar — 180 × 130 × 100 mm",
             "component_id": null,
             "enclosure_id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
             "price_adjustment": 0,
@@ -1767,7 +1855,7 @@
             "id": "f68e9a52-77ee-55b7-b8a6-0573c057fa0f",
             "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
             "value": "wire-red-left",
-            "label": "Red wire \u2014 left short arch",
+            "label": "Red wire — left short arch",
             "component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -1783,7 +1871,7 @@
             "id": "0dedde5d-f828-5db3-a64c-00fbf7289547",
             "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
             "value": "wire-grey-left",
-            "label": "Grey wire \u2014 left short arch",
+            "label": "Grey wire — left short arch",
             "component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -1799,7 +1887,7 @@
             "id": "8ab9aecc-955a-5841-8d95-5418f8215a2f",
             "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
             "value": "wire-red-right",
-            "label": "Red wire \u2014 right tall arch",
+            "label": "Red wire — right tall arch",
             "component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -1815,7 +1903,7 @@
             "id": "f2ac185f-8e4d-5301-ac07-fbbe8f6dbe2c",
             "option_id": "70e1d34a-1b6d-4f17-9e77-690bab2db39a",
             "value": "wire-grey-right",
-            "label": "Grey wire \u2014 right tall arch",
+            "label": "Grey wire — right tall arch",
             "component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
             "enclosure_id": null,
             "price_adjustment": 0,
@@ -2267,7 +2355,7 @@
       },
       "c4da1cb4-0200-5324-84ec-4d1967d9989b": {
         "id": "c4da1cb4-0200-5324-84ec-4d1967d9989b",
-        "name": "Lauritz Knudsen C32 AC \u2014 double pole",
+        "name": "Lauritz Knudsen C32 AC — double pole",
         "category": "AC MCB",
         "sku": "NIS-VIS-AC-MCB-GREY-C32",
         "model": null,
@@ -2465,7 +2553,7 @@
       },
       "79a48e14-1d94-5853-afab-cc82ae935239": {
         "id": "79a48e14-1d94-5853-afab-cc82ae935239",
-        "name": "Red wire \u2014 left short arch",
+        "name": "Red wire — left short arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-RED-LEFT",
         "model": null,
@@ -2487,7 +2575,7 @@
       },
       "4d0ed45d-d27b-5b99-a4a8-cf4880b84385": {
         "id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
-        "name": "Grey wire \u2014 left short arch",
+        "name": "Grey wire — left short arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-GREY-LEFT",
         "model": null,
@@ -2509,7 +2597,7 @@
       },
       "dde95cac-082c-52fb-a175-0cc0056e928e": {
         "id": "dde95cac-082c-52fb-a175-0cc0056e928e",
-        "name": "Red wire \u2014 right tall arch",
+        "name": "Red wire — right tall arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-RED-RIGHT",
         "model": null,
@@ -2531,7 +2619,7 @@
       },
       "5fbcf9b3-9490-5b15-b274-43319272bb0f": {
         "id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
-        "name": "Grey wire \u2014 right tall arch",
+        "name": "Grey wire — right tall arch",
         "category": "Internal Wire",
         "sku": "NIS-VIS-WIRE-GREY-RIGHT",
         "model": null,
@@ -2594,14 +2682,68 @@
         "specifications": {
           "artwork_review_required": true
         }
+      },
+      "0b6828b6-447d-54d9-b002-b5673e7a2f4a": {
+        "id": "0b6828b6-447d-54d9-b002-b5673e7a2f4a",
+        "name": "EMPOWER EM60-C20A AC — 20A",
+        "category": "AC MCB",
+        "sku": "NIS-VIS-AC-MCB-EMPOWER-C20A",
+        "model": "EM60-C20A AC",
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-mcb-empower-c20a.png",
+        "visual_role": "mcb",
+        "visual_settings": {
+          "asset_id": "ac-mcb-empower-c20a",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false,
+          "source_reference": "user-photo-20260922"
+        },
+        "specifications": {
+          "artwork_review_required": true,
+          "source_photo": "ACDB-14 uploaded 22 September 2026",
+          "device_type": "AC",
+          "marked_current": "20A",
+          "marked_voltage": "415V AC"
+        }
+      },
+      "9d6f6815-ae42-5802-b05c-2935b9b04413": {
+        "id": "9d6f6815-ae42-5802-b05c-2935b9b04413",
+        "name": "ORBIT OT-SPD-40 AC",
+        "category": "AC SPD",
+        "sku": "NIS-VIS-AC-SPD-ORBIT",
+        "model": "OT-SPD-40",
+        "selling_price": 0,
+        "gst_rate": 18,
+        "stock_qty": 0,
+        "unit": "pcs",
+        "image_url": "/configurator/components-v1/ac-spd-orbit.png",
+        "visual_role": "spd",
+        "visual_settings": {
+          "asset_id": "ac-spd-orbit",
+          "asset_pack": "components-v1",
+          "pricing_status": "quote_required",
+          "engineering_verified": false,
+          "source_reference": "user-photo-20260922"
+        },
+        "specifications": {
+          "artwork_review_required": true,
+          "source_photo": "ACDB-14 uploaded 22 September 2026",
+          "device_type": "AC",
+          "marked_current": null,
+          "marked_voltage": "320V AC"
+        }
       }
     },
     "enclosures": {
       "171b055e-52ad-56c3-91ae-10f654e6d5b3": {
         "id": "171b055e-52ad-56c3-91ae-10f654e6d5b3",
-        "name": "New India Solar \u2014 180 \u00d7 130 \u00d7 100 mm",
+        "name": "New India Solar — 180 × 130 × 100 mm",
         "sku": "NIS-VIS-ENCLOSURE-180",
-        "dimensions_mm": "180 H \u00d7 130 W \u00d7 100 D",
+        "dimensions_mm": "180 H × 130 W × 100 D",
         "material": null,
         "ip_rating": null,
         "module_capacity": null,
@@ -2822,7 +2964,7 @@
           "fit": "fill",
           "preview_component_id": "79a48e14-1d94-5853-afab-cc82ae935239",
           "preview_image_url": "/configurator/components-v1/wire-red-left.png",
-          "preview_name": "Red wire \u2014 left short arch",
+          "preview_name": "Red wire — left short arch",
           "match_asset": true
         }
       },
@@ -2847,7 +2989,7 @@
           "fit": "fill",
           "preview_component_id": "4d0ed45d-d27b-5b99-a4a8-cf4880b84385",
           "preview_image_url": "/configurator/components-v1/wire-grey-left.png",
-          "preview_name": "Grey wire \u2014 left short arch",
+          "preview_name": "Grey wire — left short arch",
           "match_asset": true
         }
       },
@@ -2872,7 +3014,7 @@
           "fit": "fill",
           "preview_component_id": "dde95cac-082c-52fb-a175-0cc0056e928e",
           "preview_image_url": "/configurator/components-v1/wire-red-right.png",
-          "preview_name": "Red wire \u2014 right tall arch",
+          "preview_name": "Red wire — right tall arch",
           "match_asset": true
         }
       },
@@ -2897,7 +3039,7 @@
           "fit": "fill",
           "preview_component_id": "5fbcf9b3-9490-5b15-b274-43319272bb0f",
           "preview_image_url": "/configurator/components-v1/wire-grey-right.png",
-          "preview_name": "Grey wire \u2014 right tall arch",
+          "preview_name": "Grey wire — right tall arch",
           "match_asset": true
         }
       }
