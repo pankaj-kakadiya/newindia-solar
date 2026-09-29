@@ -1,0 +1,37 @@
+name: Admin builder integration
+on:
+  pull_request:
+    paths:
+      - 'components/ConfiguratorBuilder.tsx'
+      - 'components/admin/Builder*.tsx'
+      - 'components/buyer/ComboBuilder.tsx'
+      - 'app/admin/configurator/**'
+      - 'app/bulk-order/**'
+      - 'lib/builder*.ts'
+      - 'lib/combo-catalogue.ts'
+      - 'tests/builder-buyer.browser.cjs'
+      - '.github/workflows/admin-builder-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  buyer-admin-connection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false @playwright/test@1.55.1
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config tests/builder-buyer.config.cjs --grep 'admin catalogue|RFQ carries|normal landing'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: admin-builder-browser-results
+          path: test-results/
+          retention-days: 7
