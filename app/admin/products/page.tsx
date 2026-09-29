@@ -26,7 +26,7 @@ import { saveProductImages } from "../../../lib/product-images";
 import { supabase } from "../../../lib/supabase";
 import { loadAdminCosts } from "../../../lib/admin-catalogue-costs";
 import { VARIANT_FIELDS } from "../../../lib/catalogue-projections";
-import { calculateGstBreakdown } from "../../../lib/manufacturing-costs";
+import { calculateGstBreakdown, recipeSellingPrice } from "../../../lib/manufacturing-costs";
 
 import { deleteAdminRecords } from "../../../lib/admin-delete";
 import { useDeletePermission } from "../../../lib/use-delete-permission";
@@ -583,7 +583,7 @@ export default function Products() {
     const changedVersion = data !== costView.recipe.id;
     const savedCost = Number(costView.summary?.material_cost || 0) + Number(d.labour_cost || 0) + Number(d.overhead_cost || 0) + Number(d.packaging_cost || 0);
     setCostView(null);
-    setMsg(`Box cost updated to ${money(savedCost)} ex GST${changedVersion ? " in a new protected recipe version" : ""}.`);
+    setMsg(`Box cost and margin-based live selling price updated${changedVersion ? " in a new protected recipe version" : ""}.`);
     await load();
   }
   function toggle(id: string) {
@@ -661,7 +661,7 @@ export default function Products() {
     ? Number(costView.summary?.material_cost || 0) + Number(costView.draft?.labour_cost || 0) + Number(costView.draft?.overhead_cost || 0) + Number(costView.draft?.packaging_cost || 0)
     : 0;
   const previewMargin = Math.min(Math.max(Number(costView?.draft?.target_margin_percent || 0), 0), 99);
-  const previewRecommended = previewCost / (1 - previewMargin / 100);
+  const previewRecommended = recipeSellingPrice(previewCost, previewMargin);
   const costGst = calculateGstBreakdown(previewCost, costView?.product?.gst_rate);
   const sellingGst = calculateGstBreakdown(costView?.summary?.current_selling_price, costView?.product?.gst_rate);
   const recommendedGst = calculateGstBreakdown(previewRecommended, costView?.product?.gst_rate);
@@ -1466,7 +1466,7 @@ export default function Products() {
                 <div><small>Selling ex GST</small><b>{money(sellingGst.exclusive)}</b></div>
                 <div><small>Selling incl. GST</small><b>{money(sellingGst.inclusive)}</b></div>
               </div>
-              <div className="costRecommendation"><Calculator size={20}/><div><b>Recommended: {money(recommendedGst.exclusive)} ex GST · {money(recommendedGst.inclusive)} incl. GST</b><p>GST {recommendedGst.gst_rate}% is {money(recommendedGst.gst_amount)}. Based on a {previewMargin.toFixed(1)}% target margin. {Number(costView.summary?.buildable_qty || 0)} finished unit(s) can be built now.</p></div></div>
+              <div className="costRecommendation"><Calculator size={20}/><div><b>Selling price on save: {money(recommendedGst.exclusive)} ex GST · {money(recommendedGst.inclusive)} incl. GST</b><p>GST {recommendedGst.gst_rate}% is {money(recommendedGst.gst_amount)}. Saving publishes this price using a {previewMargin.toFixed(1)}% target margin. Product or pricing edit permission is required. {Number(costView.summary?.buildable_qty || 0)} finished unit(s) can be built now.</p></div></div>
               <div className="costLineTable"><table><thead><tr><th>Material</th><th>Qty + wastage</th><th>Stock</th><th>Unit cost</th><th>Line cost</th></tr></thead><tbody>{costView.lines.map((line:any)=><tr key={line.item_id}><td><b>{line.item_name}</b><small>{line.sku || line.item_type}</small></td><td>{Number(line.required_qty)} {line.unit}<small>{Number(line.wastage_percent)>0?`${line.wastage_percent}% wastage`:"No wastage"}</small></td><td className={Number(line.shortage)>0?"stockLow":""}>{Number(line.stock_qty)}<small>{Number(line.shortage)>0?`Short ${line.shortage}`:"Available"}</small></td><td>{money(line.unit_cost)}</td><td><b>{money(line.line_cost)}</b></td></tr>)}</tbody></table></div>
             </div>
             <div className="catalogueDrawerFoot"><Link className="catalogueBtn ghost" href="/admin/manufacturing">Edit Full Recipe</Link><button className="catalogueBtn ghost" onClick={() => setCostView(null)}>Cancel</button><button className="catalogueBtn" onClick={saveManufacturingCost} disabled={savingCost}><Save size={15}/>{savingCost?"Saving…":"Save Box Cost"}</button></div>
