@@ -26,3 +26,6 @@
 .adminLoginSecurity img{display:block;max-width:100%;height:auto;margin:12px auto}
 .adminLoginSecurity code{overflow-wrap:anywhere;word-break:break-all}
 .adminLoginSecurity .adminSecurityFactor{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:12px 0}
+
+/* Reserve space while the session check resolves to the sign-in form. */
+.adminLoginFormPanel{min-height:680px}

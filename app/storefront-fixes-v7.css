@@ -38,3 +38,27 @@
   .comboPage .comboSummaryLine>strong{grid-column:2;margin-top:2px;font-size:13px}
   .cvPage .cvBottomCta{padding:24px 20px}
 }
+
+/* Readable small text and explicit footer heading hierarchy. */
+.homeV3 .hvTrustGrid small,.homeV3 .hvCategoryCopy p,.homeV3 .hvSectionHead p,.homeV3 .hvWhyIntro>p,.homeV3 .hvPromise small{color:#52616c}
+.homeV3 .hvSectionHead>div:first-child>span,.homeV3 .hvWhyIntro>span{color:#a34400}
+.homeV3 .hvBuyNumber{color:#647078}
+.homeV3 .hvBuilderLight .hvBuilderTop i{color:#245b3b}
+.nisFooter .nisPrimaryBtn{background:#146d3b;color:#fff}
+.nisFooter .nisFooterHeading{color:#fff;margin:0 0 16px;font-size:16px}
+
+/* Product-page text identified by the live mobile accessibility audit. */
+.pdSaving del,.pdTaxLine small,.pdServiceGrid>div>span,.pdRelatedGrid>article>div>small{color:#52616c}
+.pdSaving>span{color:#146d3b;background:#edf7ef}
+.pdBuyRow .pdAdd{background:#146d3b;color:#fff}
+.pdFaqList summary>span{color:#52616c}
+
+.nhHeader .nhSearchAction kbd{color:#52616c}
+.nhHeader .nhActions .nhQuoteAction{background:#146d3b;color:#fff}
+.nhBrand img{height:54px}
+.cvPage{min-height:100vh}
+.cvResultsHead p,.cvPagination>span,.emptyCart>p{color:#52616c}
+.cartPageHead .darkEye{color:#146d3b}
+
+.homeV3 .hvBuildAssurance small{color:#52616c}
+.emptyCart .btnRow .btn{background:#146d3b;color:#fff}
