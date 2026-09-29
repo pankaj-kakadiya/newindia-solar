@@ -32,6 +32,8 @@ export const hrefModule:Record<string,string>={
   '/admin/purchasing':'purchasing',
   '/admin/pricing':'pricing',
   '/admin/finance':'finance',
+  '/admin/accounting':'accounting',
+  '/admin/manufacturing':'production',
   '/admin/configurator':'configurator',
   '/admin/production':'production',
   '/admin/content':'content',
