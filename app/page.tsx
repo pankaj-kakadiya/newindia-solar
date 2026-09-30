@@ -1,5 +1,5 @@
 import type {Metadata} from 'next'
-import HomePageContent from '../components/HomePageContent'
+import HomePageContentV4 from '../components/HomePageContentV4'
 import {supabase} from '../lib/supabase'
 import {withDefaultCatalogue, type HomeProduct, type HomeDownload} from '../lib/homepage-sections'
 
@@ -18,5 +18,5 @@ export default async function Home(){
     supabase.from('products').select('id,name,slug,short_description,featured,gst_rate,product_images(image_url,alt_text,sort_order),product_variants(selling_price,stock_qty,sku)').eq('status','active').order('featured',{ascending:false}).order('sort_order').limit(4).abortSignal(AbortSignal.timeout(6000)),
     supabase.from('cms_downloads').select('id,title,description,file_url,category').eq('is_active',true).order('sort_order').limit(12).abortSignal(AbortSignal.timeout(6000)),
   ])
-  return <HomePageContent products={(products.data || []) as HomeProduct[]} downloads={withDefaultCatalogue((downloads.data || []) as HomeDownload[])} productsUnavailable={!!products.error}/>
+  return <HomePageContentV4 products={(products.data || []) as HomeProduct[]} downloads={withDefaultCatalogue((downloads.data || []) as HomeDownload[])} productsUnavailable={!!products.error}/>
 }
