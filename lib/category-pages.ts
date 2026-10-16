@@ -1,8 +1,11 @@
-export type CategoryPage={slug:string;label:string;categoryTerms:string[];description:string}
+export type CategoryPage={slug:string;label:string;categoryTerms:string[];description:string;productSlugPrefix?:string;excludeSlugPrefix?:string}
+
+export const COMBO_SLUG_PREFIX='acdb-dcdb-combo-'
 
 export const CATEGORY_PAGES:CategoryPage[]=[
- {slug:'acdb',label:'ACDB',categoryTerms:['acdb'],description:'AC distribution and protection boxes for residential, commercial and industrial solar installations.'},
- {slug:'dcdb',label:'DCDB',categoryTerms:['dcdb'],description:'DC combiner and protection boxes for solar strings and array-side protection.'},
+ {slug:'acdb-dcdb-combo',label:'ACDB + DCDB Combo',categoryTerms:['acdbdcdbcombo','combo'],productSlugPrefix:COMBO_SLUG_PREFIX,description:'Matched ACDB + DCDB box sets for 1–6 kW single phase rooftop solar — same-brand and mixed-brand combos, ready to dispatch.'},
+ {slug:'acdb',label:'ACDB',categoryTerms:['acdb'],excludeSlugPrefix:COMBO_SLUG_PREFIX,description:'AC distribution and protection boxes for residential, commercial and industrial solar installations.'},
+ {slug:'dcdb',label:'DCDB',categoryTerms:['dcdb'],excludeSlugPrefix:COMBO_SLUG_PREFIX,description:'DC combiner and protection boxes for solar strings and array-side protection.'},
  {slug:'enclosures',label:'Enclosures',categoryTerms:['enclosure','enclosures'],description:'IP-rated enclosures for solar distribution, protection and control assemblies.'},
  {slug:'mcb-mccb',label:'MCB / MCCB',categoryTerms:['mcb','mccb','mcbmccb','acmcb','dcmcb','acmccb','dcmccb'],description:'AC and DC circuit breakers for isolation and overcurrent protection.'},
  {slug:'spd',label:'Surge Protection Devices',categoryTerms:['spd','acspd','dcspd','surgeprotection','surgeprotectiondevice','surgeprotectiondevices'],description:'AC and DC surge protection devices for solar installations.'},

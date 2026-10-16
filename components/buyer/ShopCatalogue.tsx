@@ -35,7 +35,7 @@ async function readPublished(table: 'products' | 'categories', signal: AbortSign
 }
 
 type ChangeFilters = (patch: Partial<Filters>, resetPage?: boolean) => void
-type CatalogueScope = {categoryTerms: string[]; label: string; path: string; description: string}
+type CatalogueScope = {categoryTerms: string[]; label: string; path: string; description: string; productSlugPrefix?: string; excludeSlugPrefix?: string}
 
 type FilterPanelProps = {
   filters: Filters; categories: Category[]; counts: Map<string, number>;
@@ -159,7 +159,7 @@ export default function ShopCatalogue({scope}:{scope?:CatalogueScope}) {
     window.history.pushState(null, '', `${basePath}${query ? `?${query}` : ''}`)
   }
   function clear() {change({...EMPTY_FILTERS, view: filters.view, specs: {}}); setSearch('')}
-  const scopedProducts = useMemo(() => {if(!scope)return products;const terms=new Set(scope.categoryTerms.map(term=>term.toLowerCase().replace(/[^a-z0-9]/g,'')));return products.filter(product=>{const name=product.categories?.name.toLowerCase().replace(/[^a-z0-9]/g,'')||'',slug=product.categories?.slug.toLowerCase().replace(/[^a-z0-9]/g,'')||'';return terms.has(name)||terms.has(slug)})}, [products, scope])
+  const scopedProducts = useMemo(() => {if(!scope)return products;const terms=new Set(scope.categoryTerms.map(term=>term.toLowerCase().replace(/[^a-z0-9]/g,'')));const pslug=(product:Product)=>(product.slug||'').toLowerCase();if(scope.productSlugPrefix){const prefix=scope.productSlugPrefix;return products.filter(product=>pslug(product).startsWith(prefix))}const exclude=scope.excludeSlugPrefix;return products.filter(product=>{if(exclude&&pslug(product).startsWith(exclude))return false;const name=product.categories?.name.toLowerCase().replace(/[^a-z0-9]/g,'')||'',slug=product.categories?.slug.toLowerCase().replace(/[^a-z0-9]/g,'')||'';return terms.has(name)||terms.has(slug)})}, [products, scope])
   const results = useMemo(() => filterCatalogue(scopedProducts, categories, filters), [scopedProducts, categories, filters])
   const facets = useMemo(() => catalogueFacets(scopedProducts, categories, filters), [scopedProducts, categories, filters])
   const brands = useMemo(() => [...new Map(scopedProducts.filter(p => p.brands?.is_active).map(p => [p.brands!.slug, {slug: p.brands!.slug, name: p.brands!.name}])).values()].sort((a,b) => a.name.localeCompare(b.name)), [scopedProducts])
