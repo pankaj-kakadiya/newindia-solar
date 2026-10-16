@@ -1,7 +1,7 @@
 import type {Metadata} from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import {ArrowRight, Boxes, Cable, CircuitBoard, PlugZap, ShieldCheck, Sparkles} from 'lucide-react'
+import {ArrowRight, Boxes, Layers, Cable, CircuitBoard, PlugZap, ShieldCheck, Sparkles} from 'lucide-react'
 import StoreHeader from '../../components/StoreHeader'
 import StoreFooter from '../../components/StoreFooter'
 
@@ -9,6 +9,7 @@ export const metadata:Metadata={title:'Solar Component Categories | New India So
 
 const groups=[
  {title:'Boxes & protection',copy:'Ready protection boxes and enclosure systems for the AC and DC side of solar installations.',icon:ShieldCheck,items:[
+  {name:'ACDB + DCDB Combo',desc:'Matched 1–6 kW ACDB + DCDB box sets',slug:'acdb-dcdb-combo',icon:Layers},
   {name:'ACDB',desc:'AC distribution and protection boxes',slug:'acdb',img:'/acdb-demo.svg'},
   {name:'DCDB',desc:'DC combiner and protection boxes',slug:'dcdb',img:'/dcdb-demo.svg'},
   {name:'Enclosures',desc:'IP-rated boxes and cabinets',slug:'enclosures',icon:Boxes},
