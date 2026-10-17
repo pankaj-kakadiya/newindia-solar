@@ -27,6 +27,14 @@ const securityHeaders=[
  ...(production?[{key:'Strict-Transport-Security',value:'max-age=63072000; includeSubDomains; preload'}]:[])
 ]
 
+// Shareable catalogue links on our own domain (e.g. https://newindiasolar.com/downloads/acdb-dcdb-combo-catalogue.pdf).
+// The PDF files are hosted on IndiaMART's document store; to publish a new version, upload it and change the URL here.
+const catalogueFiles={
+ 'acdb-dcdb-combo-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654245282/AA/KF/KZ/246685908/newindia-solar-acdb-dcdb-combo-catalogue-1-6kw-320v.pdf',
+ 'acdb-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654245307/PZ/XG/EV/246685908/newindia-solar-acdb-catalogue.pdf',
+ 'dcdb-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654245309/NY/ID/ML/246685908/newindia-solar-dcdb-catalogue.pdf'
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig={
  reactStrictMode:true,
@@ -42,6 +50,9 @@ const nextConfig={
    {source:'/customize/:path*',destination:'/categories/acdb-dcdb-combo',permanent:true},
    ...retiredCategories.map(slug=>({source:`/categories/${slug}`,destination:'/categories',permanent:true}))
   ]
+ },
+ async rewrites(){
+  return Object.entries(catalogueFiles).map(([file,destination])=>({source:`/downloads/${file}`,destination}))
  },
  async headers(){
   return [
