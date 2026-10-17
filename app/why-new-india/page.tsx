@@ -10,7 +10,7 @@ const pillars=[
  {icon:Boxes,title:'One focused solar range',body:'Protection boxes, switchgear, wiring, connectors, earthing and BOS essentials in one product system.'},
  {icon:ClipboardCheck,title:'Clear product information',body:'Published variants, ratings, GST, minimum quantities and availability are presented before checkout.'},
  {icon:PackageCheck,title:'Project-ready procurement',body:'Direct purchase for standard products, saved buyer details and a separate RFQ path for bulk or custom requirements.'},
- {icon:Factory,title:'Custom ACDB / DCDB workflow',body:'Visual requirement builders help buyers define components before engineering, BOM and commercial confirmation.'},
+ {icon:Factory,title:'Custom ACDB / DCDB workflow',body:'Share your ratings and components so the team can confirm the box before engineering, BOM and commercial confirmation.'},
  {icon:Truck,title:'Built for Indian project supply',body:'A Surat-based company serving installers, dealers, EPC teams and project buyers across India.'},
  {icon:ShieldCheck,title:'Verification before commitment',body:'Current price, tax, minimum quantity and stock are checked again during the ordering flow.'},
 ]

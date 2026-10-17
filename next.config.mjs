@@ -31,6 +31,18 @@ const securityHeaders=[
 const nextConfig={
  reactStrictMode:true,
  poweredByHeader:false,
+ async redirects(){
+  // The storefront sells only ACDB, DCDB and ACDB + DCDB combos; builders and other categories were retired.
+  const retiredCategories=['enclosures','mcb-mccb','spd','dc-fuses','solar-cable','mc4-connectors','cable-glands','terminal-blocks','earthing-kits','bos-accessories']
+  return [
+   {source:'/combo',destination:'/categories/acdb-dcdb-combo',permanent:true},
+   {source:'/customize',destination:'/categories/acdb-dcdb-combo',permanent:true},
+   {source:'/customize/acdb',destination:'/categories/acdb',permanent:true},
+   {source:'/customize/dcdb',destination:'/categories/dcdb',permanent:true},
+   {source:'/customize/:path*',destination:'/categories/acdb-dcdb-combo',permanent:true},
+   ...retiredCategories.map(slug=>({source:`/categories/${slug}`,destination:'/categories',permanent:true}))
+  ]
+ },
  async headers(){
   return [
    {source:'/:path*',headers:securityHeaders},
