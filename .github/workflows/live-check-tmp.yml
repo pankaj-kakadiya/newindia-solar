@@ -1,0 +1,17 @@
+name: Temp live site check
+on:
+  push:
+    branches: [ci/live-check]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in / /categories /categories/acdb-dcdb-combo /categories/dcdb /combo; do
+            code=$(curl -s -o page.html -w "%{http_code}" "https://newindiasolar.com$u")
+            echo "== $u -> $code, combo-mentions=$(grep -o 'acdb-dcdb-combo' page.html | wc -l), title=$(grep -o '<title>[^<]*' page.html | head -1)"
+          done
+          curl -sI https://newindiasolar.com/ | grep -iE 'date|last-modified|x-nextjs|age|server|cache' || true
+          curl -s https://newindiasolar.com/ -o home.html; grep -o '/_next/static/[^/"]*/_buildManifest' home.html | head -1
