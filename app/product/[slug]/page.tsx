@@ -15,8 +15,21 @@ import {safeAssetUrl} from '../../../lib/catalogue'
 import {useCart} from '../../../components/CartProvider'
 import StoreHeader from '../../../components/StoreHeader'
 import StoreFooter from '../../../components/StoreFooter'
+import {COMBO_SLUG_PREFIX} from '../../../lib/category-pages'
+import {isStorefrontProduct} from '../../../lib/storefront-scope'
+import {trackAddToCart, trackViewItem} from '../../../lib/track'
 
 const money=(n:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n)
+function productKind(product:any):'combo'|'acdb'|'dcdb'|'other'{
+  const slug=String(product?.slug||'').toLowerCase(),cat=`${product?.categories?.name||''} ${product?.categories?.slug||''}`.toLowerCase()
+  if(slug.startsWith(COMBO_SLUG_PREFIX))return 'combo'
+  if(cat.includes('acdb'))return 'acdb'
+  if(cat.includes('dcdb'))return 'dcdb'
+  return 'other'
+}
+const KIND_LABEL={combo:'ACDB + DCDB Combo',acdb:'ACDB',dcdb:'DCDB',other:'Solar Component'}
+const KIND_HREF={combo:'/categories/acdb-dcdb-combo',acdb:'/categories/acdb',dcdb:'/categories/dcdb',other:'/shop'}
+const KIND_BADGES={combo:['ACDB + DCDB set','1–6 kW','Single phase'],acdb:['Solar ACDB','1–6 kW','Ready wired'],dcdb:['Solar DCDB','1–6 kW','Ready wired'],other:['Solar ready','Quality checked','GST invoice']}
 const gstPrice=(price:number,gst=18)=>{const paise=Math.round((price+Number.EPSILON)*100);return (paise+Math.round(paise*gst/100))/100}
 
 function SafeProductImage({src,alt,className}:{src?:string|null;alt:string;className?:string}){
@@ -37,6 +50,8 @@ export default function Product(){
   const [copied,setCopied]=useState(false)
   const [loading,setLoading]=useState(true)
   const touchStart=useRef<number|null>(null)
+  const buyRowRef=useRef<HTMLDivElement|null>(null)
+  const [stickyVisible,setStickyVisible]=useState(false)
   const {add}=useCart()
 
   useEffect(()=>{
@@ -49,9 +64,9 @@ export default function Product(){
       setVariantId(data?.product_variants?.[0]?.id||'')
       setActiveIndex(0)
       if(data){
-        const {data:more}=await supabase.from('products').select('id,name,slug,category_id,gst_rate,short_description,categories(name,slug),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,mrp,stock_qty,unit)').eq('status','active').neq('id',data.id).limit(10)
+        const {data:more}=await supabase.from('products').select('id,name,slug,category_id,gst_rate,short_description,categories(name,slug),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,mrp,stock_qty,unit)').eq('status','active').neq('id',data.id).limit(60)
         if(!alive)return
-        const sorted=[...(more||[])].sort((a:any,b:any)=>Number(b.category_id===data.category_id)-Number(a.category_id===data.category_id)).slice(0,4)
+        const kind=productKind(data),sorted=[...((more||[]) as any[])].filter(isStorefrontProduct).sort((a:any,b:any)=>Number(productKind(b)===kind)-Number(productKind(a)===kind)).slice(0,4)
         setRelated(sorted)
       }
       setLoading(false)
@@ -77,11 +92,20 @@ export default function Product(){
   const saving=mrpIncl>priceIncl?mrpIncl-priceIncl:0
   const applications=(p?.applications?.length?p.applications:['Residential rooftop solar','Commercial solar installations','String protection and combiner use']).slice(0,4)
   const features=[...(p?.product_badges||[]),...(p?.inclusions||[])].filter(Boolean).slice(0,5)
+  const kind=productKind(p),categoryLabel=KIND_LABEL[kind],categoryHref=KIND_HREF[kind]
+  const badges:string[]=(p?.product_badges?.length?p.product_badges:KIND_BADGES[kind]).slice(0,3)
+  const canBuy=price>0&&stock>0
+  const unit=v?.unit||'pcs'
+
+  useEffect(()=>{if(p&&v&&price>0)trackViewItem({id:v.sku||v.id,name:p.name,price:priceIncl,category:categoryLabel})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[p?.id,v?.id])
+  useEffect(()=>{const node=buyRowRef.current;if(!node||typeof IntersectionObserver==='undefined')return;const observer=new IntersectionObserver(([entry])=>setStickyVisible(!entry.isIntersecting&&entry.boundingClientRect.top<0),{threshold:0});observer.observe(node);return()=>observer.disconnect()},[p?.id,canBuy])
 
   if(loading)return <><StoreHeader/><main className="container productLoading"><div/><div/></main></>
   if(!p)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Product not found.</h1><Link className="btn btnPrimary" href="/shop">Back to Products</Link></main></>
 
-  function addToCart(){if(!v||price<=0||qty<minQty||qty>stock||!Number.isSafeInteger(qty))return;const image=imgs[0];add({id:v.id,kind:'standard',productVariantId:v.id,productSlug:p.slug,imageUrl:safeAssetUrl(image?.image_url)||undefined,imageAlt:image?.alt_text||p.name,name:p.name,variant:v.title||v.sku,price,qty,minQty})}
+  function addToCart(){if(!v||price<=0||qty<minQty||qty>stock||!Number.isSafeInteger(qty))return;const image=imgs[0];trackAddToCart({id:v.sku||v.id,name:p.name,price:priceIncl,quantity:qty,category:categoryLabel});add({id:v.id,kind:'standard',productVariantId:v.id,productSlug:p.slug,imageUrl:safeAssetUrl(image?.image_url)||undefined,imageAlt:image?.alt_text||p.name,name:p.name,variant:v.title||v.sku,price,qty,minQty})}
   function go(index:number){if(!imgs.length)return;setActiveIndex((index+imgs.length)%imgs.length)}
   function previous(){go(activeIndex-1)}
   function next(){go(activeIndex+1)}
@@ -93,16 +117,16 @@ export default function Product(){
   }
 
   return <><StoreHeader/><main className="pdPage">
-    <div className="container pdBreadcrumbs"><Link href="/">Home</Link><span>›</span><Link href="/shop">Products</Link><span>›</span><Link href={`/shop?q=${encodeURIComponent(p.categories?.name||'')}`}>{p.categories?.name||'Solar Component'}</Link><span>›</span><b>{p.name}</b></div>
+    <nav className="container pdBreadcrumbs" aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">›</span><Link href="/categories">Categories</Link><span aria-hidden="true">›</span><Link href={categoryHref}>{categoryLabel}</Link><span aria-hidden="true">›</span><b aria-current="page">{p.name}</b></nav>
 
     <section className="container pdHero">
-      <div className="pdMobileHead">
-        <span className="pdCategory">{p.categories?.name||'Solar Component'}</span>
+      <div className="pdHead">
+        <div className="pdHeadTop"><Link className="pdCategory" href={categoryHref}>{categoryLabel}</Link><button type="button" className="pdShare" onClick={share}><Share2/>{copied?'Link copied':'Share'}</button></div>
         <h1>{p.name}</h1>
-        <small>SKU: {v?.sku||'—'}</small>
+        <p className="pdSku">SKU: {v?.sku||'—'}</p>
       </div>
       <div className="pdGalleryColumn">
-        <div className="pdGalleryBadges">{(p.product_badges?.length?p.product_badges:['IP65','Solar Ready','EPC Ready']).slice(0,3).map((b:string,i:number)=><span key={b}>{i===0?<ShieldCheck/>:i===1?<Zap/>:<PackageCheck/>}<b>{b}</b></span>)}</div>
+        <div className="pdGalleryBadges">{badges.map((b:string,i:number)=><span key={b}>{i===0?<ShieldCheck/>:i===1?<Zap/>:<PackageCheck/>}<b>{b}</b></span>)}</div>
         <div className="pdGallery" tabIndex={0} onKeyDown={keySlide} onTouchStart={e=>{touchStart.current=e.touches[0].clientX}} onTouchEnd={touchEnd} aria-label={`${p.name} image gallery`}>
           <div className="pdImageStage">
             {activeImg?<SafeProductImage src={activeImg.image_url} alt={activeImg.alt_text||`${p.name} image ${activeIndex+1}`}/>:<div className="pdNoImage"><ImageIcon/><span>Product image</span></div>}
@@ -114,10 +138,8 @@ export default function Product(){
       </div>
 
       <div className="pdBuy">
-        <div className="pdTopline"><span className="pdCategory">{p.categories?.name||'Solar Component'}</span><div><small>SKU: {v?.sku||'—'}</small><button onClick={share}><Share2/>{copied?'Copied':'Share'}</button></div></div>
-        <h1>{p.name}</h1>
         <p className="pdLead">{p.short_description||p.description||'Reliable New India Solar component engineered for solar installation projects.'}</p>
-        <div className="pdMeta"><span className={stock>0?'stock':'out'}><CheckCircle2/>{stock>0?`In stock (${stock} ${v?.unit||'pcs'})`:'Available on request'}</span><span>GST {gst}%</span>{p.warranty_months?<span>{p.warranty_months} month warranty</span>:null}<span>MOQ {p.min_order_qty||1} {v?.unit||'pcs'}</span><span>{Number(p.lead_time_days)>0?`Lead time ${p.lead_time_days} days`:'Confirm dispatch time'}</span></div>
+        <div className="pdMeta"><span className={stock>0?'stock':'out'}><CheckCircle2/>{stock>0?`In stock (${stock} ${unit})`:'Available on request'}</span><span>GST {gst}%</span>{p.warranty_months?<span>{p.warranty_months} month warranty</span>:null}<span>MOQ {p.min_order_qty||1} {v?.unit||'pcs'}</span><span>{Number(p.lead_time_days)>0?`Lead time ${p.lead_time_days} days`:'Confirm dispatch time'}</span></div>
 
         {variants.length>1&&<div className="pdVariants"><label>Choose Variant</label><div>{variants.map((x:any)=>{const base=Number(x.selling_price||0);return <button key={x.id} className={x.id===v?.id?'active':''} onClick={()=>{setVariantId(x.id);setQty(minQty)}}><b>{x.title||x.sku}</b><span>{money(gstPrice(base,gst))} incl. GST</span></button>})}</div></div>}
 
@@ -126,7 +148,7 @@ export default function Product(){
           <aside className="pdValue"><Tag/><div><b>Best value for solar projects</b><span><Check/> Quality components</span><span><Check/> EPC ready</span><span><Check/> Pan-India support</span></div></aside>
         </div>
 
-        {price>0&&stock>0?<div className="pdBuyRow"><QuantityControl value={qty} min={minQty} max={stock} label="Product quantity" onChange={setQty}/><button className="pdAdd" disabled={qty<minQty||qty>stock} onClick={addToCart}><ShoppingCart/>Add to Cart</button></div>:<Link className="pdAdd full" href="/bulk-order">{price>0?'Check Availability':'Request Price'}</Link>}
+        {canBuy?<div className="pdBuyRow" ref={buyRowRef}><QuantityControl value={qty} min={minQty} max={stock} label="Product quantity" onChange={setQty}/><button className="pdAdd" disabled={qty<minQty||qty>stock} onClick={addToCart}><ShoppingCart/>Add to Cart</button></div>:<div ref={buyRowRef}><Link className="pdAdd full" href="/bulk-order">{price>0?'Check Availability':'Request Price'}</Link></div>}
         <div className="pdSecondaryActions"><Link href="/bulk-order"><FileText/>Request a Quote</Link><button onClick={()=>setWish(x=>!x)} className={wish?'active':''}><Heart fill={wish?'currentColor':'none'}/>{wish?'Saved to Wishlist':'Add to Wishlist'}</button></div>
 
         <div className="pdServiceGrid"><div><FileText/><b>GST-ready order</b><span>Business checkout supported</span></div><div><Truck/><b>Pan-India delivery</b><span>Reliable logistics network</span></div><div><Users/><b>Project support</b><span>Bulk RFQ available</span></div><div><Box/><b>Secure packaging</b><span>Safe & reliable</span></div></div>
@@ -141,10 +163,11 @@ export default function Product(){
       {tab==='downloads'&&<div className="pdTabContent"><div className="pdDownloads">{p.datasheet_url?<Link href={p.datasheet_url} target="_blank"><FileText/><div><b>Product Datasheet</b><span>Open technical datasheet</span></div><Download/></Link>:null}{p.installation_guide_url?<Link href={p.installation_guide_url} target="_blank"><FileText/><div><b>Installation Guide</b><span>Open installation instructions</span></div><Download/></Link>:null}{!p.datasheet_url&&!p.installation_guide_url&&<p>No downloads have been uploaded yet.</p>}</div></div>}
     </section>
 
-    <section className="container pdWhy"><div className="pdSectionHead"><div><h2>Why Choose New India Solar</h2><p>Built for installers, EPCs and project buyers across India.</p></div></div><div className="pdWhyGrid"><article><ShieldCheck/><b>Tested. Packed. Guaranteed.</b><span>Product-focused quality checks before dispatch.</span></article><article><Truck/><b>Pan-India Supply</b><span>Reliable project and business dispatch workflow.</span></article><article><Headphones/><b>Technical Support</b><span>Guidance for product and configuration selection.</span></article><article><Wrench/><b>Custom Build Options</b><span>ACDB and DCDB built around project needs.</span></article><article><Users/><b>Project Ready</b><span>Direct purchase, custom build and RFQ in one flow.</span></article></div></section>
+    <section className="container pdWhy"><div className="pdSectionHead"><div><h2>Why Choose New India Solar</h2><p>Built for installers, EPCs and project buyers across India.</p></div></div><div className="pdWhyGrid"><article><ShieldCheck/><b>Tested. Packed. Guaranteed.</b><span>Product-focused quality checks before dispatch.</span></article><article><Truck/><b>Pan-India Supply</b><span>Reliable project and business dispatch workflow.</span></article><article><Headphones/><b>Technical Support</b><span>Guidance on choosing the right box for your system.</span></article><article><Wrench/><b>Ready-Wired Boxes</b><span>ACDB, DCDB and matched combos for 1–6 kW systems.</span></article><article><Users/><b>Project Ready</b><span>Direct purchase or bulk RFQ for EPC and dealer orders.</span></article></div></section>
 
-    {related.length>0&&<section className="container pdRelated"><div className="pdSectionHead row"><div><h2>Related Products</h2><p>More components for your solar installation.</p></div><Link href="/shop">View All Products →</Link></div><div className="pdRelatedGrid">{related.map((r:any)=>{const rv=r.product_variants?.[0];const ri=[...(r.product_images||[])].sort((a:any,b:any)=>a.sort_order-b.sort_order)[0];const rp=Number(rv?.selling_price||0);const rtotal=gstPrice(rp,Number(r.gst_rate??18));return <article key={r.id}><Link href={`/product/${r.slug}`} className="pdRelatedImage"><SafeProductImage src={ri?.image_url} alt={ri?.alt_text||r.name}/></Link><div><small>{r.categories?.name||'Solar Component'}</small><h3><Link href={`/product/${r.slug}`}>{r.name}</Link></h3><div><strong>{rp?money(rtotal):'Request price'}</strong><span>{Number(rv?.stock_qty||0)>0?'In stock':'On request'}</span><Link href={`/product/${r.slug}`} aria-label={`View ${r.name}`}><ShoppingCart/></Link></div></div></article>})}</div></section>}
+    {related.length>0&&<section className="container pdRelated"><div className="pdSectionHead row"><div><h2>Related Products</h2><p>{kind==='combo'?'More ready-matched ACDB + DCDB sets.':'More ACDB, DCDB and combo boxes for your installation.'}</p></div><Link href="/shop">View All Products →</Link></div><div className="pdRelatedGrid">{related.map((r:any)=>{const rv=r.product_variants?.[0];const ri=[...(r.product_images||[])].sort((a:any,b:any)=>a.sort_order-b.sort_order)[0];const rp=Number(rv?.selling_price||0);const rtotal=gstPrice(rp,Number(r.gst_rate??18));return <article key={r.id}><Link href={`/product/${r.slug}`} className="pdRelatedImage"><SafeProductImage src={ri?.image_url} alt={ri?.alt_text||r.name}/></Link><div><small>{r.categories?.name||'Solar Component'}</small><h3><Link href={`/product/${r.slug}`}>{r.name}</Link></h3><div><strong>{rp?money(rtotal):'Request price'}</strong><span>{Number(rv?.stock_qty||0)>0?'In stock':'On request'}</span><Link href={`/product/${r.slug}`} aria-label={`View ${r.name}`}><ShoppingCart/></Link></div></div></article>})}</div></section>}
 
-    <section className="container pdFaq"><div className="pdSectionHead row"><div><h2>Frequently Asked Questions</h2><p>Quick answers before you place an order.</p></div><Link href="/#contact">Contact our team →</Link></div><div className="pdFaqList"><details><summary><span>1.</span> What is the difference between ACDB and DCDB?<ChevronDown/></summary><p>ACDB protects and distributes the AC side of a solar installation, while DCDB provides protection and combining functions on the DC side before the inverter.</p></details><details><summary><span>2.</span> Is this product suitable for commercial solar projects?<ChevronDown/></summary><p>Suitability depends on the selected voltage, current, protection and project design. Use the listed specifications or request a project quote for confirmation.</p></details><details><summary><span>3.</span> What is the warranty period?<ChevronDown/></summary><p>{p.warranty_months?`This product currently lists a ${p.warranty_months}-month warranty.`:'Warranty terms will be confirmed with the final approved product specification.'}</p></details><details><summary><span>4.</span> Can you provide custom configurations?<ChevronDown/></summary><p>Yes. New India Solar supports configurable ACDB and DCDB builds and project-specific bulk requirements.</p></details></div></section>
+    <section className="container pdFaq"><div className="pdSectionHead row"><div><h2>Frequently Asked Questions</h2><p>Quick answers before you place an order.</p></div><Link href="/contact">Contact our team →</Link></div><div className="pdFaqList"><details><summary><span>1.</span> What is the difference between ACDB and DCDB?<ChevronDown/></summary><p>ACDB protects and distributes the AC side of a solar installation, while DCDB provides protection and combining functions on the DC side before the inverter.</p></details><details><summary><span>2.</span> Is this product suitable for commercial solar projects?<ChevronDown/></summary><p>Suitability depends on the selected voltage, current, protection and project design. Use the listed specifications or request a project quote for confirmation.</p></details><details><summary><span>3.</span> What is the warranty period?<ChevronDown/></summary><p>{p.warranty_months?`This product currently lists a ${p.warranty_months}-month warranty.`:'Warranty terms will be confirmed with the final approved product specification.'}</p></details><details><summary><span>4.</span> Do you supply bulk quantities for projects?<ChevronDown/></summary><p>Yes. Send a Project RFQ with quantities, ratings and delivery location, and our team will share project pricing and dispatch timing.</p></details></div></section>
+    {price>0&&<div className={`pdStickyBar ${stickyVisible?'show':''}`} aria-hidden={!stickyVisible}><div><small>{canBuy?`Incl. ${gst}% GST`:'Price incl. GST'}</small><b>{money(priceIncl)}</b></div>{canBuy?<button type="button" tabIndex={stickyVisible?0:-1} onClick={addToCart} disabled={qty<minQty||qty>stock}><ShoppingCart/>Add to Cart</button>:<Link tabIndex={stickyVisible?0:-1} href="/bulk-order">Check Availability</Link>}</div>}
   </main><StoreFooter/></>
 }

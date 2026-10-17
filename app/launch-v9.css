@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Launch polish v9 — loaded last. Product page layout, calmer mobile
+   typography, compact catalogue cards and the mobile sticky buy bar.
+   ========================================================================== */
+
+/* ---------- Product page: one header block, gallery + buy box ---------- */
+html body main.pdPage .pdBreadcrumbs{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;white-space:nowrap;padding-top:16px;padding-bottom:8px;font-size:13px;color:#5b6b75}
+html body main.pdPage .pdBreadcrumbs a{flex:none;color:#5b6b75;text-decoration:none}
+html body main.pdPage .pdBreadcrumbs a:hover{color:#0d1b2a;text-decoration:underline}
+html body main.pdPage .pdBreadcrumbs span{flex:none;color:#a3b0b8}
+html body main.pdPage .pdBreadcrumbs b{min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:#1d2b36}
+
+html body main.pdPage .pdHero{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"gallery head" "gallery buy";column-gap:44px!important;row-gap:0!important;align-items:start}
+html body main.pdPage .pdHead{grid-area:head;min-width:0}
+html body main.pdPage .pdGalleryColumn{grid-area:gallery;position:sticky;top:104px;width:100%;max-width:none;margin:0}
+html body main.pdPage .pdBuy{grid-area:buy;min-width:0;padding-top:0}
+
+main.pdPage .pdHeadTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+main.pdPage .pdHead .pdCategory{display:inline-flex;align-items:center;text-decoration:none}
+main.pdPage .pdShare{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 13px;border:1px solid #dfe6e2;border-radius:999px;background:#fff;color:#33444f;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+main.pdPage .pdShare:hover{border-color:#b9c9c0;color:#0d1b2a}
+main.pdPage .pdShare svg{width:15px;height:15px}
+html body main.pdPage .pdHead h1{margin:14px 0 8px;color:#0d1b2a;font-size:clamp(24px,2.2vw,32px);font-weight:700;line-height:1.22;letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:pretty}
+main.pdPage .pdSku{margin:0 0 16px;color:#6d7d87;font-size:13px}
+
+html body main.pdPage .pdGalleryBadges{display:flex;flex-wrap:wrap;gap:8px;overflow:visible}
+html body main.pdPage .pdGalleryBadges span{white-space:nowrap}
+
+/* Sticky buy bar (mobile only) */
+main.pdPage .pdStickyBar{display:none}
+
+@media (max-width:860px){
+  html body main.pdPage .pdHero{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"head" "gallery" "buy";row-gap:16px!important}
+  html body main.pdPage .pdGalleryColumn{position:static}
+  html body main.pdPage .pdHead h1{margin:10px 0 4px;font-size:20px;font-weight:650;line-height:1.32;letter-spacing:-.005em}
+  main.pdPage .pdSku{margin:0;font-size:12px}
+  html body main.pdPage .pdBreadcrumbs{font-size:12px;padding-top:12px;padding-bottom:4px}
+  html body main.pdPage .pdGalleryBadges span{min-height:32px;padding:0 11px;font-size:11px}
+  html body main.pdPage .pdPriceMain strong{font-size:28px;font-weight:750;letter-spacing:-.02em}
+
+  main.pdPage .pdStickyBar{position:fixed;left:0;right:0;bottom:0;z-index:225;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #e3e9e5;background:rgba(255,255,255,.97);box-shadow:0 -8px 24px rgba(13,27,42,.08);transform:translateY(110%);visibility:hidden;transition:transform .2s ease,visibility .2s}
+  main.pdPage .pdStickyBar.show{transform:none;visibility:visible}
+  main.pdPage .pdStickyBar small{display:block;color:#6d7d87;font-size:11px}
+  main.pdPage .pdStickyBar b{color:#0d1b2a;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  main.pdPage .pdStickyBar button,main.pdPage .pdStickyBar a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border:0;border-radius:12px;background:#18a354;color:#fff;font:inherit;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer}
+  main.pdPage .pdStickyBar button:disabled{opacity:.55}
+  main.pdPage .pdStickyBar svg{width:18px;height:18px}
+  body:has(.pdStickyBar.show) .supportLauncher{bottom:calc(86px + env(safe-area-inset-bottom))}
+}
+@media (prefers-reduced-motion:reduce){main.pdPage .pdStickyBar{transition:none}}
+
+/* ---------- Catalogue (shop + category pages) ---------- */
+.cvCategoryStrip a{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border:1px solid #dfe6e2;border-radius:999px;background:#fff;color:#1d2b36;font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap}
+.cvCategoryStrip a:hover{border-color:#18a354;color:#0f7a3d}
+
+@media (max-width:640px){
+  .cvCategoryStrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .cvCategoryStrip::-webkit-scrollbar{display:none}
+  .cvCategoryStrip a{min-height:40px;font-size:13px}
+
+  /* Compact product cards */
+  html body .cvCard .cvProductImage{height:190px;min-height:0}
+  html body .cvCard .cvProductImage img{height:100%;object-fit:contain}
+  html body .cvCard .cvCardBody{padding:14px 16px 16px}
+  html body .cvCard h2{font-size:16px!important;font-weight:650!important;line-height:1.35!important;letter-spacing:0!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  html body .cvCard .cvDescription{display:none}
+  html body .cvCard .cvSpecs>div:nth-child(n+3){display:none}
+  html body .cvCard .cvSpecs{margin:10px 0 6px}
+  html body .cvCard .cvPrice strong{font-size:24px;font-weight:750}
+  html body .cvCard .cvPrice>small{display:none}
+  html body .cvCard .cvCardLinks{display:none}
+  html body .cvCard .cvCardActions{gap:8px}
+
+  /* Shorter catalogue hero so products appear sooner */
+  html body .cvHeroRow h1{font-size:26px!important;font-weight:700!important;line-height:1.18!important;letter-spacing:-.02em!important}
+  html body .cvHeroRow p{font-size:14px;line-height:1.5}
+  html body .cvComboBanner{padding:18px 18px!important}
+  html body .cvComboBanner h2{font-size:19px!important;font-weight:700!important;line-height:1.25!important}
+  html body .cvComboBanner p{font-size:13px}
+}
+
+/* ---------- Calmer headings on phones, site-wide ---------- */
+@media (max-width:640px){
+  html body main h1{font-weight:750;letter-spacing:-.02em}
+  html body main .hvHero h1{font-size:30px!important;line-height:1.12!important;font-weight:750!important}
+  html body main h2{font-weight:700}
+  html body main .hvSection h2,html body main .hvFinal h2,html body main .hvProject h2{font-size:24px!important;line-height:1.2!important;letter-spacing:-.015em!important}
+  html body main .sxHero h1,html body main .companyHero h1{font-size:28px!important;line-height:1.15!important;font-weight:750!important}
+}

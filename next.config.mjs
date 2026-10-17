@@ -5,13 +5,13 @@ const cspParts=[
  "object-src 'none'",
  "frame-ancestors 'none'",
  "form-action 'self'",
- "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com",
+ "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://connect.facebook.net",
  "style-src 'self' 'unsafe-inline'",
  "img-src 'self' data: blob: https:",
  "font-src 'self' data: https:",
  "media-src 'self' blob: https:",
- "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.razorpay.com https://checkout.razorpay.com https://graph.facebook.com",
- "frame-src 'self' https://*.razorpay.com https://checkout.razorpay.com",
+ "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.razorpay.com https://checkout.razorpay.com https://graph.facebook.com https://www.facebook.com https://connect.facebook.net https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://www.google.co.in https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com",
+ "frame-src 'self' https://*.razorpay.com https://checkout.razorpay.com https://www.googletagmanager.com https://td.doubleclick.net https://www.facebook.com",
  "worker-src 'self' blob:",
  "manifest-src 'self'"
 ]

@@ -9,9 +9,9 @@ export const dynamic='force-dynamic'
 export async function generateMetadata():Promise<Metadata>{
   const {data}=await supabase.from('cms_settings').select('value').eq('key','seo').abortSignal(AbortSignal.timeout(6000)).maybeSingle()
   const seo:any=data?.value||{}
-  const title=seo.home_title||'New India Solar | ACDB, DCDB & Solar BOS Components'
+  const title=seo.home_title||'New India Solar | Solar ACDB, DCDB & Combo Boxes Online'
   const description=seo.home_description||'Buy solar ACDB, DCDB and matched ACDB + DCDB combo boxes for 1–6 kW single phase rooftop solar, and submit project RFQs for EPC and installer requirements across India.'
-  return {title,description,alternates:{canonical:'/'},openGraph:{title:seo.og_title||title,description:seo.og_description||description,type:'website'}}
+  return {title:{absolute:title},description,alternates:{canonical:'/'},openGraph:{title:seo.og_title||title,description:seo.og_description||description,type:'website',siteName:'New India Solar',locale:'en_IN',url:'https://newindiasolar.com',images:[{url:'https://newindiasolar.com/new-india-solar-full-logo.webp',alt:'New India Solar'}]}}
 }
 
 export default async function Home(){

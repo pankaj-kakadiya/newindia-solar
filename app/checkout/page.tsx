@@ -10,6 +10,7 @@ import {buyerFetch} from '../../lib/buyer-client'
 import {addressInput,profileInput} from '../../lib/buyer-account'
 import StoreHeader from '../../components/StoreHeader'
 import StoreFooter from '../../components/StoreFooter'
+import {trackBeginCheckout,trackPurchase} from '../../lib/track'
 
 const money=(n:number)=>`₹${n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 const roundMoney=(n:number)=>Math.round((n+Number.EPSILON)*100)/100
@@ -20,7 +21,9 @@ async function loadRazorpay(){
 }
 
 export default function Checkout(){
-  const {items,clear}=useCart();const router=useRouter();const [business,setBusiness]=useState(false);const [user,setUser]=useState<any>(null);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [gatewayAvailable,setGatewayAvailable]=useState(false)
+  const {items,clear}=useCart()
+  const checkoutTracked=useRef(false)
+  useEffect(()=>{if(checkoutTracked.current||!items.length)return;checkoutTracked.current=true;trackBeginCheckout(items.map((i:any)=>({id:String(i.productVariantId||i.id),name:String(i.name||''),price:Number(i.price||0)*1.18,quantity:Number(i.qty||1)})))},[items]);const router=useRouter();const [business,setBusiness]=useState(false);const [user,setUser]=useState<any>(null);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [gatewayAvailable,setGatewayAvailable]=useState(false)
   const [savedAddresses,setSavedAddresses]=useState<any[]>([])
   const [fields,setFields]=useState({name:'',phone:'',address:'',address2:'',city:'',state:'Gujarat',pin:'',company:'',gstin:''})
   const touched=useRef(false)
@@ -103,6 +106,7 @@ export default function Checkout(){
       }
       const orderNumber=String(order?.order_number||'')
       if(!orderNumber)throw new Error('Order confirmation was interrupted. Retry to recover the same order.')
+      trackPurchase(orderNumber,Number(order?.grand_total??order?.total_amount??order?.total??items.reduce((sum:number,i:any)=>sum+Number(i.price||0)*Number(i.qty||0)*1.18,0)))
       clear()
       // Keep the receipt key until the next cart changes the fingerprint: a
       // stale tab or delayed retry must recover this order, not create another.
