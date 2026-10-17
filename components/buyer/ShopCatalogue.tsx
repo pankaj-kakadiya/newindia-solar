@@ -10,6 +10,8 @@ import {useCart} from '../CartProvider'
 import {BuyerAlert, BuyerBadge, BuyerButton, BuyerField, BuyerInput, BuyerSelect, BuyerSkeleton} from './BuyerUI'
 import {activeVariants, attributeLabel, catalogueFacets, categoryScope, EMPTY_FILTERS, filterCatalogue, inStock, minimumQuantity, money, numeric, PAGE_SIZE, priceFor, productImage, publishedProducts, readFilters, safeAssetUrl, writeFilters} from '../../lib/catalogue'
 import {isStorefrontCategory, isStorefrontProduct} from '../../lib/storefront-scope'
+import {trackAddToCart, trackSearch} from '../../lib/track'
+import {COMBO_SLUG_PREFIX} from '../../lib/category-pages'
 import type {CatalogueResult, Category, Facet, Filters, Product} from '../../lib/catalogue'
 
 // Explicit public projection: never request cost_price or internal inventory/finance fields.
@@ -109,6 +111,7 @@ function ProductCard({result}: {result: CatalogueResult}) {
       const already = items.filter(i => i.productVariantId === variant.id).reduce((sum, i) => sum + i.qty, 0)
       if (!inStock(fresh, variant) || already + qty > (numeric(variant.stock_qty) ?? 0)) throw new Error('The available stock cannot cover this addition. Review your cart or enquire for supply.')
       const image = productImage(fresh)
+      trackAddToCart({id: variant.sku || variant.id, name: fresh.name, price: latestPrice.total, quantity: qty})
       add({id: variant.id, kind: 'standard', productVariantId: variant.id, productSlug: fresh.slug, imageUrl: safeAssetUrl(image?.image_url) || undefined, imageAlt: image?.alt_text || fresh.name, name: fresh.name, variant: variant.title || variant.sku, price: latestPrice.base, qty})
       setNotice(`Added ${qty} ${variant.unit || 'unit'} to cart.${price && price.total !== latestPrice.total ? ' Price was updated; review your cart.' : ''}`)
     } catch (error) {setFailed(true); setNotice(error instanceof Error ? error.message : 'Unable to add this product. Please retry.')}
@@ -116,7 +119,7 @@ function ProductCard({result}: {result: CatalogueResult}) {
   }
   return <article className="nisCard cvCard">
     <Link href={href} className="cvProductImage" prefetch={false}><CatalogueImage product={p}/>{p.featured && <span className="cvFeatured">Featured</span>}</Link>
-    <div className="cvCardBody"><div className="cvCardEyebrow"><span>{p.categories?.name || 'Solar component'}</span>{p.brands?.is_active && <span>{p.brands.name}</span>}</div>
+    <div className="cvCardBody"><div className="cvCardEyebrow"><span>{(p.slug||'').toLowerCase().startsWith(COMBO_SLUG_PREFIX) ? 'ACDB + DCDB Combo' : p.categories?.name || 'Solar component'}</span>{p.brands?.is_active && <span>{p.brands.name}</span>}</div>
       <h2><Link href={href} prefetch={false}>{p.name}</Link></h2>
       {p.short_description && <p className="cvDescription">{p.short_description}</p>}
       <dl className="cvSpecs">{[...specs.entries()].slice(0, 4).map(([name, values]) => <div key={name}><dt>{attributeLabel(name)}</dt><dd>{[...values].slice(0, 2).join(' / ')}{values.size > 2 ? ` +${values.size - 2}` : ''}</dd></div>)}</dl>
@@ -196,11 +199,11 @@ export default function ShopCatalogue({scope}:{scope?:CatalogueScope}) {
   for (const [name, value] of Object.entries(filters.specs)) chips.push({label: `${attributeLabel(name)}: ${value}`, remove: () => {const specs = {...filters.specs}; delete specs[name]; change({specs})}})
   const panelProps = {filters, categories, counts, brands, facets, change, clear, hideCategories:true}
   const category = categories.find(c => c.slug === filters.category)
-  function submitSearch(e: FormEvent) {e.preventDefault(); change({q: search.trim().slice(0,160)})}
+  function submitSearch(e: FormEvent) {e.preventDefault(); trackSearch(search); change({q: search.trim().slice(0,160)})}
   function goPage(next: number) {change({page: next}, false); resultsHeading.current?.scrollIntoView({block: 'start', behavior: 'auto'})}
   return <main id="main-content" className="cvPage">
     <section className="cvHero"><div className="container"><nav className="cvBreadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><ChevronRight size={14}/>{scope&&<><Link href="/categories">Categories</Link><ChevronRight size={14}/></>}<span aria-current="page">{scope?.label||'Shop components'}</span></nav>
-      <div className="cvHeroRow"><div><span className="nisEyebrow">{scope?'SOLAR COMPONENT CATEGORY':'THE SOLAR COMPONENT CATALOGUE'}</span><h1>{scope?<>{scope.label}<br/><em>for solar projects.</em></>:<>Find the right component.<br/><em>Keep your project moving.</em></>}</h1><p>{scope?.description||'ACDB, DCDB and BOS components — browse published ratings, choose the right option and buy with clear GST pricing.'}</p></div><Link href="/bulk-order" className="cvProjectLink"><FileText size={24}/><span><strong>Buying for a project?</strong><small>Send quantities, ratings and your BOQ.</small></span><ArrowRight size={20}/></Link></div>
+      <div className="cvHeroRow"><div><span className="nisEyebrow">{scope?'NEW INDIA SOLAR · 1–6 KW SINGLE PHASE':'NEW INDIA SOLAR CATALOGUE'}</span><h1>{scope?<>{scope.label}<br/><em>for rooftop solar.</em></>:<>Solar ACDB, DCDB<br/><em>&amp; combo boxes.</em></>}</h1><p>{scope?.description||'Ready-wired ACDB, DCDB and matched ACDB + DCDB combos for 1–6 kW single phase rooftop solar — compare ratings and buy with clear GST pricing.'}</p></div><Link href="/bulk-order" className="cvProjectLink"><FileText size={24}/><span><strong>Buying for a project?</strong><small>Send quantities, ratings and your BOQ.</small></span><ArrowRight size={20}/></Link></div>
       <form onSubmit={submitSearch} role="search" className="cvSearch"><label htmlFor="catalogue-search" className="cvSrOnly">Search products, SKU, brand or rating</label><Search size={21}/><input id="catalogue-search" type="search" maxLength={160} value={search} placeholder={scope?`Search within ${scope.label}…`:'Search product, SKU, brand or rating…'} onChange={e => setSearch(e.target.value)}/>{(search || filters.q) && <button type="button" className="cvIconButton" aria-label="Clear product search" onClick={() => {setSearch(''); change({q: ''})}}><X size={18}/></button>}<BuyerButton type="submit">Search</BuyerButton></form>
       <div className="cvHeroFoot"><span><CheckCircle2 size={15}/> Prices include published GST</span><span><Package size={15}/> Choose from active product options</span><span><FileText size={15}/> Project RFQs welcome</span></div>
     </div></section>

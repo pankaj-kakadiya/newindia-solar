@@ -6,8 +6,8 @@ import StoreFooter from '../../components/StoreFooter'
 import './catalogue-v2.css'
 
 export const metadata: Metadata = {
-  title: 'Shop Solar Components | New India Solar',
-  description: 'Browse ACDB, DCDB and solar BOS components. Filter published specifications, compare GST-inclusive starting prices and enquire for project quantities.',
+  title: 'Buy Solar ACDB, DCDB & Combo Boxes Online | New India Solar',
+  description: 'Buy solar ACDB, DCDB and ACDB + DCDB combo boxes for 1–6 kW single phase rooftop solar. Compare ratings, GST-inclusive prices and order online or request bulk pricing.',
   alternates: {canonical: '/shop'},
 }
 export default function ShopPage() {
