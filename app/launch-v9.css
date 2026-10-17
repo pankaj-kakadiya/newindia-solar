@@ -20,7 +20,7 @@ main.pdPage .pdHead .pdCategory{display:inline-flex;align-items:center;text-deco
 main.pdPage .pdShare{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 13px;border:1px solid #dfe6e2;border-radius:999px;background:#fff;color:#33444f;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 main.pdPage .pdShare:hover{border-color:#b9c9c0;color:#0d1b2a}
 main.pdPage .pdShare svg{width:15px;height:15px}
-html body main.pdPage .pdHead h1{margin:14px 0 8px;color:#0d1b2a;font-size:clamp(24px,2.2vw,32px);font-weight:700;line-height:1.22;letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:pretty}
+html body main.pdPage .pdHead h1{margin:14px 0 8px;color:#0d1b2a;font-size:clamp(24px,2.2vw,32px);font-weight:700!important;line-height:1.22;letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:pretty}
 main.pdPage .pdSku{margin:0 0 16px;color:#6d7d87;font-size:13px}
 
 html body main.pdPage .pdGalleryBadges{display:flex;flex-wrap:wrap;gap:8px;overflow:visible}
@@ -32,7 +32,7 @@ main.pdPage .pdStickyBar{display:none}
 @media (max-width:860px){
   html body main.pdPage .pdHero{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"head" "gallery" "buy";row-gap:16px!important}
   html body main.pdPage .pdGalleryColumn{position:static}
-  html body main.pdPage .pdHead h1{margin:10px 0 4px;font-size:20px;font-weight:650;line-height:1.32;letter-spacing:-.005em}
+  html body main.pdPage .pdHead h1{margin:10px 0 4px;font-size:20px;font-weight:650!important;line-height:1.32;letter-spacing:-.005em}
   main.pdPage .pdSku{margin:0;font-size:12px}
   html body main.pdPage .pdBreadcrumbs{font-size:12px;padding-top:12px;padding-bottom:4px}
   html body main.pdPage .pdGalleryBadges span{min-height:32px;padding:0 11px;font-size:11px}
@@ -62,7 +62,7 @@ main.pdPage .pdStickyBar{display:none}
   html body .cvCard .cvProductImage{height:190px;min-height:0}
   html body .cvCard .cvProductImage img{height:100%;object-fit:contain}
   html body .cvCard .cvCardBody{padding:14px 16px 16px}
-  html body .cvCard h2{font-size:16px!important;font-weight:650!important;line-height:1.35!important;letter-spacing:0!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  html body .cvCard h2{font-size:16px!important;line-height:1.35!important;letter-spacing:0!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   html body .cvCard .cvDescription{display:none}
   html body .cvCard .cvSpecs>div:nth-child(n+3){display:none}
   html body .cvCard .cvSpecs{margin:10px 0 6px}
@@ -86,4 +86,13 @@ main.pdPage .pdStickyBar{display:none}
   html body main h2{font-weight:700}
   html body main .hvSection h2,html body main .hvFinal h2,html body main .hvProject h2{font-size:24px!important;line-height:1.2!important;letter-spacing:-.015em!important}
   html body main .sxHero h1,html body main .companyHero h1{font-size:28px!important;line-height:1.15!important;font-weight:750!important}
+}
+
+/* ---------- Heading weight ----------
+   An older global rule forces every heading to font-weight 800 !important.
+   On the buyer storefront use 700 (650 for card titles); admin is untouched. */
+html body:has(.nhHeader) :is(h1,h2,h3,h4){font-weight:700!important}
+html body:has(.nhHeader) .cvCard h2,html body:has(.nhHeader) .pdRelatedGrid h3{font-weight:650!important}
+@media (max-width:640px){
+  html body:has(.nhHeader) main :is(h3,h4){font-weight:650!important}
 }
