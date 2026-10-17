@@ -67,7 +67,6 @@ main.pdPage .pdStickyBar{display:none}
   html body .cvCard .cvSpecs>div:nth-child(n+3){display:none}
   html body .cvCard .cvSpecs{margin:10px 0 6px}
   html body .cvCard .cvPrice strong{font-size:24px;font-weight:750}
-  html body .cvCard .cvPrice>small{display:none}
   html body .cvCard .cvCardLinks{display:none}
   html body .cvCard .cvCardActions{gap:8px}
 
@@ -96,3 +95,12 @@ html body:has(.nhHeader) .cvCard h2,html body:has(.nhHeader) .pdRelatedGrid h3{f
 @media (max-width:640px){
   html body:has(.nhHeader) main :is(h3,h4){font-weight:650!important}
 }
+
+/* ---------- Base price first (GST shown as the secondary figure) ---------- */
+main.pdPage .pdPriceUnit{font-style:normal;font-size:.5em;font-weight:600;color:#5b6b75;letter-spacing:0}
+main.pdPage .pdStickyBar .pdPriceUnit{font-size:12px}
+html body main.pdPage .pdTaxLine{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+html body main.pdPage .pdTaxLine>div{min-width:0}
+html body main.pdPage .pdTaxLine>div:first-child b{color:#0f7a3d}
+@media (max-width:420px){html body main.pdPage .pdTaxLine{grid-template-columns:1fr 1fr}html body main.pdPage .pdTaxLine>div:last-child{grid-column:1/-1}}
+html body .cvCard .cvPrice>small{display:block;margin-top:2px;color:#0f7a3d;font-weight:600}
