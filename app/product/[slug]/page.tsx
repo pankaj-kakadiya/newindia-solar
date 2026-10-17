@@ -100,7 +100,7 @@ export default function Product(){
   useEffect(()=>{if(p&&v&&price>0)trackViewItem({id:v.sku||v.id,name:p.name,price:priceIncl,category:categoryLabel})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[p?.id,v?.id])
-  useEffect(()=>{const node=buyRowRef.current;if(!node||typeof IntersectionObserver==='undefined')return;const observer=new IntersectionObserver(([entry])=>setStickyVisible(!entry.isIntersecting&&entry.boundingClientRect.top<0),{threshold:0});observer.observe(node);return()=>observer.disconnect()},[p?.id,canBuy])
+  useEffect(()=>{const node=buyRowRef.current;if(!node||typeof IntersectionObserver==='undefined')return;const observer=new IntersectionObserver(([entry])=>setStickyVisible(!entry.isIntersecting&&entry.boundingClientRect.top<0),{threshold:0});observer.observe(node);return()=>observer.disconnect()},[p?.id,canBuy,loading])
 
   if(loading)return <><StoreHeader/><main className="container productLoading"><div/><div/></main></>
   if(!p)return <><StoreHeader/><main className="container emptyCatalogue"><h1>Product not found.</h1><Link className="btn btnPrimary" href="/shop">Back to Products</Link></main></>
