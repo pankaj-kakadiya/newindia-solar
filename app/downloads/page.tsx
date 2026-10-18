@@ -1,13 +1,28 @@
 import CatalogueDownload from '../../components/CatalogueDownload'
-import {readCatalogueRows} from '../../lib/pdf-catalogues'
+import {STOREFRONT_CATALOGUES} from '../../lib/pdf-catalogues'
 import '../catalogues.css'
 import type {Metadata} from 'next'
 import {Download,FileText} from 'lucide-react'
 import StoreHeader from '../../components/StoreHeader'
 import StoreFooter from '../../components/StoreFooter'
 import {supabase} from '../../lib/supabase'
-import {withDefaultCatalogue} from '../../lib/homepage-sections'
+import {isRetiredCatalogue} from '../../lib/homepage-sections'
 
 export const dynamic='force-dynamic'
-export const metadata:Metadata={title:'Downloads | New India Solar',description:'Download New India Solar catalogues, datasheets, technical documents and project resources.'}
-export default async function DownloadsPage(){const {data}=await supabase.from('cms_downloads').select('*').eq('is_active',true).order('sort_order').order('created_at',{ascending:false}).abortSignal(AbortSignal.timeout(6000));const rows=withDefaultCatalogue(data||[]);let catalogues:any[]=[];let catalogueError=false;try{catalogues=await readCatalogueRows(supabase,'product_catalogues',AbortSignal.timeout(10000),true);catalogues.sort((a,b)=>a.sort_order-b.sort_order)}catch{catalogueError=true}return <><StoreHeader/><main className="cmsPublicPage"><div className="container"><div className="cmsPublicHead"><span>RESOURCE LIBRARY</span><h1>Downloads</h1><p>Catalogues, technical documents, datasheets and project resources published by New India Solar.</p></div><section className="catPublic" aria-label="Dynamic product catalogues"><h2>Product catalogues</h2><p>Download a PDF with the latest published products, images and specifications.</p>{catalogueError?<p role="status">Product catalogues are temporarily unavailable. Please refresh to try again.</p>:<div className="catGrid">{catalogues.map(c=><article className="catCard" key={c.id}><small>{c.scope==='all'?'COMPLETE RANGE':c.scope==='categories'?'CATEGORY CATALOGUE':'PRODUCT SELECTION'}</small><h3>{c.title}</h3><p>{c.description}</p><p>{c.show_prices?'Includes current selling prices and GST.':'Contact us for pricing.'}</p><CatalogueDownload catalogue={c}/></article>)}{!catalogues.length&&<p>Product catalogues will appear here when published.</p>}</div>}</section><h2>Documents & resources</h2><div className="cmsDownloadGrid">{rows.length?rows.map((d:any)=><article key={d.id}><div className="cmsDownloadIcon"><FileText/></div><div><small>{d.category||d.file_type||'DOCUMENT'}</small><h2>{d.title}</h2>{d.description&&<p>{d.description}</p>}<a href={d.file_url} target="_blank" rel="noreferrer">Download <Download size={16}/></a></div></article>):<div className="cmsPublicEmpty">No downloads are published yet.</div>}</div></div></main><StoreFooter/></>}
+export const metadata:Metadata={title:'Catalogues & Downloads | New India Solar',description:'Download the full New India Solar catalogue for ACDB + DCDB combos, ACDB boxes and DCDB boxes, with photos, specifications and prices.',alternates:{canonical:'/downloads'}}
+
+const BLURB:Record<string,string>={
+ 'acdb-dcdb-combo':'Every matched ACDB + DCDB set for 1–6 kW single phase rooftop solar.',
+ acdb:'Every single phase ACDB box for 1–6 kW rooftop solar.',
+ dcdb:'Every DCDB box for 1–6 kW rooftop solar.',
+}
+
+export default async function DownloadsPage(){
+ const {data}=await supabase.from('cms_downloads').select('*').eq('is_active',true).order('sort_order').order('created_at',{ascending:false}).abortSignal(AbortSignal.timeout(6000))
+ const rows=(data||[]).filter((d:any)=>!isRetiredCatalogue(d)&&!/catalogue|catalog/i.test(`${d.category||''} ${d.title||''}`))
+ return <><StoreHeader/><main className="cmsPublicPage"><div className="container">
+  <div className="cmsPublicHead"><span>RESOURCE LIBRARY</span><h1>Catalogues</h1><p>Full product catalogues with photos, specifications and prices. Tap any product in the PDF to open it online.</p></div>
+  <section className="catPublic" id="catalogues" aria-label="Product catalogues"><div className="catGrid">{STOREFRONT_CATALOGUES.map(c=><article className="catCard" key={c.id}><small>FULL CATALOGUE</small><h3>{c.title}</h3><p>{BLURB[c.storefront||'']||''}</p><CatalogueDownload catalogue={c}/></article>)}</div></section>
+  {rows.length>0&&<><h2>Documents & resources</h2><div className="cmsDownloadGrid">{rows.map((d:any)=><article key={d.id}><div className="cmsDownloadIcon"><FileText/></div><div><small>{d.category||d.file_type||'DOCUMENT'}</small><h2>{d.title}</h2>{d.description&&<p>{d.description}</p>}<a href={d.file_url} target="_blank" rel="noreferrer">Download <Download size={16}/></a></div></article>)}</div></>}
+ </div></main><StoreFooter/></>
+}

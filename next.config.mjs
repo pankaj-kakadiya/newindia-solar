@@ -49,6 +49,7 @@ const nextConfig={
    {source:'/customize/dcdb',destination:'/categories/dcdb',permanent:true},
    {source:'/customize/:path*',destination:'/categories/acdb-dcdb-combo',permanent:true},
    ...retiredCategories.map(slug=>({source:`/categories/${slug}`,destination:'/categories',permanent:true}))
+   ,{source:'/downloads/new-india-solar-product-catalogue.pdf',destination:'/downloads',permanent:true}
   ]
  },
  async rewrites(){
