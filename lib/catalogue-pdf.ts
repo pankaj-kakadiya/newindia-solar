@@ -113,28 +113,6 @@ export async function buildCataloguePdf(c:PdfCatalogue,products:Product[],loadIm
   pdf.link(x,y,cw,ch-9,{url:productUrl(p)})
  }
 
- // ---------- Complete product details ----------
- let y=0
- const newDetailsPage=()=>{pdf.addPage();pageHeader();color('ink');label('Complete product details',M,26,13,true);color('muted');label('Every specification for each product. Tap a product name to open it online.',M,31,7);y=38}
- newDetailsPage()
- for(let i=0;i<products.length;i++){
-  const p=products[i],price=prices[i],rowsData=allDetails(p),variants=activeVariants(p)
-  const inclusions=Array.isArray((p as any).inclusions)?((p as any).inclusions as unknown[]).filter(x=>typeof x==='string') as string[]:[]
-  const half=Math.ceil(rowsData.length/2),need=14+half*3.4+(inclusions.length?6:0)+(variants.length>1?variants.length*3.4:0)
-  if(y+need>bottom)newDetailsPage()
-  fill('mint');pdf.roundedRect(M,y-3.5,W-2*M,7.4,1.4,1.4,'F')
-  color('green');label(`${i+1}.`,M+2,y+1.2,7.6,true);color('ink');pdf.setFont('Catalogue','bold');pdf.setFontSize(7.6);let nm=text(p.name);while(nm&&pdf.getTextWidth(nm)>W-2*M-82)nm=nm.slice(0,-1);pdf.text(nm+(nm.length<text(p.name).length?'...':''),M+9,y+1.2);pdf.link(M,y-3.5,W-2*M-60,7.4,{url:productUrl(p)})
-  if(c.show_prices&&price){color('green');label(`${inr(price.base)} + GST  |  ${inr(price.total)} incl.`,W-M-2,y+1.2,7,true,'right')}
-  y+=7
-  color('muted');label(`SKU: ${variants[0]?.sku||'-'}   |   Category: ${categoryLabel(p)}   |   ${productUrl(p).replace('https://','')}`,M+2,y,6);y+=4
-  const colW=(W-2*M-6)/2
-  for(let r=0;r<half;r++)for(let col=0;col<2;col++){const item=rowsData[r+col*half];if(!item)continue;const x=M+2+col*(colW+4);color('muted');pdf.setFont('Catalogue','normal');pdf.setFontSize(6.2);const kk=text(item[0])+': ';pdf.text(kk,x,y+r*3.4);color('ink');pdf.setFont('Catalogue','bold');const room=colW-pdf.getTextWidth(kk);let vv=text(item[1]);while(vv&&pdf.getTextWidth(vv)>room)vv=vv.slice(0,-1);pdf.text(vv,x+pdf.getTextWidth(kk),y+r*3.4)}
-  y+=half*3.4+0.6
-  if(inclusions.length){color('muted');y=para('In the box: '+inclusions.join(', '),M+2,y+1,W-2*M-4,6.2,2)+1}
-  if(variants.length>1)for(const vv of variants){if(y>bottom-4)newDetailsPage();const pr=priceFor(p,vv);color('ink');label(`${vv.sku}  ${text(vv.title||'')}  ${c.show_prices&&pr?`- ${inr(pr.base)} + GST`:''}`,M+2,y+1,6.2);y+=3.4}
-  y+=5
- }
-
  // ---------- Footer on every page ----------
  const pages=pdf.getNumberOfPages()
  for(let n=1;n<=pages;n++){pdf.setPage(n);fill('deep');pdf.rect(0,H-14,W,14,'F');color('white');label('newindiasolar.com',M,H-8,8,true);pdf.link(M,H-11,32,5,{url:SITE});pdf.setTextColor(170,232,196);label(c.show_prices?'Prices exclude 18% GST and are subject to stock. Confirm current price before ordering.':'Confirm current price, ratings and stock before ordering.',M,H-4.2,6);color('white');label('Bulk / dealer pricing  >',W-M,H-8,7.4,true,'right');pdf.link(W-M-34,H-11,34,5,{url:`${SITE}/bulk-order`});pdf.setTextColor(170,232,196);label(`${date}  |  Page ${n} of ${pages}`,W-M,H-4.2,6,false,'right')}
