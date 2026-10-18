@@ -20,17 +20,21 @@ export type HomeProduct = {
 }
 export type HomeDownload = { id: string; title: string; description: string | null; file_url: string; category: string | null }
 
-export const bundledCatalogue: HomeDownload = {
-  id: 'new-india-solar-product-catalogue',
-  title: 'New India Solar Product Catalogue',
-  description: '26-page product catalogue: ACDB, DCDB, switchgear and solar BOS components.',
-  file_url: '/downloads/new-india-solar-product-catalogue.pdf',
-  category: 'Catalogue',
+// Full catalogue for each storefront category, generated on the Downloads page from live products.
+export const categoryCatalogueLinks: HomeDownload[] = [
+  {id: 'full-acdb-dcdb-combo', title: 'ACDB + DCDB Combo Catalogue', description: 'All matched 1–6 kW ACDB + DCDB sets', file_url: '/downloads#catalogues', category: 'Full catalogue'},
+  {id: 'full-acdb', title: 'ACDB Catalogue', description: 'All single phase ACDB boxes', file_url: '/downloads#catalogues', category: 'Full catalogue'},
+  {id: 'full-dcdb', title: 'DCDB Catalogue', description: 'All DCDB boxes', file_url: '/downloads#catalogues', category: 'Full catalogue'},
+]
+
+/** Category catalogues first, then any other published documents (no bundled demo PDF). */
+export function withCategoryCatalogues<T extends HomeDownload>(downloads: T[]): (T | HomeDownload)[] {
+  return [...categoryCatalogueLinks, ...downloads.filter(file => !isRetiredCatalogue(file))]
 }
 
-export function withDefaultCatalogue<T extends HomeDownload>(downloads: T[]): (T | HomeDownload)[] {
-  return downloads.some(file => /catalogue|catalog/i.test(`${file.category} ${file.title}`) && publicAssetUrl(file.file_url))
-    ? downloads : [bundledCatalogue, ...downloads]
+/** The old 26-page demo catalogue (switchgear and BOS) is no longer offered. */
+export function isRetiredCatalogue(file: {title?: string | null; file_url?: string | null}) {
+  return /new-india-solar-product-catalogue\.pdf/i.test(String(file.file_url || '')) || /^new india solar product catalogue$/i.test(String(file.title || '').trim())
 }
 
 export function publicAssetUrl(value: unknown): string | undefined {

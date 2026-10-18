@@ -7,7 +7,7 @@ export default function CatalogueDownload({catalogue,preview=false}:{catalogue:P
  const [busy,setBusy]=useState(false),[message,setMessage]=useState('')
  async function download(){setBusy(true);setMessage('Loading current products…');try{
   let current=catalogue
-  if(!preview){const {data,error}=await supabase.from('product_catalogues').select('id,title,description,scope,category_ids,product_ids,show_prices,is_published,sort_order').eq('id',catalogue.id!).eq('is_published',true).maybeSingle();if(error||!data)throw new Error('This catalogue is no longer available. Refresh the page.');current=data as PdfCatalogue}
+  if(!preview&&!catalogue.storefront){const {data,error}=await supabase.from('product_catalogues').select('id,title,description,scope,category_ids,product_ids,show_prices,is_published,sort_order').eq('id',catalogue.id!).eq('is_published',true).maybeSingle();if(error||!data)throw new Error('This catalogue is no longer available. Refresh the page.');current=data as PdfCatalogue}
   const products=await loadPdfProducts(supabase,current,AbortSignal.timeout(60000))
   const {buildCataloguePdf,browserPdfImage}=await import('../lib/catalogue-pdf')
   const result=await buildCataloguePdf(current,products,browserPdfImage,setMessage);result.pdf.save(result.filename)

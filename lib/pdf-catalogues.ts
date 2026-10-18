@@ -1,6 +1,25 @@
 import type {Category, Product} from './catalogue'
 import {activeVariants, categoryScope, publishedProducts} from './catalogue'
-export type PdfCatalogue = {id?:string; title:string; description:string; scope:'all'|'categories'|'products'; category_ids:string[]; product_ids:string[]; show_prices:boolean; is_published:boolean; sort_order:number}
+import {CATEGORY_PAGES} from './category-pages'
+export type PdfCatalogue = {id?:string; title:string; description:string; scope:'all'|'categories'|'products'; category_ids:string[]; product_ids:string[]; show_prices:boolean; is_published:boolean; sort_order:number; storefront?:string}
+
+// Full catalogue for each storefront category (ACDB + DCDB Combo, ACDB, DCDB).
+// Always complete: every published product in the category, built from live data.
+export const STOREFRONT_CATALOGUES:PdfCatalogue[]=CATEGORY_PAGES.map((page,index)=>({
+ id:`full-${page.slug}`,
+ title:`${page.label} Catalogue`,
+ description:page.description,
+ scope:'all',category_ids:[],product_ids:[],show_prices:true,is_published:true,sort_order:index,storefront:page.slug,
+}))
+
+const normalize=(value?:string|null)=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'')
+/** Same product rules as the category pages on the website. */
+export function storefrontCategoryProducts(slug:string,products:Product[]){
+ const page=CATEGORY_PAGES.find(item=>item.slug===slug);if(!page)return []
+ const terms=new Set(page.categoryTerms.map(normalize)),pslug=(p:Product)=>(p.slug||'').toLowerCase()
+ if(page.productSlugPrefix)return products.filter(p=>pslug(p).startsWith(page.productSlugPrefix!))
+ return products.filter(p=>{if(page.excludeSlugPrefix&&pslug(p).startsWith(page.excludeSlugPrefix))return false;return terms.has(normalize(p.categories?.name))||terms.has(normalize(p.categories?.slug))})
+}
 export const emptyCatalogue = ():PdfCatalogue => ({title:'',description:'',scope:'all',category_ids:[],product_ids:[],show_prices:false,is_published:false,sort_order:0})
 export const PDF_PRODUCT_SELECT='id,name,slug,status,category_id,product_type,short_description,warranty_months,inclusions,gst_rate,min_order_qty,sort_order,specifications,categories(name,slug,is_active),product_images(image_url,alt_text,sort_order),product_variants(id,sku,title,selling_price,unit,is_active,attributes)'
 export function validateCatalogue(c:PdfCatalogue){
@@ -13,6 +32,7 @@ export function validateCatalogue(c:PdfCatalogue){
  return ''
 }
 export function catalogueProducts(c:PdfCatalogue,products:Product[],categories:Category[]){
+ if(c.storefront)return storefrontCategoryProducts(c.storefront,publishedProducts(products).filter(p=>activeVariants(p).length>0)).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name,'en',{numeric:true})||a.id.localeCompare(b.id))
  const ids=new Set<string>()
  for(const cat of categories.filter(x=>c.category_ids.includes(x.id)))for(const id of categoryScope(categories,cat.slug))ids.add(id)
  return publishedProducts(products).filter(p=>activeVariants(p).length>0&&(c.scope==='all'||(c.scope==='products'?c.product_ids.includes(p.id):ids.has(p.category_id||'')))).sort((a,b)=>(a.categories?.name||'Other').localeCompare(b.categories?.name||'Other')||(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name,'en',{numeric:true})||a.id.localeCompare(b.id))
