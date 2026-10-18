@@ -67,12 +67,13 @@ export default function ThemeLogoManager(){
     if(!file)return
     setBusy(true);setMessage('');setError(false)
     try{
-      const ext=(file.name.split('.').pop()||'webp').toLowerCase().replace(/[^a-z0-9]/g,'')
-      const path=`branding/${target}-${Date.now()}.${ext}`
-      const {error:uploadError}=await supabase.storage.from('theme-assets').upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false})
-      if(uploadError)throw uploadError
-      const {data:urlData}=supabase.storage.from('theme-assets').getPublicUrl(path)
-      const url=urlData.publicUrl
+      const {data:{session}}=await supabase.auth.getSession()
+      if(!session)throw new Error('Your session has expired. Sign in again.')
+      const body=new FormData();body.append('file',file);body.append('target',target)
+      const res=await fetch('/api/admin/theme/upload',{method:'POST',headers:{Authorization:`Bearer ${session.access_token}`},body})
+      const json=await res.json().catch(()=>({}))
+      if(!res.ok)throw new Error(json.error||'Could not upload logo.')
+      const url=json.url
       await updateThemeLogo(url)
       setManual(url);setFile(null);setPreview('');setMessage(target==='all'?'Master logo published to every brand surface.':`${selectedTarget.label} logo published.`)
     }catch(e:any){setError(true);setMessage(e?.message||'Could not upload logo.')}

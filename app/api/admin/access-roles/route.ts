@@ -19,7 +19,7 @@ export async function POST(request:NextRequest){
  const {data:baseRole}=await admin.from('admin_role_definitions').select('role_key').eq('role_key',base).maybeSingle();if(!baseRole)return out({error:'Copy-from role not found.'},400)
  const {data:maxRow}=await admin.from('admin_role_definitions').select('sort_order').order('sort_order',{ascending:false}).limit(1).maybeSingle()
  const {error}=await admin.from('admin_role_definitions').insert({role_key:roleKey,name,description:description||null,sort_order:Number(maxRow?.sort_order||0)+10,is_system:false})
- if(error)return out({error:error.code==='23505'?'A role with this key already exists.':error.message},409)
+ if(error){if(error.code!=='23505')console.error('admin/access-roles create failed',error);return out({error:error.code==='23505'?'A role with this key already exists.':'Could not create the role.'},409)}
  const {data:source}=await admin.from('admin_role_permissions').select('module_key,can_view,can_create,can_edit,can_delete,can_approve,can_export').eq('role_key',base)
  if(source?.length)await admin.from('admin_role_permissions').upsert(source.map(row=>({...row,role_key:roleKey,updated_by:auth.access.user_id,updated_at:new Date().toISOString()})),{onConflict:'role_key,module_key'})
  return out({message:`${name} role created with ${base} access as its starting point.`,role_key:roleKey},201)
@@ -34,7 +34,8 @@ export async function PATCH(request:NextRequest){
  if(role.is_system)return out({error:'System role names cannot be changed.'},403)
  if(name.length<2||name.length>60)return out({error:'Role name must be 2–60 characters.'},400)
  const {error}=await admin.from('admin_role_definitions').update({name,description:description||null,updated_at:new Date().toISOString()}).eq('role_key',roleKey)
- return error?out({error:error.message},422):out({message:'Custom role details updated.'})
+ if(error)console.error('admin/access-roles update failed',error)
+ return error?out({error:'Could not update the role.'},422):out({message:'Custom role details updated.'})
 }
 
 export async function DELETE(request:NextRequest){
@@ -46,5 +47,6 @@ export async function DELETE(request:NextRequest){
  if(role.is_system)return out({error:'System roles cannot be deleted.'},403)
  const {count}=await admin.from('profiles').select('id',{count:'exact',head:true}).eq('admin_role',roleKey);if(count)return out({error:`Reassign ${count} team user${count===1?'':'s'} before deleting this role.`},409)
  const {error}=await admin.from('admin_role_definitions').delete().eq('role_key',roleKey)
- return error?out({error:error.message},422):out({message:`${role.name} role deleted.`})
+ if(error)console.error('admin/access-roles delete failed',error)
+ return error?out({error:'Could not delete the role.'},422):out({message:`${role.name} role deleted.`})
 }
