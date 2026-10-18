@@ -30,9 +30,9 @@ const securityHeaders=[
 // Shareable catalogue links on our own domain (e.g. https://newindiasolar.com/downloads/acdb-dcdb-combo-catalogue.pdf).
 // The PDF files are hosted on IndiaMART's document store; to publish a new version, upload it and change the URL here.
 const catalogueFiles={
- 'acdb-dcdb-combo-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654245282/AA/KF/KZ/246685908/newindia-solar-acdb-dcdb-combo-catalogue-1-6kw-320v.pdf',
- 'acdb-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654245307/PZ/XG/EV/246685908/newindia-solar-acdb-catalogue.pdf',
- 'dcdb-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654245309/NY/ID/ML/246685908/newindia-solar-dcdb-catalogue.pdf'
+ 'acdb-dcdb-combo-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654288977/QY/NK/DP/246685908/newindia-solar-acdb-dcdb-combo-catalogue-hd.pdf',
+ 'acdb-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654288979/GT/EG/CH/246685908/newindia-solar-acdb-catalogue-hd.pdf',
+ 'dcdb-catalogue.pdf':'https://5.imimg.com/data5/SELLER/Doc/2026/10/654288980/VQ/YP/RX/246685908/newindia-solar-dcdb-catalogue-hd.pdf'
 }
 
 /** @type {import('next').NextConfig} */
