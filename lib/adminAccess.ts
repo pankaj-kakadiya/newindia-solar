@@ -24,6 +24,7 @@ export const hrefModule:Record<string,string>={
   '/admin/reports':'reports',
   '/admin/orders':'orders',
   '/admin/rfqs':'rfqs',
+  '/admin/campaigns':'campaigns',
   '/admin/support':'support',
   '/admin/customers':'customers',
   '/admin/products':'products',

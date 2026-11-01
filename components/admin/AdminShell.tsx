@@ -30,6 +30,7 @@ import {
   ReceiptText,
   Search,
   Settings,
+  Sun,
   ShieldCheck,
   ShoppingCart,
   SlidersHorizontal,
@@ -118,6 +119,12 @@ const navGroups: NavGroup[] = [
         icon: FileText,
         badge: "rfqs",
         module: "rfqs",
+      },
+      {
+        href: "/admin/campaigns",
+        label: "Surya Ghar Campaign",
+        icon: Sun,
+        module: "campaigns",
       },
       {
         href: "/admin/customers",
