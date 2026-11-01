@@ -17,6 +17,19 @@ commissioned on or after 22-10-2026) in Gir Somnath, Amreli and Bhavnagar.
 - **Targets:** editable targets per metric, optional district and due date; actuals are counted automatically.
 - **Subsidy calculator:** `lib/surya-ghar-campaign.ts` (`calcSuryaGharSubsidy`), shared by the leads drawer.
 
+## Villages & venues (second update)
+
+- District → taluka → village pickers on leads, camps and venues. The 27 talukas of Gir Somnath, Amreli and Bhavnagar are
+  built in with Gujarati names (`lib/gujarat-places.ts`); villages autosuggest in English or Gujarati from `geo_villages`.
+- Villages typed on a lead or camp join the directory automatically. The full list comes from importing the LGD
+  "Villages" download (lgdirectory.gov.in → Download Directory → Villages; State Gujarat; each district), which carries the
+  Gujarati name (`Village Name (In Local)`), LGD and Census codes.
+- **Villages & venues** tab: taluka coverage (villages in directory, Census households, villages reached by a camp, leads,
+  registered, commissioned), the village list with per-village results, and saved venues.
+- Venues (panchayat office, government school, temple, ground, samaj vadi, dairy) are saved once per village and picked for
+  later camps (`campaign_camps.venue_id`).
+- Migration `20261102180000_campaign_villages_venues.sql` (apply after the first one).
+
 ## Database
 
 Migration `supabase/migrations/20261102120000_surya_ghar_village_campaign.sql` creates `campaign_camps`,
