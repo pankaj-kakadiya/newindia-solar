@@ -1,0 +1,52 @@
+.campV1 .campError{background:#fff1f0;border-color:#f5c2bd;color:#9f1d14}
+.campOverview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.campPanel{padding:20px;display:flex;flex-direction:column;gap:12px}
+.campPanel h2{display:flex;align-items:center;gap:8px;margin:0;font-size:18px;color:#102131}
+.campWide{grid-column:1/-1}
+.campTargets{display:flex;flex-direction:column;gap:14px}
+.campTargetHead{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:#102131}
+.campTargetHead span{font-weight:800;font-variant-numeric:tabular-nums}
+.campTarget small{color:#5d6975}
+.campBar{height:10px;border-radius:999px;background:#e8edf2;overflow:hidden;margin:6px 0 4px}
+.campBar i{display:block;height:100%;border-radius:999px;background:#357f19}
+.campBar.lost i{background:#9aa5b1}
+.campFunnel{display:flex;flex-direction:column;gap:6px}
+.campFunnelRow{display:grid;grid-template-columns:170px minmax(0,1fr) 44px;align-items:center;gap:10px;border:0;background:transparent;padding:4px 6px;border-radius:8px;cursor:pointer;text-align:left;font:inherit;color:#102131}
+.campFunnelRow:hover{background:#f3f6f9}
+.campFunnelRow .campBar{margin:0}
+.campFunnelRow b{text-align:right;font-variant-numeric:tabular-nums}
+.campV1 .num{text-align:right;font-variant-numeric:tabular-nums}
+.campV1 .num input{max-width:110px;text-align:right}
+.campToolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fff;border:1px solid #e5e9ee;border-radius:15px;padding:12px}
+.campToolbar .rfqSearch{flex:1 1 260px;min-height:42px}
+.campToolbar select{min-height:42px;border:1px solid #dce2e7;border-radius:10px;padding:0 10px;background:#fff;max-width:220px}
+.campToolbarActions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.campToolbarNote{margin:0}
+.campCheck{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:8px;font-weight:600;color:#253645;cursor:pointer;min-height:40px}
+.campCheck input{width:18px;height:18px;accent-color:#357f19}
+.campRowActions{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap}
+.campRowActions .iconBtn{width:38px;height:38px;border-radius:10px}
+.campRowActions .iconBtn:hover{background:#eef3f7}
+.campBadge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#eef1f4;color:#3b4658}
+.campBadge.announced{background:#fff2dc;color:#8a4b00}
+.campBadge.completed{background:#e6f2df;color:#245a10}
+.campBadge.cancelled{background:#f3f4f6;color:#6b7280;text-decoration:line-through}
+.campSubsidy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.campSubsidy>div{background:#f6f8fa;border:1px solid #e3e8ee;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.campSubsidy span{font-size:12px;font-weight:700;color:#5d6975;text-transform:uppercase;letter-spacing:.04em}
+.campSubsidy b{font-size:20px;color:#102131;font-variant-numeric:tabular-nums}
+.campSubsidy .pay{background:#e9f4e3;border-color:#bfdcae}
+.campSubsidy .pay b{color:#245a10}
+.campSubsidy small{color:#3b4658}
+.campWarn{grid-column:1/-1;margin:0;background:#fff4e2;border:1px solid #f3c784;color:#7a4300;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600}
+.campChecklist{display:flex;flex-direction:column;gap:2px}
+.campMini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.campMini>div{background:#f6f8fa;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}
+.campMini span{font-size:12px;color:#5d6975;font-weight:700}
+.campMini b{font-size:22px;color:#102131}
+.campCalc{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;align-items:start}
+.campFoot{font-size:13px;margin:0}
+.campAdd{align-self:flex-start}
+.campTargetTable input,.campTargetTable select{min-height:38px;border:1px solid #dce2e7;border-radius:8px;padding:0 8px;width:100%;box-sizing:border-box;background:#fff}
+@media(max-width:980px){.campOverview{grid-template-columns:1fr}.campCalc{grid-template-columns:1fr}}
+@media(max-width:560px){.campFunnelRow{grid-template-columns:120px minmax(0,1fr) 36px}.campSubsidy{grid-template-columns:1fr}.campToolbar select{max-width:none;flex:1 1 45%}.campToolbarActions{margin-left:0;width:100%}.campToolbarActions>*{flex:1;justify-content:center}}
