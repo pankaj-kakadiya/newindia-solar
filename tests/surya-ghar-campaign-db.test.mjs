@@ -52,3 +52,36 @@ test('campaign data is limited to staff with the campaigns permission',async()=>
   assert.equal(anonDenied,true,'anonymous role has no table access')
  }finally{await db.close()}
 })
+
+test('village directory and saved venues follow the campaigns permission',async()=>{
+ const db=new PGlite()
+ try{
+  await db.exec(await readFile(new URL('./fixtures/custom-pricing-schema.sql',import.meta.url),'utf8'))
+  await db.exec(await readFile(new URL('./fixtures/catalogue-cost-permissions.sql',import.meta.url),'utf8'))
+  await db.exec(`
+   create table public.admin_modules(module_key text primary key,label text,description text,route text,sort_order int);
+   alter table public.admin_role_permissions add primary key(role_key,module_key);
+   insert into profiles values ('${ADMIN}','admin',null,'active'),('${SALES}','staff','sales','active'),('${GENERAL}','staff','general','active');
+  `)
+  await db.exec(await migration('_surya_ghar_village_campaign.sql'))
+  await db.exec(await migration('_campaign_villages_venues.sql'))
+  const q=async(sql,args=[])=>(await db.query(sql,args)).rows
+  async function as(who,fn){await db.exec('begin');try{await q("select set_config('request.jwt.claim.sub',$1,true)",[who]);await db.exec('set local role authenticated');return await fn()}finally{await db.exec('rollback')}}
+  const fails=async(who,sql)=>as(who,async()=>{try{await q(sql);return false}catch{return true}})
+
+  await db.exec("insert into geo_villages(district,taluka,name_en,name_gu,lgd_code,source) values('Amreli','Khambha','Khambha','ખાંભા','515470','lgd')")
+  await db.exec("insert into campaign_venues(district,taluka,village,venue_type,name) values('Amreli','Khambha','Khambha','gov_school','Prathmik Shala')")
+  assert.equal(await as(SALES,async()=>(await q('select count(*)::int c from geo_villages'))[0].c),1,'sales reads villages')
+  assert.equal(await as(SALES,async()=>(await q("insert into geo_villages(district,taluka,name_en) values('Amreli','Dhari','Dalkhaniya') returning id")).length),1,'sales adds villages')
+  assert.equal(await as(SALES,async()=>(await q("insert into campaign_venues(district,village,venue_type,name) values('Amreli','Dhari','temple','Ram Mandir') returning id")).length),1,'sales adds venues')
+  assert.equal(await as(SALES,async()=>(await q('delete from campaign_venues returning id')).length),0,'sales cannot delete venues')
+  assert.equal(await as(GENERAL,async()=>(await q('select count(*)::int c from geo_villages'))[0].c),0,'general staff sees no villages')
+  assert.equal(await fails(GENERAL,"insert into campaign_venues(district,village,name) values('Amreli','X','Y')"),true,'general staff cannot add venues')
+  assert.equal(await fails(ADMIN,"insert into geo_villages(district,taluka,name_en) values('Amreli','khambha',' KHAMBHA ')"),false,'trimmed-name duplicates differ only by spaces are distinct rows')
+  assert.equal(await fails(ADMIN,"insert into geo_villages(district,taluka,name_en) values('Amreli','KHAMBHA','khambha')"),true,'one village name per taluka')
+  assert.equal(await fails(ADMIN,"insert into campaign_venues(district,village,name) values('Amreli','KHAMBHA','prathmik shala')"),true,'a venue is saved once per village')
+  assert.equal(await fails(ADMIN,"insert into campaign_venues(district,village,venue_type,name) values('Amreli','Khambha','stadium','X')"),true,'venue types are fixed')
+  const linked=await as(ADMIN,async()=>{const [v]=await q("select id from campaign_venues limit 1");await q("insert into campaign_camps(camp_code,village,district,venue_id,venue) values('C01','Khambha','Amreli',$1,'Prathmik Shala')",[v.id]);await q('delete from campaign_venues where id=$1',[v.id]);return (await q("select venue_id,venue from campaign_camps where camp_code='C01'"))[0]})
+  assert.deepEqual(linked,{venue_id:null,venue:'Prathmik Shala'},'deleting a venue keeps the camp and its venue name')
+ }finally{await db.close()}
+})

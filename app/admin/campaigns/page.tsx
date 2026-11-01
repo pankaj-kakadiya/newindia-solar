@@ -2,12 +2,15 @@
 
 import {ChangeEvent,useEffect,useMemo,useState} from 'react'
 import * as XLSX from 'xlsx'
-import {ArrowRight,Calculator,CalendarClock,Check,Download,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
+import {ArrowRight,Calculator,CalendarClock,Check,Download,Landmark,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import {canAdmin} from '../../../lib/adminAccess'
+import {PlaceFields,VenueFields} from '../../../components/admin/campaign/PlaceFields'
+import PlacesTab from '../../../components/admin/campaign/PlacesTab'
+import {findVillage,type VillageRow} from '../../../lib/gujarat-places'
 import {CAMPAIGN_DISTRICTS,CAMPAIGN_METRICS,CAMPAIGN_STAGES,SURYA_GHAR_RULES,calcSuryaGharSubsidy,leadsFromSheetRows,metricActual,normalizeMobile,reachedStage,stageLabel,whatsappLink} from '../../../lib/surya-ghar-campaign'
 
-type Tab='overview'|'leads'|'camps'|'targets'|'calculator'
+type Tab='overview'|'leads'|'camps'|'places'|'targets'|'calculator'
 const money=(n:any)=>`₹${Math.round(Number(n||0)).toLocaleString('en-IN')}`
 const day=(v:any)=>v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const dateInput=(v:any)=>v?String(v).slice(0,10):''
@@ -18,7 +21,9 @@ const campStatus:Record<string,string>={planned:'Planned',announced:'Announced',
 const PRE_EVENT=[['sarpanch','Sarpanch / talati meeting done'],['vendor','Partner vendor price locked in writing'],['bank','Bank loan officer confirmed'],['whatsapp','WhatsApp invite posted in village groups'],['posters','Posters at dairy, ration shop, temple'],['rickshaw','Loudspeaker rickshaw round (day before)']]
 const KIT=[['demo','Demo kit: panel, inverter, ACDB + DCDB'],['pamphlets','300 pamphlets + banner'],['gr','5 printed copies of the GR'],['devices','2 phones/laptops with data + power bank'],['sound','Mic, speaker, seating, water']]
 const blankLead=(camp?:any)=>({full_name:'',mobile:'',village:camp?.village||'',taluka:camp?.taluka||'',district:camp?.district||'Amreli',camp_id:camp?.id||'',consumer_number:'',category:'general',avg_monthly_units:'',system_kw:'2.18',portal_registered:false,portal_application_no:'',loan_needed:false,bank_name:'',quoted_price:'',stage:'lead',survey_date:'',install_date:'',commission_date:'',central_subsidy_received:false,state_subsidy_received:false,next_follow_up_at:'',assigned_to:'',lost_reason:'',notes:''})
-const blankCamp=(n:number)=>({camp_code:`C${String(n).padStart(2,'0')}`,camp_date:'',village:'',taluka:'',district:'Amreli',venue:'',status:'planned',sarpanch_name:'',sarpanch_phone:'',partner_vendor:'',bank_partner:'',attendance:'',checklist:{},notes:''})
+const blankCamp=(n:number)=>({camp_code:`C${String(n).padStart(2,'0')}`,camp_date:'',village:'',taluka:'',district:'Amreli',venue:'',venue_id:'',new_type:'',new_name:'',status:'planned',sarpanch_name:'',sarpanch_phone:'',partner_vendor:'',bank_partner:'',attendance:'',checklist:{},notes:''})
+// Supabase returns at most 1,000 rows per request: page through larger tables.
+async function fetchAll(table:string,order:string,ascending=true){const out:any[]=[];for(let from=0;from<50000;from+=1000){const {data,error}=await supabase.from(table).select('*').order(order,{ascending}).range(from,from+999);if(error)return {data:out,error};out.push(...(data||[]));if(!data||data.length<1000)break}return {data:out,error:null as any}}
 const waText=(l:any)=>`નમસ્તે ${l.full_name||''}, ન્યૂ ઇન્ડિયા સોલાર તરફથી. PM સૂર્ય ઘર + ગુજરાત સરકારની નવી સબસિડી સાથે તમારી ${l.system_kw?`${l.system_kw} kW `:''}સોલાર અરજી અંગે વાત કરવી છે. અનુકૂળ સમય જણાવશો? +91 99099 77507`
 
 export default function SuryaGharCampaign(){
@@ -27,20 +32,24 @@ export default function SuryaGharCampaign(){
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState('')
  const [q,setQ]=useState(''),[fDistrict,setFDistrict]=useState('all'),[fCamp,setFCamp]=useState('all'),[fStage,setFStage]=useState('all'),[dueOnly,setDueOnly]=useState(false)
  const [lead,setLead]=useState<any>(null),[activities,setActivities]=useState<any[]>([]),[note,setNote]=useState(''),[camp,setCamp]=useState<any>(null)
+ const [villages,setVillages]=useState<VillageRow[]>([]),[venues,setVenues]=useState<any[]>([]),[placesReady,setPlacesReady]=useState(true)
  const [calcKw,setCalcKw]=useState('2.18'),[calcCat,setCalcCat]=useState<'general'|'sc'|'st'>('general')
  const can=(a:'create'|'edit'|'delete'|'export')=>canAdmin(access,'campaigns',a)
 
  async function load(){
   setLoading(true);setErr('')
-  const [l,c,t,s,a]=await Promise.all([
-   supabase.from('campaign_leads').select('*').order('created_at',{ascending:false}).limit(5000),
+  const [l,c,t,s,a,gv,ve]=await Promise.all([
+   fetchAll('campaign_leads','created_at',false),
    supabase.from('campaign_camps').select('*').order('camp_date',{ascending:false,nullsFirst:false}).limit(500),
    supabase.from('campaign_targets').select('*').order('sort_order').order('created_at'),
    supabase.from('profiles').select('id,full_name,company_name,role').in('role',['admin','staff']).order('full_name'),
    supabase.rpc('get_my_admin_access'),
+   fetchAll('geo_villages','name_en'),
+   supabase.from('campaign_venues').select('*').order('name').limit(1000),
   ])
   const first=l.error||c.error||t.error
   if(first)setErr(/does not exist|schema cache/i.test(first.message)?'Campaign tables are not set up yet. Apply the Surya Ghar campaign database migration, then refresh.':first.message)
+  setPlacesReady(!gv.error&&!ve.error);setVillages(gv.data||[]);setVenues(ve.data||[])
   setLeads(l.data||[]);setCamps(c.data||[]);setTargets(t.data||[]);setStaff(s.data||[]);setAccess(a.data||null);setLoading(false)
  }
  useEffect(()=>{load()},[])
@@ -64,6 +73,11 @@ export default function SuryaGharCampaign(){
   setNote('');setActivities([])
   if(l.id){const {data}=await supabase.from('campaign_lead_activities').select('*').eq('lead_id',l.id).order('created_at',{ascending:false}).limit(100);setActivities(data||[])}
  }
+ // Villages typed on a lead, camp or venue join the directory so the next person can pick them.
+ async function ensureVillage(district:string,taluka:string,village:string){
+  if(!placesReady||!village?.trim()||!taluka||!can('create')||findVillage(villages,district,taluka,village))return
+  await supabase.from('geo_villages').insert({district,taluka,name_en:village.trim(),source:'manual'})
+ }
  async function saveLead(){
   if(!lead)return
   const mobile=lead.mobile?normalizeMobile(lead.mobile):null
@@ -75,6 +89,7 @@ export default function SuryaGharCampaign(){
   const res=lead.id?await supabase.from('campaign_leads').update(payload).eq('id',lead.id).select().single():await supabase.from('campaign_leads').insert(payload).select().single()
   setSaving(false)
   if(res.error){setErr(/consumer_number/.test(res.error.message)?'A lead with this PGVCL consumer number already exists.':res.error.message);return}
+  await ensureVillage(payload.district,payload.taluka||'',payload.village||'')
   flash(lead.id?'Lead saved.':'Lead added.');await load();await openLead(res.data)
  }
  async function deleteLead(){if(!lead?.id||!confirm(`Delete ${lead.full_name}? This removes the lead and its activity.`))return;const {error}=await supabase.from('campaign_leads').delete().eq('id',lead.id);if(error){setErr(error.message);return}setLead(null);flash('Lead deleted.');load()}
@@ -114,11 +129,21 @@ export default function SuryaGharCampaign(){
  async function saveCamp(){
   if(!camp)return
   if(!camp.camp_code.trim()||!camp.village.trim()){setErr('Camp ID and village are required.');return}
-  const payload={camp_code:camp.camp_code.trim(),camp_date:camp.camp_date||null,village:camp.village.trim(),taluka:camp.taluka||null,district:camp.district,venue:camp.venue||null,status:camp.status,sarpanch_name:camp.sarpanch_name||null,sarpanch_phone:camp.sarpanch_phone||null,partner_vendor:camp.partner_vendor||null,bank_partner:camp.bank_partner||null,attendance:camp.attendance===''||camp.attendance==null?null:Number(camp.attendance),checklist:camp.checklist||{},notes:camp.notes||null}
+  let venue_id=camp.venue_id||null,venueName=camp.venue||null
+  if(placesReady&&!venue_id&&camp.new_name?.trim()){
+   const nv={district:camp.district,taluka:camp.taluka||null,village:camp.village.trim(),venue_type:camp.new_type||'other',name:camp.new_name.trim()}
+   const ins=await supabase.from('campaign_venues').insert(nv).select().single()
+   const found=ins.error?venues.find(v=>v.district===nv.district&&v.village.toLowerCase()===nv.village.toLowerCase()&&v.name.toLowerCase()===nv.name.toLowerCase()):ins.data
+   if(!found){setErr(ins.error?.message||'Could not save the venue.');return}
+   venue_id=found.id;venueName=found.name
+  }
+  const payload:any={camp_code:camp.camp_code.trim(),camp_date:camp.camp_date||null,village:camp.village.trim(),taluka:camp.taluka||null,district:camp.district,venue:venueName,status:camp.status,sarpanch_name:camp.sarpanch_name||null,sarpanch_phone:camp.sarpanch_phone||null,partner_vendor:camp.partner_vendor||null,bank_partner:camp.bank_partner||null,attendance:camp.attendance===''||camp.attendance==null?null:Number(camp.attendance),checklist:camp.checklist||{},notes:camp.notes||null}
+  if(placesReady)payload.venue_id=venue_id
   setSaving(true)
   const {error}=camp.id?await supabase.from('campaign_camps').update(payload).eq('id',camp.id):await supabase.from('campaign_camps').insert(payload)
   setSaving(false)
   if(error){setErr(/camp_code/.test(error.message)?'That Camp ID is already used.':error.message);return}
+  await ensureVillage(payload.district,payload.taluka||'',payload.village)
   setCamp(null);flash('Camp saved.');load()
  }
  async function deleteCamp(){if(!camp?.id||!confirm(`Delete camp ${camp.camp_code}? Its leads stay, without a camp.`))return;const {error}=await supabase.from('campaign_camps').delete().eq('id',camp.id);if(error){setErr(error.message);return}setCamp(null);flash('Camp deleted.');load()}
@@ -149,6 +174,7 @@ export default function SuryaGharCampaign(){
    <button role="tab" aria-selected={tab==='overview'} className={tab==='overview'?'active':''} onClick={()=>setTab('overview')}><LayoutDashboard size={16}/>Overview</button>
    <button role="tab" aria-selected={tab==='leads'} className={tab==='leads'?'active':''} onClick={()=>setTab('leads')}><Users size={16}/>Leads ({leads.length})</button>
    <button role="tab" aria-selected={tab==='camps'} className={tab==='camps'?'active':''} onClick={()=>setTab('camps')}><Tent size={16}/>Village camps ({camps.length})</button>
+   <button role="tab" aria-selected={tab==='places'} className={tab==='places'?'active':''} onClick={()=>setTab('places')}><Landmark size={16}/>Villages & venues</button>
    <button role="tab" aria-selected={tab==='targets'} className={tab==='targets'?'active':''} onClick={()=>setTab('targets')}><Target size={16}/>Targets</button>
    <button role="tab" aria-selected={tab==='calculator'} className={tab==='calculator'?'active':''} onClick={()=>setTab('calculator')}><Calculator size={16}/>Subsidy calculator</button>
   </div>
@@ -216,6 +242,8 @@ export default function SuryaGharCampaign(){
    {can('edit')&&<button className="adminBtn ghost campAdd" onClick={()=>setTargets(x=>[...x,{metric_key:'registrations',label:'',target_value:50,due_date:'2026-12-31',district:'',sort_order:100+x.length}])}><Plus size={16}/>Add target</button>}
   </section>}
 
+  {tab==='places'&&(placesReady?<PlacesTab villages={villages} venues={venues} leads={leads} camps={camps} can={can} reload={load} setErr={setErr} flash={flash}/>:<section className="adminPanel campPanel"><p className="muted">The village directory and saved venues need the second campaign database update (campaign_villages_venues). Apply it in Supabase, then refresh.</p></section>)}
+
   {tab==='calculator'&&<section className="adminPanel campPanel"><h2><Calculator size={18}/>Subsidy calculator</h2>
    <div className="campCalc">
     <div className="rfqFormGrid"><label><span>System size (kW DC)</span><input type="number" step="0.01" min="0" value={calcKw} onChange={e=>setCalcKw(e.target.value)}/></label><label><span>Household category</span><select value={calcCat} onChange={e=>setCalcCat(e.target.value as any)}><option value="general">General</option><option value="sc">SC</option><option value="st">ST</option></select></label></div>
@@ -234,9 +262,7 @@ export default function SuryaGharCampaign(){
      <label><span>Name *</span><input value={lead.full_name} onChange={e=>setLead((x:any)=>({...x,full_name:e.target.value}))}/></label>
      <label><span>Mobile</span><input inputMode="numeric" value={lead.mobile||''} onChange={e=>setLead((x:any)=>({...x,mobile:e.target.value}))} placeholder="10 digits"/></label>
      <label><span>Camp</span><select value={lead.camp_id} onChange={e=>{const c=campById[e.target.value];setLead((x:any)=>({...x,camp_id:e.target.value,village:x.village||c?.village||'',taluka:x.taluka||c?.taluka||'',district:c?.district||x.district}))}}><option value="">No camp</option>{camps.map(c=><option key={c.id} value={c.id}>{c.camp_code} · {c.village}</option>)}</select></label>
-     <label><span>District</span><select value={lead.district} onChange={e=>setLead((x:any)=>({...x,district:e.target.value}))}>{CAMPAIGN_DISTRICTS.map(d=><option key={d}>{d}</option>)}</select></label>
-     <label><span>Village</span><input value={lead.village||''} onChange={e=>setLead((x:any)=>({...x,village:e.target.value}))}/></label>
-     <label><span>Taluka</span><input value={lead.taluka||''} onChange={e=>setLead((x:any)=>({...x,taluka:e.target.value}))}/></label>
+     <PlaceFields value={{district:lead.district,taluka:lead.taluka||'',village:lead.village||''}} villages={villages} onChange={p=>setLead((x:any)=>({...x,...p}))}/>
      <label><span>PGVCL consumer no.</span><input value={lead.consumer_number||''} onChange={e=>setLead((x:any)=>({...x,consumer_number:e.target.value}))}/></label>
      <label><span>Category</span><select value={lead.category} onChange={e=>setLead((x:any)=>({...x,category:e.target.value}))}><option value="general">General</option><option value="sc">SC</option><option value="st">ST</option></select></label>
      <label><span>Avg units / month</span><input type="number" min={0} value={lead.avg_monthly_units} onChange={e=>setLead((x:any)=>({...x,avg_monthly_units:e.target.value}))}/></label>
@@ -269,11 +295,9 @@ export default function SuryaGharCampaign(){
     <section className="rfqDrawerSection"><h3><Tent size={16}/>Camp details</h3><div className="rfqFormGrid">
      <label><span>Camp ID *</span><input value={camp.camp_code} onChange={e=>setCamp((x:any)=>({...x,camp_code:e.target.value}))}/></label>
      <label><span>Date</span><input type="date" value={dateInput(camp.camp_date)} onChange={e=>setCamp((x:any)=>({...x,camp_date:e.target.value}))}/></label>
-     <label><span>Village *</span><input value={camp.village} onChange={e=>setCamp((x:any)=>({...x,village:e.target.value}))}/></label>
-     <label><span>Taluka</span><input value={camp.taluka||''} onChange={e=>setCamp((x:any)=>({...x,taluka:e.target.value}))}/></label>
-     <label><span>District</span><select value={camp.district} onChange={e=>setCamp((x:any)=>({...x,district:e.target.value}))}>{CAMPAIGN_DISTRICTS.map(d=><option key={d}>{d}</option>)}</select></label>
+     <PlaceFields required value={{district:camp.district,taluka:camp.taluka||'',village:camp.village||''}} villages={villages} onChange={p=>setCamp((x:any)=>({...x,...p,...(p.village!==x.village||p.district!==x.district?{venue_id:'',new_name:'',new_type:''}:{})}))}/>
      <label><span>Status</span><select value={camp.status} onChange={e=>setCamp((x:any)=>({...x,status:e.target.value}))}>{Object.entries(campStatus).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
-     <label><span>Venue</span><input value={camp.venue||''} onChange={e=>setCamp((x:any)=>({...x,venue:e.target.value}))} placeholder="Panchayat office, temple ground…"/></label>
+     {placesReady?<VenueFields place={{district:camp.district,taluka:camp.taluka||'',village:camp.village||''}} venues={venues} value={{venue_id:camp.venue_id||'',venue:camp.venue||'',new_type:camp.new_type||'',new_name:camp.new_name||''}} onChange={v=>setCamp((x:any)=>({...x,...v}))}/>:<label><span>Venue</span><input value={camp.venue||''} onChange={e=>setCamp((x:any)=>({...x,venue:e.target.value}))} placeholder="Panchayat office, temple ground…"/></label>}
      <label><span>Attendance</span><input type="number" min={0} value={camp.attendance} onChange={e=>setCamp((x:any)=>({...x,attendance:e.target.value}))}/></label>
      <label><span>Sarpanch name</span><input value={camp.sarpanch_name||''} onChange={e=>setCamp((x:any)=>({...x,sarpanch_name:e.target.value}))}/></label>
      <label><span>Sarpanch phone</span><input value={camp.sarpanch_phone||''} onChange={e=>setCamp((x:any)=>({...x,sarpanch_phone:e.target.value}))}/></label>
