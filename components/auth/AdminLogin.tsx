@@ -9,6 +9,7 @@ import {AdminLoginStep,MfaState,adminLoginStep,readMfaState,safeAdminReturnTo} f
 import MfaChallenge from './MfaChallenge'
 import AdminPasswordForm from './AdminPasswordForm'
 import AccountSecurityPanel from './AccountSecurityPanel'
+import {sessionEndMessage} from '../../lib/adminSession'
 
 export default function AdminLogin(){
  const router=useRouter(),search=useSearchParams()
@@ -21,7 +22,7 @@ export default function AdminLogin(){
   try{
    const {data:{user}}=await supabase.auth.getUser()
    if(request!==version.current)return
-   if(!user){setMfa(null);setStep('signin');return}
+   if(!user){setMfa(null);setStep('signin');setMessage(sessionEndMessage(search.get('reason')));return}
    const {data:profile,error}=await supabase.from('profiles').select('role,staff_status,must_change_password,mfa_required').eq('id',user.id).maybeSingle()
    if(error)throw error
    if(request!==version.current)return
@@ -38,7 +39,7 @@ export default function AdminLogin(){
    if(request!==version.current)return
    if(!access)throw Error('Admin access could not be verified.')
    if(access.session_ready===false){
-    await supabase.auth.signOut({scope:'local'});setStep('signin');setMessage('Your session expired. Please sign in again.');return
+    await supabase.auth.signOut({scope:'local'});setStep('signin');setMessage(sessionEndMessage(access.session_status)||'Your session expired. Please sign in again.');return
    }
    router.replace(safeAdminReturnTo(search.get('next')));router.refresh()
   }catch(error:any){if(request===version.current){setStep('error');setMessage(error.message||'Could not verify account security. Please retry.')}}

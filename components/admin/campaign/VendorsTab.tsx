@@ -49,7 +49,7 @@ export default function VendorsTab({vendors,leads,can,reload,setErr,flash,openLe
    const now=new Date().toISOString()
    for(let i=0;i<fresh.length;i+=300){const rows=fresh.slice(i,i+300).map(v=>({...v,portal_synced_at:now}));const {error}=await supabase.from('campaign_vendors').insert(rows);if(error){for(const r of rows){const x=await supabase.from('campaign_vendors').insert(r);if(x.error)failed++}}}
    for(const v of update){const ex=byKey.get(vendorKey(v.name));const {error}=await supabase.from('campaign_vendors').update(portalPatch(ex,v)).eq('id',ex.id);if(error)failed++}
-   setBusy(false);await reload();flash(`Vendors updated: ${fresh.length} added, ${update.length} refreshed${failed?`, ${failed} could not be saved`:''}.`)
+   setBusy(false);await reload();flash(`Vendors updated: ${fresh.length} added, ${update.length} refreshed${failed?`, ${failed} could not be saved`:''}.`);void Promise.resolve(supabase.rpc('log_admin_activity',{p_event:'import',p_module:'campaigns',p_path:'/admin/campaigns',p_description:`Imported vendors from ${file.name}: ${fresh.length} added, ${update.length} refreshed`})).catch(()=>{})
   }catch(x:any){setBusy(false);setErr(`Could not read the file: ${x?.message||x}`)}
  }
 
@@ -72,6 +72,7 @@ export default function VendorsTab({vendors,leads,can,reload,setErr,flash,openLe
   if(!error){const {data:{user}}=await supabase.auth.getUser();await supabase.from('campaign_lead_activities').insert(ids.map(id=>({lead_id:id,activity_type:'system',message:vendorId?`Installation vendor: ${vendor?.name}`:'Installation vendor removed',created_by:user?.id||null})))}
   setBusy(false)
   if(error){setErr(error.message);return}
+  void Promise.resolve(supabase.rpc('log_admin_activity',{p_event:'assign',p_module:'campaigns',p_path:'/admin/campaigns',p_description:vendorId?`Assigned ${ids.length} household${ids.length===1?'':'s'} to ${vendor?.name}`:`Removed ${vendor?.name} from a household`})).catch(()=>{})
   setPick({});flash(vendorId?`${ids.length} household${ids.length===1?'':'s'} assigned to ${vendor?.name}.`:'Household unassigned.');reload()
  }
 

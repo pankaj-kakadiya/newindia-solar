@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises'
 import {createRequire} from 'node:module'
 import vm from 'node:vm'
 import {adminLoginStep,readMfaState,safeAdminReturnTo,adminSecurityRedirect} from '../lib/mfa.ts'
+import {sessionEndMessage} from '../lib/adminSession.ts'
 const require=createRequire(import.meta.url),ts=require('typescript')
 const compile=async path=>ts.transpileModule(await readFile(new URL('../'+path,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText
 const compiled=await compile('components/auth/AdminLogin.tsx')
@@ -38,6 +39,7 @@ async function harness(options={}){
   'lucide-react':{},
   '../../lib/supabase':{supabase},
   '../../lib/mfa':{adminLoginStep,readMfaState,safeAdminReturnTo},
+  '../../lib/adminSession':{sessionEndMessage},
   ...Object.fromEntries(Object.entries(components).map(([name,component])=>['./'+name,{__esModule:true,default:component}]))
  }
  const mod={exports:{}}
