@@ -54,3 +54,18 @@ test('reads the SLDC home page in its real table layout',()=>{
  <tr><td>DAM Rate</td><td>:</td><td><span>10.0</span> Rs/unit</td></tr></table><p>Day-Ahead Market (DAM) trial</p>`
  assert.deepEqual(parseSldcHome(html),{frequency_hz:50.033,demand_mw:18238.025,dam_rate:10})
 })
+
+test('growth since the 22 Oct state scheme, with the pre-baseline gap estimated',async()=>{
+ const {sinceScheme,campPriority}=await import('../lib/solar-market.ts')
+ const r=(d,name,a,i)=>({snapshot_date:d,level:'district',state:'Gujarat',name,applications:a,installations:i,households:0,capacity_mw:0,subsidy_lakh:0})
+ const rows=[r('2026-10-01','Amreli',900,800),r('2026-11-02','Amreli',1000,800),r('2026-11-02','Bhavnagar',2000,1500),r('2026-11-12','Amreli',1300,900),r('2026-11-12','Bhavnagar',2100,1700),r('2026-11-12','Botad',50,10)]
+ assert.equal(sinceScheme(rows,'2026-11-02').ready,false,'one snapshot is not enough')
+ const s=sinceScheme(rows,'2026-11-12')
+ assert.equal(s.baseline,'2026-11-02');assert.equal(s.days,10);assert.equal(s.gapDays,11)
+ assert.equal(s.newApplications,400);assert.equal(s.newInstallations,300)
+ assert.equal(s.usedEstimate,300+30*11,'gap filled at 30 installs/day')
+ assert.equal(s.left,300000-630);assert.equal(s.daysLeftByInstalls,Math.ceil((300000-630)/30))
+ const a=s.districts.find(d=>d.name==='Amreli');assert.equal(a.appsPerDay,30);assert.equal(a.pending,400)
+ assert.equal(s.districts.find(d=>d.name==='Botad').newApplications,0,'a district missing from the baseline counts no growth')
+ assert.ok(campPriority(a)>campPriority(s.districts.find(d=>d.name==='Bhavnagar')))
+})
