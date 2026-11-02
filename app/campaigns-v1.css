@@ -164,3 +164,29 @@ td>.procChip{display:flex;width:max-content}
  .procGuideGrid{grid-template-columns:1fr 1fr}
  .procGuideGrid article{break-inside:avoid}
 }
+
+/* Vendors */
+.vendStars{display:inline-flex;align-items:center;gap:4px;color:#b7791f;font-weight:700}
+.vendStars svg{color:#e2a524}
+.vendTop{font-size:1rem!important;line-height:1.25;display:block}
+.vendBadge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.75rem;font-weight:700;background:#eef2f5;color:#40505c}
+.vendBadge.contacted{background:#e8f0fb;color:#1f4f8f}
+.vendBadge.shortlisted{background:#fff4dc;color:#8a5a00}
+.vendBadge.approved{background:#e3f4ea;color:#1e6b3a}
+.vendBadge.active{background:#357f19;color:#fff}
+.vendBadge.blocked{background:#fbe5e5;color:#9b1c1c}
+.vendTable td{vertical-align:top}
+.vendTable .tableSub a{color:inherit}
+.vendMini{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important}
+.vendMini small{display:block;color:#6b7884;font-size:.78rem}
+.vendLinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.vendLinks a{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid #dbe2e7;border-radius:999px;font-size:.82rem;color:#123727;text-decoration:none;background:#fff}
+.vendTalukas{display:grid;gap:8px;margin:10px 0}
+.vendTalukas>span{font-size:11px;text-transform:uppercase;font-weight:800;color:#6b7884;letter-spacing:.04em}
+.vendTalukas>div>div{display:flex;flex-wrap:wrap;gap:2px 14px}
+.vendTalukas b{font-size:.85rem;color:#253645}
+.vendTalukas .campCheck{min-height:30px;font-weight:500}
+.vendWork{grid-column:1/-1}
+.vendSub{margin:14px 0 6px;font-size:.9rem;color:#253645}
+.vendPick{display:grid;gap:2px;max-height:260px;overflow:auto;border:1px solid #e3e9ee;border-radius:10px;padding:6px 10px;margin-bottom:10px}
+.vendPick .campCheck{min-height:32px;font-weight:600}
