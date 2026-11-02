@@ -31,7 +31,9 @@ export const bilingual = (en?: string | null, gu?: string | null) => en ? (gu &&
 const squash = (s: unknown) => String(s ?? '').toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '')
 
 const TALUKA_ALIASES: Record<string, string> = {
-  girgadhada: 'Gir Gadhada', gadhada: 'Gir Gadhada', kunkavavvadia: 'Kunkavav Vadia', kunkavav: 'Kunkavav Vadia', vadia: 'Kunkavav Vadia',
+  girgadhada: 'Gir Gadhada', girgadhda: 'Gir Gadhada', gadhada: 'Gir Gadhada', gadhda: 'Gir Gadhada',
+  // LGD lists city wards as separate sub-districts; they belong to the parent taluka for the campaign.
+  veravalcity: 'Veraval', bhavnagarcityeast: 'Bhavnagar', bhavnagarcitywest: 'Bhavnagar', bhavnagarcity: 'Bhavnagar', amrelicity: 'Amreli', kunkavavvadia: 'Kunkavav Vadia', kunkavav: 'Kunkavav Vadia', vadia: 'Kunkavav Vadia',
   savarkundla: 'Savarkundla', savarkundala: 'Savarkundla', liliya: 'Lilia', lilia: 'Lilia', bagasra: 'Bagasara', bagasara: 'Bagasara',
   gariyadhar: 'Gariadhar', gariadhar: 'Gariadhar', vallabhipur: 'Vallabhipur', vallabhpur: 'Vallabhipur', umrala: 'Umrala', sihor: 'Sihor', shihor: 'Sihor',
   patanveraval: 'Veraval', veraval: 'Veraval', sutrapada: 'Sutrapada', talala: 'Talala', talalagir: 'Talala', kodinar: 'Kodinar', una: 'Una',
@@ -89,6 +91,7 @@ export function villagesFromSheetRows(rows: Record<string, unknown>[], fallbackD
   const villages: VillageRow[] = []
   let skipped = 0
   const seen = new Set<string>()
+  const seenCodes = new Set<string>()
   for (const row of rows) {
     const out: Record<string, unknown> = {}
     for (const [h, v] of Object.entries(row)) {
@@ -99,15 +102,26 @@ export function villagesFromSheetRows(rows: Record<string, unknown>[], fallbackD
     const taluka = district ? canonicalTaluka(district, out.taluka) : null
     const name = String(out.name_en ?? '').trim().replace(/\s+/g, ' ')
     if (!district || !taluka || !name) { skipped++; continue }
-    const key = `${district}|${taluka}|${squash(name)}`
-    if (seen.has(key)) { skipped++; continue }
+    const lgd = String(out.lgd_code ?? '').trim()
+    if (lgd && seenCodes.has(lgd)) { skipped++; continue }
+    if (lgd) seenCodes.add(lgd)
+    let key = `${district}|${taluka}|${squash(name)}`
+    let finalName = name
+    if (seen.has(key)) {
+      // Two different villages with the same name in one taluka (LGD has a few): keep both, told apart by code.
+      if (!lgd) { skipped++; continue }
+      finalName = `${name} (${lgd})`
+      key = `${district}|${taluka}|${squash(finalName)}`
+    }
     seen.add(key)
     const int = (v: unknown) => { const n = Number(String(v ?? '').replace(/,/g, '')); return Number.isFinite(n) && String(v ?? '').trim() !== '' ? Math.round(n) : null }
-    const titled = name === name.toUpperCase() ? name.toLowerCase().replace(/(^|[\s(-])\p{L}/gu, m => m.toUpperCase()) : name
+    const titled = finalName === finalName.toUpperCase() ? finalName.toLowerCase().replace(/(^|[\s(-])\p{L}/gu, m => m.toUpperCase()) : finalName
+    const gu = String(out.name_gu ?? '').trim()
     villages.push({
       district, taluka, name_en: titled,
-      name_gu: String(out.name_gu ?? '').trim() || null,
-      lgd_code: String(out.lgd_code ?? '').trim() || null,
+      // LGD often repeats the English name in the local-name column: keep it only when it is in Gujarati script.
+      name_gu: /[\u0A80-\u0AFF]/.test(gu) ? gu : null,
+      lgd_code: lgd || null,
       census_code: String(out.census_code ?? '').trim() || null,
       households: int(out.households), population: int(out.population),
     })
