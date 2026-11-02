@@ -74,3 +74,20 @@ test('one session per person, idle timeout, maximum length, owner sign-out and a
   assert.equal((await beat(BOT,B1,false)).status,'ok','the automation account is not signed out for inactivity or age')
  }finally{await db.close()}
 })
+
+test('the session update also applies on a database without the earlier MFA update',async()=>{
+ const db=new PGlite()
+ try{
+  await db.exec(await readFile(new URL('./fixtures/admin-mfa-schema.sql',import.meta.url),'utf8'))
+  await db.exec(`insert into auth.users(id,email) values('${STAFF}','staff@nis.in'); insert into public.profiles(id,role,admin_role,staff_status) values('${STAFF}','staff','finance','active');
+   insert into auth.sessions(id,user_id,created_at,updated_at) values('${id(301)}','${STAFF}',now()-interval '1 hour',now()),('${id(302)}','${STAFF}',now(),now());`)
+  await db.exec(await readFile(new URL('../supabase/migrations/20261103120000_admin_sessions_activity.sql',import.meta.url),'utf8'))
+  const q=async(sql,args=[])=>(await db.query(sql,args)).rows
+  async function as(sid,fn){await db.exec('begin');try{await q("select set_config('request.jwt.claims',$1,true)",[JSON.stringify({sub:STAFF,session_id:sid,aal:'aal1'})]);await db.exec('set local role authenticated');return await fn()}finally{await db.exec('commit')}}
+  assert.equal(await as(id(302),async()=>(await q("select public.has_admin_permission('finance','view') ok"))[0].ok),true,'newest session works')
+  assert.equal(await as(id(301),async()=>(await q("select public.has_admin_permission('finance','view') ok"))[0].ok),false,'older device is refused')
+  // Applying the MFA update afterwards still works (it replaces the placeholder with the real check).
+  await db.exec(await readFile(new URL('../supabase/migrations/20260921171535_complete_admin_mfa_flow.sql',import.meta.url),'utf8'))
+  assert.equal(await as(id(302),async()=>(await q("select public.has_admin_permission('finance','view') ok"))[0].ok),true)
+ }finally{await db.close()}
+})
