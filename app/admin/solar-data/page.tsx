@@ -1,11 +1,11 @@
 'use client'
 
 import {useEffect,useMemo,useState} from 'react'
-import {Activity,BarChart3,Check,ClipboardPaste,Download,Gauge,MapPin,RefreshCw,Save,Search,Sun,X,Zap} from 'lucide-react'
+import {Activity,BarChart3,CalendarRange,Check,ClipboardPaste,Download,Gauge,MapPin,RefreshCw,Save,Search,Sun,X,Zap} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import Toasts from '../../../components/admin/campaign/Toasts'
 import {canAdmin} from '../../../lib/adminAccess'
-import {SOLAR_SITES,districtInsights,estimateDailyKwh,estimateOutputMw,parsePortalTable,type PmsgRow} from '../../../lib/solar-market'
+import {STATE_SCHEME,SOLAR_SITES,campPriority,districtInsights,sinceScheme,estimateDailyKwh,estimateOutputMw,parsePortalTable,type PmsgRow} from '../../../lib/solar-market'
 import {reachedStage} from '../../../lib/surya-ghar-campaign'
 
 type Tab='pmsg'|'energy'
@@ -75,6 +75,7 @@ export default function SolarMarketData(){
  const ours=(d:string)=>{const L=leads.filter(l=>l.district===d);return{leads:L.length,registered:L.filter(l=>l.portal_registered||reachedStage(l.stage,'registered')).length,commissioned:L.filter(l=>reachedStage(l.stage,'commissioned')).length}}
  const shown=useMemo(()=>{const s=q.trim().toLowerCase();const list=districts.filter(d=>(!onlyCampaign||CAMPAIGN.includes(d.name))&&(!s||d.name.toLowerCase().includes(s)));return list.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):(b as any)[sort]-(a as any)[sort])},[districts,q,onlyCampaign,sort])
  const maxPending=Math.max(1,...districts.map(d=>d.pending)),maxInst=Math.max(1,...districts.map(d=>d.installations))
+ const scheme=useMemo(()=>sinceScheme(rows,snap),[rows,snap])
  const campaignTotals=districts.filter(d=>CAMPAIGN.includes(d.name)).reduce((a,d)=>({applications:a.applications+d.applications,installations:a.installations+d.installations,pending:a.pending+d.pending,capacity_mw:a.capacity_mw+d.capacity_mw}),{applications:0,installations:0,pending:0,capacity_mw:0})
 
  const parsed=useMemo(()=>paste.trim()?parsePortalTable(paste,pasteDate):null,[paste,pasteDate])
@@ -127,6 +128,8 @@ export default function SolarMarketData(){
     <div><span>Pending applications</span><b>{IN(Math.max((guj?.applications||0)-(guj?.installations||0),0))}</b><small>Applied, not yet installed: the open market</small></div>
     <div><span>Subsidy released</span><b>{guj?cr(guj.subsidy_lakh):'—'}</b><small>{IN(guj?.households)} households covered</small></div>
    </div>
+
+   <SchemeSection s={scheme} start={STATE_SCHEME.start}/>
 
    <section className="adminPanel campPanel solarCampaign"><h2><MapPin size={18}/>Your campaign districts</h2>
     <div className="solarCampaignGrid">{CAMPAIGN.map(name=>{const d=districts.find(x=>x.name===name);const o=ours(name);return <div key={name} className="solarCard"><b>{name}</b>{d?<><div className="solarCardRow"><span>Installed</span><strong>{IN(d.installations)}</strong></div><div className="solarCardRow"><span>Pending applications</span><strong>{IN(d.pending)}</strong></div><div className="solarCardRow"><span>Conversion</span><strong>{pct(d.conversion)}</strong></div><div className="solarCardRow"><span>Capacity</span><strong>{IN(d.capacity_mw,1)} MW</strong></div></>:<p className="muted">Not in this snapshot.</p>}<div className="solarOurs"><span>NewIndia campaign</span>{o.leads} leads · {o.registered} registered · {o.commissioned} commissioned</div></div>})}</div>
@@ -210,4 +213,28 @@ function DemandChart({points}:{points:{t:number;v:number}[]}){
   <circle cx={x(last.t)} cy={y(last.v)} r={4} className="solarDot"/>
   <text x={x(last.t)-8} y={y(last.v)-10} textAnchor="end" className="solarLabel">{IN(last.v)} MW</text>
  </svg>
+}
+
+function SchemeSection({s,start}:{s:ReturnType<typeof sinceScheme>;start:string}){
+ const d=(x:string)=>new Date(`${x}T00:00:00+05:30`).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})
+ if(!s.ready)return <section className="adminPanel campPanel schemePanel"><h2><CalendarRange size={18}/>Since the Gujarat top-up started ({d(start)})</h2><p className="muted">{s.baseline?`Snapshot of ${d(s.baseline)} is the starting point. The daily snapshot adds tomorrow's figures; growth per district, speed and the 3-lakh estimate appear here from the second day.`:'Add a portal snapshot to start tracking.'}</p></section>
+ const ranked=s.districts.slice().sort((a,b)=>b.newApplications-a.newApplications)
+ const camp=s.districts.filter(x=>CAMPAIGN.includes(x.name)).sort((a,b)=>campPriority(b)-campPriority(a))
+ const max=Math.max(1,...ranked.map(x=>x.newApplications))
+ const deadline=[s.daysLeftByApplications,s.daysLeftByInstalls].filter((x):x is number=>x!=null).sort((a,b)=>a-b)[0]
+ const when=(n:number|null|undefined)=>n==null?'—':new Date(Date.parse(s.latest)+n*864e5).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+ return <section className="adminPanel campPanel schemePanel"><h2><CalendarRange size={18}/>Since the Gujarat top-up started ({d(start)})</h2>
+  <p className="muted">Growth from {d(s.baseline)} to {d(s.latest)} ({s.days} day{s.days===1?'':'s'}, {s.snapshots} snapshots){s.gapDays?`; ${d(start)}–${d(s.baseline)} is estimated at the same daily rate`:''}.</p>
+  <div className="rfqStats schemeStats">
+   <div><span>New applications</span><b>{IN(s.applicationsEstimate)}</b><small>{IN(s.appsPerDay,0)} a day in Gujarat</small></div>
+   <div><span>New installations</span><b>{IN(s.usedEstimate)}</b><small>{IN(s.installsPerDay,0)} a day</small></div>
+   <div><span>3-lakh pool used (estimate)</span><b>{(s.usedShare*100).toFixed(1)}%</b><div className="campBar"><i style={{width:`${Math.max(s.usedShare*100,1)}%`}}/></div><small>{IN(s.left)} households left at most</small></div>
+   <div><span>Pool full around</span><b>{deadline!=null?when(deadline):'—'}</b><small>{s.daysLeftByApplications!=null?`by applications in ~${IN(s.daysLeftByApplications)} days`:''}{s.daysLeftByInstalls!=null?` · by installations in ~${IN(s.daysLeftByInstalls)} days`:''}</small></div>
+  </div>
+  <div className="schemeGrid">
+   <div><h3>Camp priority in your districts</h3><div className="adminTableWrap"><table className="adminTable"><thead><tr><th>#</th><th>District</th><th className="num">New applications / day</th><th className="num">Waiting for installation</th><th className="num">New since {d(s.baseline)}</th></tr></thead><tbody>{camp.map((x,i)=><tr key={x.name} className={i===0?'solarHighlight':''}><td>{i+1}</td><td><b>{x.name}</b></td><td className="num">{IN(x.appsPerDay,1)}</td><td className="num">{IN(x.pending)}</td><td className="num">+{IN(x.newApplications)} / +{IN(x.newInstallations)} installed</td></tr>)}</tbody></table></div><p className="muted solarFoot">Ranked by how fast households are applying and how many are still waiting for a vendor: both mean demand you can reach with a camp now.</p></div>
+   <div><h3>Fastest-growing districts in Gujarat</h3><div className="schemeBars">{ranked.slice(0,10).map(x=><div key={x.name} className={CAMPAIGN.includes(x.name)?'mine':''}><span>{x.name}</span><div className="campBar"><i style={{width:`${x.newApplications/max*100}%`}}/></div><b>+{IN(x.newApplications)}</b></div>)}</div></div>
+  </div>
+  <p className="muted solarFoot">The 3-lakh figure is the Cabinet decision of 22-10-2026 (more than three lakh families, about ₹1,000 crore). The portal does not show which households get the state top-up, so every new Gujarat installation is counted: the pool used is an upper bound and the real date may be later. Systems above 2.18 kW and households outside the income limit do not use the pool.</p>
+ </section>
 }

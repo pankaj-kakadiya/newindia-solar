@@ -96,3 +96,48 @@ export const estimateOutputMw = (installedMw: number, irradiance: number) => Mat
 
 /** Estimated kWh from a system of `kw` given daily radiation in MJ/m² (Open-Meteo shortwave_radiation_sum). */
 export const estimateDailyKwh = (kw: number, radiationMjPerM2: number) => Math.max(0, kw * (radiationMjPerM2 / 3.6) * PERFORMANCE_RATIO)
+
+/** Gujarat state top-up (Cabinet decision 22-10-2026): "more than three lakh families", ~₹1,000 crore. */
+export const STATE_SCHEME = { start: '2026-10-22', households: 300000 } as const
+
+export type SchemeDistrict = { name: string; applications: number; installations: number; pending: number; newApplications: number; newInstallations: number; appsPerDay: number; installsPerDay: number }
+
+const dayDiff = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5)
+
+/**
+ * Growth since the state scheme started, from portal snapshots. The baseline is the first Gujarat district
+ * snapshot on or after the start date; the days between the start and the baseline are filled at the
+ * measured daily rate (an estimate, flagged by gapDays). Every new Gujarat installation is counted against
+ * the 3-lakh pool, so the pool figures are an upper bound: the portal does not mark state top-up households.
+ */
+export function sinceScheme(rows: PmsgRow[], latestDate: string, start: string = STATE_SCHEME.start, pool: number = STATE_SCHEME.households) {
+  const gj = rows.filter(r => r.level === 'district' && r.state.toLowerCase() === 'gujarat')
+  const dates = [...new Set(gj.map(r => r.snapshot_date))].filter(d => d >= start && d <= latestDate).sort()
+  const baseline = dates[0]
+  if (!baseline || baseline === latestDate) return { ready: false as const, baseline: baseline || null, latest: latestDate, snapshots: dates.length }
+  const base = new Map(gj.filter(r => r.snapshot_date === baseline).map(r => [r.name.toLowerCase(), r]))
+  const days = dayDiff(baseline, latestDate), gapDays = Math.max(dayDiff(start, baseline), 0)
+  const districts: SchemeDistrict[] = gj.filter(r => r.snapshot_date === latestDate).map(r => {
+    const b = base.get(r.name.toLowerCase())
+    const newApplications = b ? Math.max(r.applications - b.applications, 0) : 0
+    const newInstallations = b ? Math.max(r.installations - b.installations, 0) : 0
+    return { name: r.name, applications: r.applications, installations: r.installations, pending: Math.max(r.applications - r.installations, 0), newApplications, newInstallations, appsPerDay: newApplications / days, installsPerDay: newInstallations / days }
+  })
+  const sum = (k: keyof SchemeDistrict) => districts.reduce((a, d) => a + (Number(d[k]) || 0), 0)
+  const newApplications = sum('newApplications'), newInstallations = sum('newInstallations')
+  const installsPerDay = newInstallations / days, appsPerDay = newApplications / days
+  const usedEstimate = Math.round(newInstallations + installsPerDay * gapDays)
+  const applicationsEstimate = Math.round(newApplications + appsPerDay * gapDays)
+  const left = Math.max(pool - usedEstimate, 0)
+  return {
+    ready: true as const, baseline, latest: latestDate, snapshots: dates.length, days, gapDays, pool,
+    districts, newApplications, newInstallations, appsPerDay, installsPerDay,
+    usedEstimate, applicationsEstimate, left, usedShare: Math.min(usedEstimate / pool, 1),
+    // Applications fill the pool before installations do: the earlier of the two is the real deadline for camps.
+    daysLeftByInstalls: installsPerDay > 0 ? Math.ceil(left / installsPerDay) : null,
+    daysLeftByApplications: appsPerDay > 0 ? Math.ceil(Math.max(pool - applicationsEstimate, 0) / appsPerDay) : null,
+  }
+}
+
+/** Camp priority for a district: households already applying fast, and many applications still waiting for installation. */
+export const campPriority = (d: SchemeDistrict) => d.appsPerDay * 30 + d.pending * 0.05
