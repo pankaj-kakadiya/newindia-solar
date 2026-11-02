@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server'
 import {parseSldcHome} from '../../../../lib/solar-market'
 
-// Public relay for the three headline figures on the SLDC Gujarat home page (grid frequency,
+// Public relay (CORS open, cached 60 s) for the three headline figures on the SLDC Gujarat home page (grid frequency,
 // Gujarat demand, DAM rate). SLDC turns away servers outside India, so on Vercel this runs in Mumbai;
 // the admin dashboard's server route falls back to it when its own request is refused.
 export const runtime='edge'

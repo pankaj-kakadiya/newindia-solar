@@ -16,6 +16,8 @@ let weatherCache:Cached<any[]>|null=null
 // SLDC's firewall turns away unknown bots, so ask the way a browser does.
 const BROWSER_HEADERS={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36','Accept':'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8','Accept-Language':'en-IN,en;q=0.9'}
 
+const RELAY_URLS=[process.env.SLDC_RELAY_URL,'https://newindia-solar.vercel.app/api/solar/sldc','https://newindia-solar-housious.vercel.app/api/solar/sldc'].filter(Boolean) as string[]
+
 async function fetchText(url:string,ms=10000){
  const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),ms)
  try{const r=await fetch(url,{signal:ctrl.signal,headers:BROWSER_HEADERS,cache:'no-store',redirect:'follow'});if(!r.ok)throw new Error(`${new URL(url).host} answered HTTP ${r.status}`);return await r.text()}
@@ -25,10 +27,15 @@ async function fetchText(url:string,ms=10000){
 
 async function sldc(){
  if(sldcCache&&Date.now()-sldcCache.at<120_000)return sldcCache.value
- let html=''
- try{html=await fetchText('https://www.sldcguj.com/')}catch(first){try{html=await fetchText('https://sldcguj.com/')}catch{throw first}}
- const live=parseSldcHome(html)
- if(live.demand_mw==null&&live.frequency_hz==null)throw new Error('SLDC page opened but the live figures were not on it')
+ let live:SldcLive|null=null,firstError:any=null
+ try{live=parseSldcHome(await fetchText('https://www.sldcguj.com/'));if(live.demand_mw==null&&live.frequency_hz==null){live=null;throw new Error('SLDC page opened but the live figures were not on it')}}catch(e){firstError=e}
+ // SLDC refuses servers outside India (Hostinger's included), so fall back to our relay that runs in Mumbai on Vercel.
+ if(!live){
+  for(const url of RELAY_URLS){
+   try{const j=JSON.parse(await fetchText(url,8000));if(j&&(j.demand_mw!=null||j.frequency_hz!=null)){live={frequency_hz:j.frequency_hz??null,demand_mw:j.demand_mw??null,dam_rate:j.dam_rate??null};break}}catch{}
+  }
+ }
+ if(!live)throw firstError||new Error('SLDC Gujarat did not answer')
  // Five-minute buckets keep one stored reading per metric per interval, however many people are viewing.
  const bucket=new Date(Math.floor(Date.now()/300_000)*300_000).toISOString()
  const value={...live,observed_at:bucket}
