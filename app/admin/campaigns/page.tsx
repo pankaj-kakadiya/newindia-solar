@@ -4,6 +4,7 @@ import {ChangeEvent,useEffect,useMemo,useState} from 'react'
 import * as XLSX from 'xlsx'
 import {ArrowRight,Building2,Calculator,CalendarClock,Check,ClipboardList,Download,Landmark,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import Toasts from '../../../components/admin/campaign/Toasts'
 import {canAdmin} from '../../../lib/adminAccess'
 import {PlaceFields,VenueFields} from '../../../components/admin/campaign/PlaceFields'
 import PlacesTab from '../../../components/admin/campaign/PlacesTab'
@@ -185,8 +186,7 @@ export default function SuryaGharCampaign(){
 
  return <div className="rfqV2 campV1">
   <div className="rfqHero"><div><span className="adminEyebrow">PM SURYA GHAR · GUJARAT STATE TOP-UP</span><h1>Surya Ghar Village Campaign</h1><p>Village camps, household leads and the subsidy pipeline for Gir Somnath, Amreli and Bhavnagar. Households pay 10% of the benchmark (SC/ST 5%) up to {SURYA_GHAR_RULES.stateLimitKw} kW under GR {SURYA_GHAR_RULES.grNumber}.</p></div><div className="rfqHeroActions"><button className="adminBtn ghost" onClick={load}><RefreshCw size={16}/>Refresh</button>{can('export')&&<button className="adminBtn ghost" onClick={exportCsv}><Download size={16}/>Export leads</button>}</div></div>
-  {msg&&<div className="themeMessage"><Check size={16}/>{msg}</div>}
-  {err&&<div className="themeMessage campError"><X size={16}/>{err}</div>}
+  <Toasts msg={msg} err={err} onClear={k=>k==='msg'?setMsg(''):setErr('')}/>
 
   <div className="rfqStats">
    <div><span>Households</span><b>{active.length}</b><small>{leads.length-active.length} lost · {(n=>`${n} camp${n===1?'':'s'} held`)(camps.filter(c=>c.status==='completed').length)}</small></div>

@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react'
 import {Activity,BarChart3,Check,ClipboardPaste,Download,Gauge,MapPin,RefreshCw,Save,Search,Sun,X,Zap} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
+import Toasts from '../../../components/admin/campaign/Toasts'
 import {canAdmin} from '../../../lib/adminAccess'
 import {SOLAR_SITES,districtInsights,estimateDailyKwh,estimateOutputMw,parsePortalTable,type PmsgRow} from '../../../lib/solar-market'
 import {reachedStage} from '../../../lib/surya-ghar-campaign'
@@ -97,8 +98,7 @@ export default function SolarMarketData(){
 
  return <div className="rfqV2 campV1 solarV1">
   <div className="rfqHero"><div><span className="adminEyebrow">MARKET INTELLIGENCE</span><h1>Solar Market Data</h1><p>PM Surya Ghar progress for Gujarat by district and DISCOM, compared with every state, and the live Gujarat grid with today&apos;s sunlight in your campaign districts.</p></div><div className="rfqHeroActions"><button className="adminBtn ghost" onClick={()=>tab==='pmsg'?load():loadLive()}><RefreshCw size={16}/>Refresh</button>{tab==='pmsg'&&canAdmin(access,'campaigns','export')&&<button className="adminBtn ghost" onClick={exportCsv}><Download size={16}/>Export districts</button>}</div></div>
-  {msg&&<div className="themeMessage"><Check size={16}/>{msg}</div>}
-  {err&&<div className="themeMessage campError"><X size={16}/>{err}</div>}
+  <Toasts msg={msg} err={err} onClear={k=>k==='msg'?setMsg(''):setErr('')}/>
 
   <div className="reportsTabs" role="tablist">
    <button role="tab" aria-selected={tab==='pmsg'} className={tab==='pmsg'?'active':''} onClick={()=>setTab('pmsg')}><BarChart3 size={16}/>PM Surya Ghar data</button>

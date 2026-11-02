@@ -190,3 +190,50 @@ td>.procChip{display:flex;width:max-content}
 .vendSub{margin:14px 0 6px;font-size:.9rem;color:#253645}
 .vendPick{display:grid;gap:2px;max-height:260px;overflow:auto;border:1px solid #e3e9ee;border-radius:10px;padding:6px 10px;margin-bottom:10px}
 .vendPick .campCheck{min-height:32px;font-weight:600}
+
+/* Drawer layout: never wider than the drawer, on any screen */
+.campV1 .rfqDrawer,.solarV1 .rfqDrawer{overflow-x:hidden;overscroll-behavior:contain}
+.campV1 .rfqDrawer *,.campV1 .rfqDrawer *::before,.campV1 .rfqDrawer *::after{box-sizing:border-box}
+.campV1 .rfqDrawerGrid>*,.campV1 .rfqFormGrid>*,.campV1 .procSteps,.campV1 .procSteps *{min-width:0}
+.campV1 .rfqDrawer input:not([type=checkbox]):not([type=radio]),.campV1 .rfqDrawer select,.campV1 .rfqDrawer textarea{width:100%;max-width:100%;min-width:0}
+.campV1 .rfqDrawer .procDate input{width:auto}
+.campV1 .rfqDrawerHead{align-items:flex-start}
+.campV1 .rfqDrawerHead>div{min-width:0}
+.campV1 .rfqDrawerHead h2{overflow-wrap:anywhere}
+.campV1 .rfqDrawerActions{align-items:center}
+.campV1 .campCheck{align-items:flex-start!important;line-height:1.35;padding:5px 0}
+.campV1 .campCheck input{margin-top:2px;flex:0 0 auto}
+.campV1 .procStepHead{border-radius:12px}
+.campV1 .procStepHead:hover{background:#f6faf4}
+.campV1 .procTitle b,.campV1 .procTitle small{overflow-wrap:anywhere}
+@media(max-width:1150px){.campV1 .rfqDrawer{width:min(760px,100vw)}}
+@media(max-width:760px){
+ .campV1 .rfqDrawer{width:100vw}
+ .campV1 .rfqDrawerHead h2{font-size:20px}
+ .campV1 .rfqDrawerActions .adminBtn{flex:1 1 calc(50% - 10px);justify-content:center}
+ .campV1 .procBody{padding:0 10px 12px 10px}
+ .campV1 .procStepHead{padding:10px 8px;gap:10px}
+ .campV1 .procMeta{font-size:.75rem}
+ .campV1 .procActions{flex-direction:column;align-items:stretch}
+ .campV1 .procActions .adminBtn{justify-content:center}
+ .campV1 .procDate{justify-content:space-between}
+ .campV1 .vendMini{grid-template-columns:1fr 1fr!important}
+ .campV1 .reportsTabs{overflow-x:auto;flex-wrap:nowrap}
+ .campV1 .reportsTabs button{white-space:nowrap;flex:0 0 auto}
+ .campV1 .campToolbar{flex-wrap:wrap}
+ .campV1 .campToolbar>*{flex:1 1 100%}
+ .campV1 .campToolbarActions{display:flex;flex-wrap:wrap;gap:8px}
+ .campV1 .campToolbarActions>*{flex:1 1 auto;justify-content:center}
+}
+
+/* Top-right notifications, above drawers */
+.campToasts{position:fixed;top:96px;right:20px;z-index:1000;display:grid;gap:10px;width:min(380px,calc(100vw - 32px));pointer-events:none}
+.campToast{pointer-events:auto;display:flex;align-items:flex-start;gap:10px;padding:12px 12px 12px 14px;border-radius:14px;background:#fff;border:1px solid #dfe7ec;box-shadow:0 18px 40px rgba(7,19,31,.18);font-size:.88rem;line-height:1.4;color:#14212b;animation:campToastIn .18s ease-out}
+.campToast svg{flex:0 0 auto;margin-top:1px}
+.campToast span{flex:1;min-width:0;overflow-wrap:anywhere}
+.campToast button{border:0;background:transparent;color:#6b7884;cursor:pointer;padding:2px;border-radius:6px;display:inline-flex}
+.campToast button:hover{background:#eef2f5}
+.campToast.ok{border-left:4px solid #357f19}.campToast.ok>svg{color:#357f19}
+.campToast.error{border-left:4px solid #c2410c;background:#fffaf5}.campToast.error>svg{color:#c2410c}
+@keyframes campToastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(max-width:760px){.campToasts{top:auto;bottom:16px;right:16px;left:16px;width:auto}}
