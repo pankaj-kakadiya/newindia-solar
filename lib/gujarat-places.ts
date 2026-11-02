@@ -63,6 +63,31 @@ export function canonicalTaluka(district: string, value: unknown) {
 
 export type VillageRow = { id?: string; district: string; taluka: string; name_en: string; name_gu?: string | null; lgd_code?: string | null; census_code?: string | null; households?: number | null; population?: number | null }
 
+/** Lower-case letters and digits only, for comparing place names typed in different ways. */
+export const squashPlace = (s: unknown) => squash(s)
+
+/**
+ * Search-as-you-type over villages, English or Gujarati, ignoring case, spaces and punctuation.
+ * Exact names first, then names that start with the text, then a word that starts with it, then anywhere.
+ */
+export function searchVillages<T extends VillageRow>(villages: T[], text: string, limit = 60): T[] {
+  const s = squash(text)
+  const sorted = (list: T[]) => list.slice().sort((a, b) => a.name_en.localeCompare(b.name_en) || a.taluka.localeCompare(b.taluka))
+  if (!s) return sorted(villages).slice(0, limit)
+  const scored: [number, T][] = []
+  for (const v of villages) {
+    const en = squash(v.name_en), gu = squash(v.name_gu)
+    const words = String(v.name_en).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean)
+    let score = -1
+    if (en === s || gu === s) score = 0
+    else if (en.startsWith(s) || gu.startsWith(s)) score = 1
+    else if (words.some(w => w.startsWith(s))) score = 2
+    else if (en.includes(s) || gu.includes(s)) score = 3
+    if (score >= 0) scored.push([score, v])
+  }
+  return scored.sort((a, b) => a[0] - b[0] || a[1].name_en.localeCompare(b[1].name_en) || a[1].taluka.localeCompare(b[1].taluka)).slice(0, limit).map(x => x[1])
+}
+
 /** Finds a village by English or Gujarati name (case/space-insensitive) inside a district and, if given, a taluka. */
 export function findVillage(villages: VillageRow[], district: string, taluka: string | null | undefined, name: string) {
   const s = squash(name)

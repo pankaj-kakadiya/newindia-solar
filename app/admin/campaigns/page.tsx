@@ -23,7 +23,7 @@ const KIT=[['demo','Demo kit: panel, inverter, ACDB + DCDB'],['pamphlets','300 p
 const blankLead=(camp?:any)=>({full_name:'',mobile:'',village:camp?.village||'',taluka:camp?.taluka||'',district:camp?.district||'Amreli',camp_id:camp?.id||'',consumer_number:'',category:'general',avg_monthly_units:'',system_kw:'2.18',portal_registered:false,portal_application_no:'',loan_needed:false,bank_name:'',quoted_price:'',stage:'lead',survey_date:'',install_date:'',commission_date:'',central_subsidy_received:false,state_subsidy_received:false,next_follow_up_at:'',assigned_to:'',lost_reason:'',notes:''})
 const blankCamp=(n:number)=>({camp_code:`C${String(n).padStart(2,'0')}`,camp_date:'',village:'',taluka:'',district:'Amreli',venue:'',venue_id:'',new_type:'',new_name:'',status:'planned',sarpanch_name:'',sarpanch_phone:'',partner_vendor:'',bank_partner:'',attendance:'',checklist:{},notes:''})
 // Supabase returns at most 1,000 rows per request: page through larger tables.
-async function fetchAll(table:string,order:string,ascending=true){const out:any[]=[];for(let from=0;from<50000;from+=1000){const {data,error}=await supabase.from(table).select('*').order(order,{ascending}).range(from,from+999);if(error)return {data:out,error};out.push(...(data||[]));if(!data||data.length<1000)break}return {data:out,error:null as any}}
+async function fetchAll(table:string,order:string,ascending=true){const out:any[]=[];for(let from=0;from<50000;from+=1000){const {data,error}=await supabase.from(table).select('*').order(order,{ascending}).order('id',{ascending:true}).range(from,from+999);if(error)return {data:out,error};out.push(...(data||[]));if(!data||data.length<1000)break}return {data:out,error:null as any}}
 const waText=(l:any)=>`નમસ્તે ${l.full_name||''}, ન્યૂ ઇન્ડિયા સોલાર તરફથી. PM સૂર્ય ઘર + ગુજરાત સરકારની નવી સબસિડી સાથે તમારી ${l.system_kw?`${l.system_kw} kW `:''}સોલાર અરજી અંગે વાત કરવી છે. અનુકૂળ સમય જણાવશો? +91 99099 77507`
 
 export default function SuryaGharCampaign(){
@@ -45,7 +45,7 @@ export default function SuryaGharCampaign(){
    supabase.from('profiles').select('id,full_name,company_name,role').in('role',['admin','staff']).order('full_name'),
    supabase.rpc('get_my_admin_access'),
    fetchAll('geo_villages','name_en'),
-   supabase.from('campaign_venues').select('*').order('name').limit(1000),
+   fetchAll('campaign_venues','name'),
   ])
   const first=l.error||c.error||t.error
   if(first)setErr(/does not exist|schema cache/i.test(first.message)?'Campaign tables are not set up yet. Apply the Surya Ghar campaign database migration, then refresh.':first.message)

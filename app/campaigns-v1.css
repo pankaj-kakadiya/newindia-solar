@@ -90,3 +90,18 @@
 .solarV1 .reportsTabs{display:flex;gap:6px;margin:14px 0}
 .solarV1 .reportsTabs button{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #dfe9e3;border-radius:10px;background:#fff;cursor:pointer}
 .solarV1 .reportsTabs button.active{background:#123727;color:#fff}
+
+/* Village search (replaces the browser datalist) */
+.placeField{display:flex;flex-direction:column;gap:5px;position:relative}
+.placeField>span{font-size:11px;text-transform:uppercase;font-weight:800;color:#6b7884;letter-spacing:.04em}
+.placeSearchList li span{font-size:inherit;text-transform:none;font-weight:400;letter-spacing:0}
+.placeSearch{position:relative}
+.placeSearch input{width:100%;box-sizing:border-box}
+.placeSearchList{position:absolute;z-index:40;left:0;right:0;top:calc(100% + 4px);max-height:300px;overflow:auto;margin:0;padding:4px;list-style:none;background:#fff;border:1px solid #d6e0e8;border-radius:12px;box-shadow:0 14px 30px rgba(7,19,31,.14)}
+.placeSearchList li{display:flex;align-items:baseline;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.placeSearchList li b{color:#14212b;font-weight:600}
+.placeSearchList li span{color:#4b5d68}
+.placeSearchList li small{margin-left:auto;color:#6b7b86;font-size:.78rem;white-space:nowrap}
+.placeSearchList li.active{background:#eef6ea}
+.placeSearchList.empty{padding:10px 12px;color:#6b7b86;font-size:.88rem}
+.placeMore{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}

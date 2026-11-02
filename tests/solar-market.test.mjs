@@ -47,3 +47,10 @@ test('estimates rooftop output and daily units',()=>{
  assert.equal(estimateOutputMw(1000,-5),0)
  assert.equal(Math.round(estimateDailyKwh(2.18,21.6)*100)/100,9.81)
 })
+
+test('reads the SLDC home page in its real table layout',()=>{
+ const html=`<script>var x="Grid Frequency : 1 Hz"</script><table><tr><td>Grid Frequency</td><td>:</td><td><span class="text-dark">50.033</span> <sup>Hz</sup></td></tr>
+ <tr class="sitedetails"><td>Gujarat Catered</td><td>:</td><td><span class="text-dark">18238.025</span> <sup> MW</sup></td></tr>
+ <tr><td>DAM Rate</td><td>:</td><td><span>10.0</span> Rs/unit</td></tr></table><p>Day-Ahead Market (DAM) trial</p>`
+ assert.deepEqual(parseSldcHome(html),{frequency_hz:50.033,demand_mw:18238.025,dam_rate:10})
+})

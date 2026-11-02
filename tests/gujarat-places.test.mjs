@@ -63,3 +63,16 @@ test('LGD sub-district spellings, city wards and same-name villages all import',
  assert.equal(skipped,1)
  assert.deepEqual(villages.map(v=>[v.taluka,v.name_en,v.name_gu]),[['Gir Gadhada','Dron',null],['Talala','Bamanasa','બામણાસા'],['Talala','Bamanasa (516101)',null]])
 })
+
+test('village search finds partial names in English or Gujarati, best matches first',async()=>{
+ const {searchVillages}=await import('../lib/gujarat-places.ts')
+ const v=(name_en,name_gu,taluka='Una')=>({district:'Gir Somnath',taluka,name_en,name_gu})
+ const list=[v('Navabandar','નવાબંદર'),v('Nava Gam','નવા ગામ','Kodinar'),v('Dhokadva','ધોકડવા','Gir Gadhada'),v('Kanakai Nava','કનકાઈ નવા','Talala'),v('Una','ઉના')]
+ assert.deepEqual(searchVillages(list,'nava').map(x=>x.name_en),['Nava Gam','Navabandar','Kanakai Nava'])
+ assert.deepEqual(searchVillages(list,'navag').map(x=>x.name_en),['Nava Gam'],'spaces are ignored')
+ assert.deepEqual(searchVillages(list,'ધોક').map(x=>x.name_en),['Dhokadva'],'Gujarati works')
+ assert.equal(searchVillages(list,'kadv')[0].name_en,'Dhokadva','matches inside a name')
+ assert.equal(searchVillages(list,'UNA')[0].name_en,'Una','exact name first')
+ assert.equal(searchVillages(list,'').length,5)
+ assert.equal(searchVillages(list,'',2).length,2,'limit applies')
+})

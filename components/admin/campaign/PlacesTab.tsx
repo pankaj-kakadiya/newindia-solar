@@ -1,10 +1,10 @@
 'use client'
 
-import {ChangeEvent,useMemo,useState} from 'react'
+import {ChangeEvent,useEffect,useMemo,useState} from 'react'
 import * as XLSX from 'xlsx'
 import {Landmark,MapPin,Plus,Save,Search,Trash2,Upload,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
-import {CAMPAIGN_GEO,VENUE_TYPES,bilingual,findVillage,talukasFor,venueTypeLabel,villagesFromSheetRows,type VillageRow} from '../../../lib/gujarat-places'
+import {CAMPAIGN_GEO,VENUE_TYPES,bilingual,findVillage,searchVillages,squashPlace,talukasFor,venueTypeLabel,villagesFromSheetRows,type VillageRow} from '../../../lib/gujarat-places'
 import {reachedStage} from '../../../lib/surya-ghar-campaign'
 import {PlaceFields} from './PlaceFields'
 
@@ -16,7 +16,7 @@ const blankVenue=(district:string,taluka:string)=>({district:district==='all'?'A
 
 export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr,flash}:{villages:VillageRow[];venues:any[];leads:any[];camps:any[];can:Can;reload:()=>Promise<void>;setErr:(m:string)=>void;flash:(m:string)=>void}){
  const [district,setDistrict]=useState('all'),[taluka,setTaluka]=useState('all'),[q,setQ]=useState(''),[busy,setBusy]=useState(false)
- const [village,setVillage]=useState<any>(null),[venue,setVenue]=useState<any>(null)
+ const [village,setVillage]=useState<any>(null),[venue,setVenue]=useState<any>(null),[limit,setLimit]=useState(300)
 
  const stats=useMemo(()=>{
   const m=new Map<string,{camps:number;leads:number;registered:number;commissioned:number;venues:number}>()
@@ -28,8 +28,13 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
  },[camps,venues,leads])
  const none={camps:0,leads:0,registered:0,commissioned:0,venues:0}
  const talukaOptions=district==='all'?[]:talukasFor(district)
- const shown=useMemo(()=>{const s=q.trim().toLowerCase();return villages.filter(v=>(district==='all'||v.district===district)&&(taluka==='all'||v.taluka===taluka)&&(!s||v.name_en.toLowerCase().includes(s)||(v.name_gu||'').includes(q.trim()))).sort((a,b)=>a.district.localeCompare(b.district)||a.taluka.localeCompare(b.taluka)||a.name_en.localeCompare(b.name_en))},[villages,district,taluka,q])
- const shownVenues=venues.filter(v=>(district==='all'||v.district===district)&&(taluka==='all'||v.taluka===taluka)&&(!q.trim()||`${v.name} ${v.village}`.toLowerCase().includes(q.trim().toLowerCase())))
+ useEffect(()=>{setLimit(300)},[district,taluka,q])
+ const inArea=useMemo(()=>villages.filter(v=>(district==='all'||v.district===district)&&(taluka==='all'||v.taluka===taluka)),[villages,district,taluka])
+ const shown=useMemo(()=>q.trim()?searchVillages(inArea,q,100000):inArea.slice().sort((a,b)=>a.district.localeCompare(b.district)||a.taluka.localeCompare(b.taluka)||a.name_en.localeCompare(b.name_en)),[inArea,q])
+ const byDistrict=useMemo(()=>Object.keys(CAMPAIGN_GEO).filter(d=>d!=='Other').map(d=>[d,villages.filter(v=>v.district===d).length] as const),[villages])
+ // Venues match on venue name, village (English or the directory's Gujarati name), taluka or contact.
+ const guName=useMemo(()=>new Map(villages.map(v=>[`${v.district}|${squashPlace(v.name_en)}`,v.name_gu||''])),[villages])
+ const shownVenues=useMemo(()=>{const s=squashPlace(q);return venues.filter(v=>(district==='all'||v.district===district)&&(taluka==='all'||!v.taluka||v.taluka===taluka)&&(!s||squashPlace(`${v.name} ${v.village} ${v.taluka||''} ${v.contact_name||''} ${guName.get(`${v.district}|${squashPlace(v.village)}`)||''} ${venueTypeLabel(v.venue_type)}`).includes(s)))},[venues,district,taluka,q,guName])
 
  // Taluka coverage: villages in the directory, villages reached by a camp, and the household pipeline.
  const coverage=useMemo(()=>Object.entries(CAMPAIGN_GEO).filter(([d])=>d!=='Other'&&(district==='all'||d===district)).flatMap(([d,info])=>info.talukas.map(([t,gu])=>{
@@ -58,7 +63,9 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
    if(!confirm(`${file.name}: ${fresh.length} new villages, ${update.length} existing villages get missing details${skipped?`, ${skipped} rows skipped (other districts, unknown taluka or duplicates)`:''}. Import?`))return
    setBusy(true);let failed=0
    const source=parsed.some(v=>v.lgd_code)?'lgd':'census'
-   for(let i=0;i<fresh.length;i+=500){const {error}=await supabase.from('geo_villages').insert(fresh.slice(i,i+500).map(v=>({...v,source})));if(error){for(const v of fresh.slice(i,i+500)){const r=await supabase.from('geo_villages').insert({...v,source});if(r.error)failed++}}}
+   // Insert in batches; when a batch hits an existing village, split it until only the clashing rows are left out.
+   const insertRows=async(rows:VillageRow[]):Promise<number>=>{if(!rows.length)return 0;const {error}=await supabase.from('geo_villages').insert(rows.map(v=>({...v,source})));if(!error)return 0;if(rows.length===1)return 1;const mid=Math.ceil(rows.length/2);return (await insertRows(rows.slice(0,mid)))+(await insertRows(rows.slice(mid)))}
+   for(let i=0;i<fresh.length;i+=500)failed+=await insertRows(fresh.slice(i,i+500))
    for(const u of update){const {error}=await supabase.from('geo_villages').update(u.patch).eq('id',u.id);if(error)failed++}
    setBusy(false);await reload()
    flash(`Village directory updated: ${fresh.length} new and ${update.length} updated${failed?`, ${failed} could not be saved`:''}.`)
@@ -103,11 +110,11 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
    {coverage.map(r=><tr key={r.d+r.t}><td><button className="rfqOpportunity" onClick={()=>{setDistrict(r.d);setTaluka(r.t)}}><b>{r.t}</b><span>{r.gu}</span></button></td><td>{r.d}</td><td className="num">{r.villages||'—'}</td><td className="num">{r.households?r.households.toLocaleString('en-IN'):'—'}</td><td className="num">{r.reached}{r.villages?<span className="tableSub">{Math.round(r.reached/r.villages*100)}%</span>:null}</td><td className="num">{r.leads}</td><td className="num">{r.registered}</td><td className="num">{r.commissioned}</td></tr>)}
   </tbody></table></div></section>
 
-  <section className="adminPanel campPanel"><h2><MapPin size={18}/>Villages ({shown.length})</h2>{villages.length?null:<p className="muted">The village directory is empty. Import the LGD village list (lgdirectory.gov.in → Download Directory → Villages, State Gujarat, District Gir Somnath / Amreli / Bhavnagar) to get every village in English and Gujarati. Villages typed on leads and camps are also added here.</p>}
+  <section className="adminPanel campPanel"><h2><MapPin size={18}/>Villages ({shown.length.toLocaleString('en-IN')})</h2><p className="muted">In the directory: {byDistrict.map(([d,n])=>`${d} ${n.toLocaleString('en-IN')}`).join(' · ')} · total {villages.length.toLocaleString('en-IN')}</p>{villages.length?null:<p className="muted">The village directory is empty. Import the LGD village list (lgdirectory.gov.in → Download Directory → Villages, State Gujarat, District Gir Somnath / Amreli / Bhavnagar) to get every village in English and Gujarati. Villages typed on leads and camps are also added here.</p>}
    <div className="adminTableWrap"><table className="adminTable"><thead><tr><th>Village</th><th>Taluka</th><th className="num">Households</th><th className="num">Camps</th><th className="num">Venues</th><th className="num">Leads</th><th className="num">Registered</th><th className="num">Commissioned</th></tr></thead><tbody>
-    {shown.slice(0,500).map(v=>{const s=stats.get(key(v.district,v.name_en))||none;return <tr key={v.id}><td><button className="rfqOpportunity" onClick={()=>setVillage({...v,name_gu:v.name_gu||'',households:v.households??'',population:v.population??'',lgd_code:v.lgd_code||''})}><b>{v.name_en}</b><span>{v.name_gu||'Gujarati name not set'}</span></button></td><td>{v.taluka}<span className="tableSub">{v.district}</span></td><td className="num">{v.households?.toLocaleString('en-IN')??'—'}</td><td className="num">{s.camps}</td><td className="num">{s.venues}</td><td className="num">{s.leads}</td><td className="num">{s.registered}</td><td className="num">{s.commissioned}</td></tr>})}
+    {shown.slice(0,limit).map(v=>{const s=stats.get(key(v.district,v.name_en))||none;return <tr key={v.id}><td><button className="rfqOpportunity" onClick={()=>setVillage({...v,name_gu:v.name_gu||'',households:v.households??'',population:v.population??'',lgd_code:v.lgd_code||''})}><b>{v.name_en}</b><span>{v.name_gu||'Gujarati name not set'}</span></button></td><td>{v.taluka}<span className="tableSub">{v.district}</span></td><td className="num">{v.households?.toLocaleString('en-IN')??'—'}</td><td className="num">{s.camps}</td><td className="num">{s.venues}</td><td className="num">{s.leads}</td><td className="num">{s.registered}</td><td className="num">{s.commissioned}</td></tr>})}
     {!shown.length&&<tr><td colSpan={8} className="emptyCell">No villages match.</td></tr>}
-   </tbody></table></div>{shown.length>500&&<p className="muted">Showing the first 500. Pick a taluka or search to narrow it.</p>}
+   </tbody></table></div>{shown.length>limit&&<div className="placeMore"><span className="muted">Showing {limit.toLocaleString('en-IN')} of {shown.length.toLocaleString('en-IN')}.</span><button className="adminBtn ghost" onClick={()=>setLimit(l=>l+500)}>Show 500 more</button><button className="adminBtn ghost" onClick={()=>setLimit(shown.length)}>Show all</button></div>}
   </section>
 
   <section className="adminPanel campPanel"><h2><Landmark size={18}/>Saved venues ({shownVenues.length})</h2><p className="muted">Save a venue once (panchayat office, government school, temple, ground) and pick it for every later camp in that village.</p>

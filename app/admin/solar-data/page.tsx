@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react'
 import {Activity,BarChart3,Check,ClipboardPaste,Download,Gauge,MapPin,RefreshCw,Save,Search,Sun,X,Zap} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import {canAdmin} from '../../../lib/adminAccess'
-import {districtInsights,parsePortalTable,type PmsgRow} from '../../../lib/solar-market'
+import {SOLAR_SITES,districtInsights,estimateDailyKwh,estimateOutputMw,parsePortalTable,type PmsgRow} from '../../../lib/solar-market'
 import {reachedStage} from '../../../lib/surya-ghar-campaign'
 
 type Tab='pmsg'|'energy'
@@ -15,7 +15,14 @@ const cr=(lakh:number)=>`₹${IN(lakh/100,0)} Cr`
 const fmtDate=(d:string)=>d?new Date(`${d}T00:00:00+05:30`).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const today=()=>new Date(Date.now()+5.5*3600_000).toISOString().slice(0,10)
 
-async function fetchAll(table:string,select='*'){const out:any[]=[];for(let from=0;from<100000;from+=1000){const {data,error}=await supabase.from(table).select(select).range(from,from+999);if(error)return {data:out,error};out.push(...(data||[]));if(!data||data.length<1000)break}return {data:out,error:null as any}}
+// Sunlight straight from Open-Meteo in the browser, used when the server could not reach it.
+async function browserSun(){
+ const url=`https://api.open-meteo.com/v1/forecast?latitude=${SOLAR_SITES.map(s=>s.lat).join(',')}&longitude=${SOLAR_SITES.map(s=>s.lon).join(',')}&current=temperature_2m,cloud_cover,shortwave_radiation&daily=shortwave_radiation_sum,sunshine_duration&timezone=Asia%2FKolkata&forecast_days=1`
+ const j=await (await fetch(url)).json();const list=Array.isArray(j)?j:[j]
+ return SOLAR_SITES.map((s,i)=>{const w=list[i]||{};const rad=Number(w.daily?.shortwave_radiation_sum?.[0]??0);return{...s,irradiance:Number(w.current?.shortwave_radiation??0),cloud_cover:w.current?.cloud_cover??null,temperature:w.current?.temperature_2m??null,sunshine_hours:Math.round(Number(w.daily?.sunshine_duration?.[0]??0)/360)/10,kwh_today_2_18:Math.round(estimateDailyKwh(2.18,rad)*10)/10}})
+}
+
+async function fetchAll(table:string,select='*'){const out:any[]=[];for(let from=0;from<100000;from+=1000){const {data,error}=await supabase.from(table).select(select).order('id').range(from,from+999);if(error)return {data:out,error};out.push(...(data||[]));if(!data||data.length<1000)break}return {data:out,error:null as any}}
 
 export default function SolarMarketData(){
  const [tab,setTab]=useState<Tab>('pmsg')
@@ -42,10 +49,15 @@ export default function SolarMarketData(){
   try{
    const {data:{session}}=await supabase.auth.getSession()
    const r=await fetch('/api/admin/solar/live',{headers:{Authorization:`Bearer ${session?.access_token||''}`},cache:'no-store'})
-   const j=await r.json()
+   const j=await r.json().catch(()=>({error:`The server answered HTTP ${r.status}`}))
    if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`)
+   if(!j.sun?.length){try{j.sun=await browserSun();j.sun_error=null}catch{}}
    setLive(j)
-  }catch(x:any){setLiveErr(x?.message||String(x))}
+  }catch(x:any){
+   setLiveErr(x?.message||String(x))
+   // Still show today's sunlight and the rooftop estimate when the server route is unavailable.
+   try{const sun=await browserSun();const guj=rows.filter(r=>r.level==='state'&&r.state.toLowerCase()==='gujarat').sort((a,b)=>b.snapshot_date.localeCompare(a.snapshot_date))[0];const avg=sun.reduce((a,x)=>a+x.irradiance,0)/sun.length;const camp=sun.slice(0,3);setLive((prev:any)=>prev||{grid:null,sun,history:[],rooftop:{installed_mw:guj?.capacity_mw||0,installed_as_of:guj?.snapshot_date||null,avg_irradiance:Math.round(avg),estimated_output_mw:Math.round(estimateOutputMw(guj?.capacity_mw||0,avg)),campaign_kwh_today_2_18:Math.round(camp.reduce((a,x)=>a+x.kwh_today_2_18,0)/camp.length*10)/10}})}catch{}
+  }
   setLiveLoading(false)
  }
  useEffect(()=>{if(tab!=='energy')return;loadLive();const t=window.setInterval(loadLive,120_000);return()=>window.clearInterval(t)},[tab])
@@ -148,6 +160,12 @@ function EnergyTab({live,err,loading}:{live:any;err:string;loading:boolean}){
  if(!live&&loading)return <section className="adminPanel"><p className="emptyCell">Reading the Gujarat grid and today&apos;s sunlight…</p></section>
  if(!live)return <section className="adminPanel campPanel"><p className="muted">{err?`Could not load live data: ${err}`:'No live data yet.'}</p></section>
  const g=live.grid||{},r=live.rooftop||{}
+ const sun=live.sun||[]
+ const night=sun.length>0&&sun.every((x:any)=>!x.irradiance)
+ // Units per kW today across the six places × installed MW = expected MWh for Gujarat's PM Surya Ghar rooftops.
+ const perKw=sun.length?sun.reduce((a:number,x:any)=>a+(x.kwh_today_2_18||0)/2.18,0)/sun.length:0
+ const todayMwh=Math.round(perKw*(r.installed_mw||0))
+ const gridDown=!live.grid
  const demand=(live.history||[]).filter((h:any)=>h.metric==='gujarat_demand_mw').map((h:any)=>({t:Date.parse(h.observed_at),v:Number(h.value)}))
  const updated=g.observed_at?new Date(g.observed_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'—'
  return <>
@@ -156,9 +174,9 @@ function EnergyTab({live,err,loading}:{live:any;err:string;loading:boolean}){
    <div><span>Gujarat demand now</span><b>{g.demand_mw!=null?`${IN(g.demand_mw)} MW`:'—'}</b><small>Catered by the state grid · {updated}</small></div>
    <div><span>Grid frequency</span><b>{g.frequency_hz!=null?`${g.frequency_hz.toFixed(2)} Hz`:'—'}</b><small>Normal band 49.90–50.05 Hz</small></div>
    <div><span>Exchange price (DAM)</span><b>{g.dam_rate!=null?`₹${g.dam_rate.toFixed(2)}`:'—'}</b><small>Per unit, day-ahead market</small></div>
-   <div><span>PM Surya Ghar rooftops now</span><b>{r.estimated_output_mw!=null?`≈ ${IN(r.estimated_output_mw)} MW`:'—'}</b><small>Estimate from {IN(r.installed_mw,0)} MW installed and {r.avg_irradiance} W/m² sunlight</small></div>
+   <div><span>PM Surya Ghar rooftops now</span><b>{night?'Sun not up':r.estimated_output_mw!=null?`≈ ${IN(r.estimated_output_mw)} MW`:'—'}</b><small>{todayMwh?`≈ ${IN(todayMwh/1000,1)} GWh expected today from ${IN(r.installed_mw,0)} MW installed`:`Estimate from ${IN(r.installed_mw,0)} MW installed`}{night?'':` · ${r.avg_irradiance} W/m² now`}</small></div>
   </div>
-  {live.grid_error&&<p className="campWarn">SLDC Gujarat did not answer: {live.grid_error}</p>}
+  {gridDown&&<p className="campWarn">Live grid figures are unavailable right now: {live.grid_error||err||'SLDC Gujarat did not answer'}. Sunlight and rooftop estimates below are still live. The page tries again every 2 minutes.</p>}
 
   <section className="adminPanel campPanel"><h2><Gauge size={18}/>Gujarat demand, last 36 hours</h2>
    {demand.length>1?<DemandChart points={demand}/>:<p className="muted">The chart fills in as readings are collected: one every 5 minutes while this page is open (or on a schedule once set up). Come back after a few hours to see the day&apos;s curve.</p>}
@@ -167,7 +185,7 @@ function EnergyTab({live,err,loading}:{live:any;err:string;loading:boolean}){
   <section className="adminPanel campPanel"><h2><Sun size={18}/>Sunlight right now</h2>
    {live.sun_error&&<p className="campWarn">Weather service did not answer: {live.sun_error}</p>}
    <div className="adminTableWrap"><table className="adminTable"><thead><tr><th>Place</th><th className="num">Sunlight (W/m²)</th><th className="num">Cloud cover</th><th className="num">Temperature</th><th className="num">Sunshine today</th><th className="num">2.18 kW system today</th></tr></thead><tbody>
-    {(live.sun||[]).map((s:any,i:number)=><tr key={s.place} className={i<3?'solarHighlight':''}><td><b>{s.place}</b><span className="tableSub">{s.district}{i<3?' · campaign district':''}</span></td><td className="num">{IN(s.irradiance)}</td><td className="num">{s.cloud_cover!=null?`${s.cloud_cover}%`:'—'}</td><td className="num">{s.temperature!=null?`${s.temperature} °C`:'—'}</td><td className="num">{s.sunshine_hours} h</td><td className="num"><b>≈ {s.kwh_today_2_18} kWh</b></td></tr>)}
+    {(live.sun||[]).map((s:any,i:number)=><tr key={s.place} className={i<3?'solarHighlight':''}><td><b>{s.place}</b><span className="tableSub">{s.district}{i<3?' · campaign district':''}</span></td><td className="num">{s.irradiance?IN(s.irradiance):<span className="muted">Night</span>}</td><td className="num">{s.cloud_cover!=null?`${s.cloud_cover}%`:'—'}</td><td className="num">{s.temperature!=null?`${s.temperature} °C`:'—'}</td><td className="num">{s.sunshine_hours} h</td><td className="num"><b>≈ {s.kwh_today_2_18} kWh</b><span className="tableSub">expected today</span></td></tr>)}
    </tbody></table></div>
    {r.campaign_kwh_today_2_18!=null&&<p className="solarPitch">Today a 2.18 kW rooftop in your campaign districts makes about <b>{r.campaign_kwh_today_2_18} units</b>, roughly <b>{Math.round(r.campaign_kwh_today_2_18*30)} units a month</b> at this level of sunshine. Useful as a live example at village camps.</p>}
   </section>
