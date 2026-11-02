@@ -577,6 +577,7 @@ export default function AdminShell({
     });
   }
   async function logout() {
+    await Promise.resolve(supabase.rpc("end_admin_session", { p_reason: "logout" })).catch(() => {});
     await supabase.auth.signOut();
     router.replace("/admin/login");
   }

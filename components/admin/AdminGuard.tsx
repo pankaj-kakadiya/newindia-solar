@@ -4,10 +4,11 @@ import {usePathname,useRouter} from 'next/navigation'
 import {supabase} from '../../lib/supabase'
 import {AdminAccess,canAdmin,moduleForAdminPath} from '../../lib/adminAccess'
 import {adminSecurityRedirect,readMfaState} from '../../lib/mfa'
+import AdminSessionWatch from './AdminSessionWatch'
 
 export default function AdminGuard({children}:{children:React.ReactNode}){
   const router=useRouter(),path=usePathname()
-  const [allowedPath,setAllowedPath]=useState(''),[revision,setRevision]=useState(0),[error,setError]=useState('')
+  const [watch,setWatch]=useState<{userId:string;idle:number;track:boolean}|null>(null),[allowedPath,setAllowedPath]=useState(''),[revision,setRevision]=useState(0),[error,setError]=useState('')
   const isLogin=path==='/admin/login'
   useEffect(()=>{
     const {data}=supabase.auth.onAuthStateChange(event=>{
@@ -39,14 +40,14 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
         const {data:accessData,error:accessError}=await supabase.rpc('get_my_admin_access')
         if(accessError)throw accessError
         const access=(accessData||null) as AdminAccess|null
-        if(access?.session_ready===false){await supabase.auth.signOut({scope:'local'});if(alive)router.replace('/admin/login');return}
+        if(access?.session_ready===false){const reason=(access as any)?.session_status&&(access as any).session_status!=='ok'?(access as any).session_status:'missing';await supabase.auth.signOut({scope:'local'});if(alive)router.replace(`/admin/login?reason=${encodeURIComponent(reason)}`);return}
         const moduleKey=moduleForAdminPath(path)
         if(!access||(moduleKey&&!canAdmin(access,moduleKey,'view'))){router.replace('/admin?access=denied');return}
         try{
           const key=`nis-admin-session-${user.id}`
           if(!window.sessionStorage.getItem(key)){await supabase.rpc('record_admin_session');window.sessionStorage.setItem(key,'1')}
         }catch{}
-        if(alive)setAllowedPath(path)
+        if(alive){setWatch({userId:user.id,idle:Number((access as any)?.idle_timeout_minutes)||30,track:(access as any)?.track_page_views!==false});setAllowedPath(path)}
       }catch(error:any){if(alive)setError(error.message||'Could not verify account security.')}
     })()
     return()=>{alive=false}
@@ -54,5 +55,5 @@ export default function AdminGuard({children}:{children:React.ReactNode}){
   if(isLogin)return <>{children}</>
   if(error)return <div className="adminLoading" role="alert">{error} <button onClick={()=>setRevision(v=>v+1)}>Retry</button></div>
   if(allowedPath!==path)return <div className="adminLoading">Checking secure access…</div>
-  return <>{children}</>
+  return <>{watch&&<AdminSessionWatch userId={watch.userId} idleMinutes={watch.idle} trackPages={watch.track}/>}{children}</>
 }

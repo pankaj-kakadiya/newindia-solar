@@ -70,6 +70,7 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
    for(const u of update){const {error}=await supabase.from('geo_villages').update(u.patch).eq('id',u.id);if(error)failed++}
    setBusy(false);await reload()
    flash(`Village directory updated: ${fresh.length} new and ${update.length} updated${failed?`, ${failed} could not be saved`:''}.`)
+   void Promise.resolve(supabase.rpc('log_admin_activity',{p_event:'import',p_module:'campaigns',p_path:'/admin/campaigns',p_description:`Imported village list ${file.name}: ${fresh.length} new, ${update.length} updated`})).catch(()=>{})
   }catch(x:any){setBusy(false);setErr(`Could not read the file: ${x?.message||x}`)}
  }
 

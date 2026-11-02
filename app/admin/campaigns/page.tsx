@@ -9,13 +9,14 @@ import {canAdmin} from '../../../lib/adminAccess'
 import {PlaceFields,VenueFields} from '../../../components/admin/campaign/PlaceFields'
 import PlacesTab from '../../../components/admin/campaign/PlacesTab'
 import VendorsTab from '../../../components/admin/campaign/VendorsTab'
+import TeamTab from '../../../components/admin/campaign/TeamTab'
 import {installsIn,vendorStatusLabel} from '../../../lib/campaign-vendors'
 import {LeadProcessPanel,ProcessChip,ProcessTab} from '../../../components/admin/campaign/ProcessSteps'
 import {INSTALL_STEPS,setStepDone} from '../../../lib/installation-process'
 import {findVillage,type VillageRow} from '../../../lib/gujarat-places'
 import {CAMPAIGN_DISTRICTS,CAMPAIGN_METRICS,CAMPAIGN_STAGES,SURYA_GHAR_RULES,calcSuryaGharSubsidy,leadsFromSheetRows,metricActual,normalizeMobile,reachedStage,stageLabel,whatsappLink} from '../../../lib/surya-ghar-campaign'
 
-type Tab='overview'|'leads'|'process'|'vendors'|'camps'|'places'|'targets'|'calculator'
+type Tab='overview'|'leads'|'process'|'vendors'|'team'|'camps'|'places'|'targets'|'calculator'
 const money=(n:any)=>`₹${Math.round(Number(n||0)).toLocaleString('en-IN')}`
 const day=(v:any)=>v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const dateInput=(v:any)=>v?String(v).slice(0,10):''
@@ -149,6 +150,7 @@ export default function SuryaGharCampaign(){
   const body=filtered.map(l=>[campById[l.camp_id]?.camp_code||'',l.village,l.taluka,l.district,l.full_name,l.mobile,l.consumer_number,catLabel(l.category),l.avg_monthly_units,l.system_kw,l.system_kw?calcSuryaGharSubsidy(l.system_kw,l.category).householdPays:'',l.portal_registered?'Yes':'No',l.portal_application_no,l.loan_needed?'Yes':'No',stageLabel(l.stage),l.survey_date,l.install_date,l.commission_date,l.central_subsidy_received?'Yes':'No',l.state_subsidy_received?'Yes':'No',dateInput(l.next_follow_up_at),staffName(l.assigned_to),l.notes])
   const csv=[head,...body].map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n')
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));a.download='surya-ghar-campaign-leads.csv';a.click()
+  void Promise.resolve(supabase.rpc('log_admin_activity',{p_event:'export',p_module:'campaigns',p_path:'/admin/campaigns',p_description:`Exported ${body.length} households`})).catch(()=>{})
  }
 
  // ---- camps
@@ -200,6 +202,7 @@ export default function SuryaGharCampaign(){
    <button role="tab" aria-selected={tab==='leads'} className={tab==='leads'?'active':''} onClick={()=>setTab('leads')}><Users size={16}/>Leads ({leads.length})</button>
    <button role="tab" aria-selected={tab==='process'} className={tab==='process'?'active':''} onClick={()=>setTab('process')}><ClipboardList size={16}/>Installation process</button>
    <button role="tab" aria-selected={tab==='vendors'} className={tab==='vendors'?'active':''} onClick={()=>setTab('vendors')}><Building2 size={16}/>Vendors{vendors.length?` (${vendors.length.toLocaleString('en-IN')})`:''}</button>
+   <button role="tab" aria-selected={tab==='team'} className={tab==='team'?'active':''} onClick={()=>setTab('team')}><Users size={16}/>Team & rights</button>
    <button role="tab" aria-selected={tab==='camps'} className={tab==='camps'?'active':''} onClick={()=>setTab('camps')}><Tent size={16}/>Village camps ({camps.length})</button>
    <button role="tab" aria-selected={tab==='places'} className={tab==='places'?'active':''} onClick={()=>setTab('places')}><Landmark size={16}/>Villages & venues</button>
    <button role="tab" aria-selected={tab==='targets'} className={tab==='targets'?'active':''} onClick={()=>setTab('targets')}><Target size={16}/>Targets</button>
@@ -244,6 +247,8 @@ export default function SuryaGharCampaign(){
   {tab==='process'&&(processReady?<ProcessTab leads={leads} openLead={openLead} campCode={id=>campById[id]?.camp_code||'No camp'}/>:<section className="adminPanel campPanel"><p className="muted">The 9-step installation process needs the campaign_installation_process database update. Run it in Supabase, then refresh.</p></section>)}
 
   {tab==='vendors'&&<VendorsTab vendors={vendors} leads={leads} can={can} reload={load} setErr={setErr} flash={flash} openLead={openLead} ready={vendorsReady}/>}
+
+  {tab==='team'&&<TeamTab leads={leads} flash={flash} setErr={setErr}/>}
 
   {tab==='camps'&&<>
    <section className="campToolbar"><p className="muted campToolbarNote">One row per village camp. Leads link to a camp by its Camp ID.</p><div className="campToolbarActions">{can('create')&&<button className="adminBtn" onClick={()=>setCamp(blankCamp(camps.length+1))}><Plus size={16}/>Add camp</button>}</div></section>
