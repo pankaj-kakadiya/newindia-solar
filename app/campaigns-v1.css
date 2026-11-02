@@ -112,3 +112,55 @@
 .placeResultBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;padding:12px 16px;border:1px solid #cfe5c4;border-radius:14px;background:#f3f9ef;color:#253645}
 .placeResultBar .adminBtn{margin-left:auto}
 .placeResultBar .linkBtn{border:0;background:none;color:#357f19;font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+
+/* 9-step installation process */
+.procChip{position:relative;display:inline-flex;align-items:center;margin-top:6px;padding:3px 9px;border-radius:999px;background:#eef2f5;color:#253645;font-size:.75rem;font-weight:700;overflow:hidden;white-space:nowrap}
+.procChip i{position:absolute;inset:0 auto 0 0;background:#d6ecca;z-index:0}
+.procChip{isolation:isolate}.procChip i{z-index:-1}
+.procChip.done{background:#357f19;color:#fff}.procChip.done i{display:none}
+.procChip.lost{background:#eceff2;color:#7b8794}
+td>.procChip{display:flex;width:max-content}
+.procSection{grid-column:1/-1}
+.procSteps{display:grid;gap:10px}
+.procHead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.procHead span{color:#6b7884;font-size:.85rem}
+.procBar{height:8px;border-radius:999px;background:#e8edf2;overflow:hidden}.procBar i{display:block;height:100%;background:#357f19;border-radius:999px}
+.procSteps ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.procSteps li{border:1px solid #e3e9ee;border-radius:12px;background:#fff}
+.procSteps li.current{border-color:#9fcf87;box-shadow:0 0 0 3px #eef7e8}
+.procStepHead{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;background:none;text-align:left;cursor:pointer}
+.procNum{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:#eef2f5;color:#253645;font-weight:800;font-size:.85rem;flex:0 0 auto}
+.procSteps li.done .procNum{background:#357f19;color:#fff}
+.procSteps li.current .procNum{background:#123727;color:#fff}
+.procTitle{display:flex;flex-direction:column;flex:1;min-width:0}
+.procTitle b{color:#14212b;font-size:.95rem}.procTitle small{color:#6b7884}
+.procMeta{color:#6b7884;font-size:.8rem;white-space:nowrap}
+.procBody{padding:0 12px 12px 52px;display:grid;gap:10px}
+.procSummary{margin:0;color:#253645;font-size:.9rem}
+.procChecklist{display:grid;gap:2px}
+.procChecklist .campCheck{min-height:32px;font-weight:500}
+.procActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.procActions .campHint{display:inline-flex;align-items:center;gap:6px}
+.procDate{display:inline-flex;align-items:center;gap:8px}.procDate span{font-size:.8rem;color:#6b7884;font-weight:700}
+.procDate input{border:1px solid #dbe2e7;border-radius:9px;padding:8px}
+.procBoard{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:12px 0}
+.procBoard>button,.procBoard>div{display:flex;flex-direction:column;gap:2px;text-align:left;padding:12px;border:1px solid #dfe9e3;border-radius:14px;background:#fff;cursor:pointer}
+.procBoard>div{cursor:default;background:#f3f9ef}
+.procBoard span{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;font-weight:800;color:#6b7884}
+.procBoard b{font-size:1.6rem;color:#14212b}
+.procBoard small{color:#4b5d68;font-size:.8rem;line-height:1.25}
+.procBoard>button.active{background:#123727;border-color:#123727}
+.procBoard>button.active span,.procBoard>button.active b,.procBoard>button.active small{color:#fff}
+.procGuideGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.procGuideGrid article{border:1px solid #e3e9ee;border-radius:14px;padding:14px;display:grid;gap:6px;align-content:start}
+.procGuideGrid header{display:flex;gap:10px;align-items:center}
+.procGuideGrid header div{display:flex;flex-direction:column}.procGuideGrid header small{color:#6b7884}
+.procGuideGrid p{margin:0;font-size:.9rem}
+.procGuideGrid ul{margin:4px 0 0;padding-left:18px;font-size:.85rem;color:#253645;display:grid;gap:3px}
+@media print{
+ body *{visibility:hidden}
+ .procGuide,.procGuide *{visibility:visible}
+ .procGuide{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none}
+ .procGuideGrid{grid-template-columns:1fr 1fr}
+ .procGuideGrid article{break-inside:avoid}
+}
