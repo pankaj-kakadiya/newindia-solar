@@ -4,9 +4,10 @@ import {parseSldcHome} from '../../../../lib/solar-market'
 // Public relay for the three headline figures on the SLDC Gujarat home page (grid frequency,
 // Gujarat demand, DAM rate). SLDC turns away servers outside India, so on Vercel this runs in Mumbai;
 // the admin dashboard's server route falls back to it when its own request is refused.
+export const runtime='edge'
 export const dynamic='force-dynamic'
 export const preferredRegion=['bom1']
-export const maxDuration=15
+
 
 let cache:{at:number;body:any}|null=null
 
