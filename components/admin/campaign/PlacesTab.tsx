@@ -29,6 +29,7 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
  const none={camps:0,leads:0,registered:0,commissioned:0,venues:0}
  const talukaOptions=district==='all'?[]:talukasFor(district)
  useEffect(()=>{setLimit(300)},[district,taluka,q])
+ const searching=q.trim().length>0
  const inArea=useMemo(()=>villages.filter(v=>(district==='all'||v.district===district)&&(taluka==='all'||v.taluka===taluka)),[villages,district,taluka])
  const shown=useMemo(()=>q.trim()?searchVillages(inArea,q,100000):inArea.slice().sort((a,b)=>a.district.localeCompare(b.district)||a.taluka.localeCompare(b.taluka)||a.name_en.localeCompare(b.name_en)),[inArea,q])
  const byDistrict=useMemo(()=>Object.keys(CAMPAIGN_GEO).filter(d=>d!=='Other').map(d=>[d,villages.filter(v=>v.district===d).length] as const),[villages])
@@ -98,7 +99,7 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
   <section className="campToolbar">
    <select aria-label="District" value={district} onChange={e=>{setDistrict(e.target.value);setTaluka('all')}}><option value="all">All districts</option>{Object.entries(CAMPAIGN_GEO).filter(([d])=>d!=='Other').map(([d,i])=><option key={d} value={d}>{bilingual(d,i.gu)}</option>)}</select>
    <select aria-label="Taluka" value={taluka} disabled={district==='all'} onChange={e=>setTaluka(e.target.value)}><option value="all">{district==='all'?'Pick a district':'All talukas'}</option>{talukaOptions.map(([en,gu])=><option key={en} value={en}>{bilingual(en,gu)}</option>)}</select>
-   <div className="rfqSearch"><Search size={17}/><input aria-label="Search villages and venues" placeholder="Search village or venue (English / ગુજરાતી)" value={q} onChange={e=>setQ(e.target.value)}/></div>
+   <div className="rfqSearch"><Search size={17}/><input type="search" aria-label="Search villages and venues" placeholder="Search village or venue (English / ગુજરાતી)" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>{if(e.key==='Escape')setQ('')}}/>{q&&<button type="button" className="placeClear" aria-label="Clear search" onClick={()=>setQ('')}><X size={15}/></button>}</div>
    <div className="campToolbarActions">
     {can('create')&&<label className="adminBtn ghost"><Upload size={16}/>{busy?'Working…':'Import village list'}<input hidden type="file" accept=".xlsx,.xls,.csv" onChange={importVillages} disabled={busy}/></label>}
     {can('create')&&<button className="adminBtn ghost" onClick={()=>setVillage(blankVillage(district,taluka))}><Plus size={16}/>Add village</button>}
@@ -106,9 +107,10 @@ export default function PlacesTab({villages,venues,leads,camps,can,reload,setErr
    </div>
   </section>
 
-  <section className="adminPanel campPanel"><h2><MapPin size={18}/>Taluka coverage</h2><div className="adminTableWrap"><table className="adminTable"><thead><tr><th>Taluka</th><th>District</th><th className="num">Villages in directory</th><th className="num">Households (Census)</th><th className="num">Villages with a camp</th><th className="num">Leads</th><th className="num">Registered</th><th className="num">Commissioned</th></tr></thead><tbody>
+  {searching&&<section className="placeResultBar" role="status"><b>{shown.length.toLocaleString('en-IN')} {shown.length===1?'village':'villages'}</b> and <b>{shownVenues.length} {shownVenues.length===1?'venue':'venues'}</b> match “{q.trim()}”{taluka!=='all'?` in ${taluka}`:district!=='all'?` in ${district}`:''}.{!shown.length&&(taluka!=='all'||district!=='all')&&<> <button type="button" className="linkBtn" onClick={()=>{setDistrict('all');setTaluka('all')}}>Search all districts</button></>}<button type="button" className="adminBtn ghost" onClick={()=>setQ('')}><X size={15}/>Clear search</button></section>}
+  {!searching&&<section className="adminPanel campPanel"><h2><MapPin size={18}/>Taluka coverage</h2><div className="adminTableWrap"><table className="adminTable"><thead><tr><th>Taluka</th><th>District</th><th className="num">Villages in directory</th><th className="num">Households (Census)</th><th className="num">Villages with a camp</th><th className="num">Leads</th><th className="num">Registered</th><th className="num">Commissioned</th></tr></thead><tbody>
    {coverage.map(r=><tr key={r.d+r.t}><td><button className="rfqOpportunity" onClick={()=>{setDistrict(r.d);setTaluka(r.t)}}><b>{r.t}</b><span>{r.gu}</span></button></td><td>{r.d}</td><td className="num">{r.villages||'—'}</td><td className="num">{r.households?r.households.toLocaleString('en-IN'):'—'}</td><td className="num">{r.reached}{r.villages?<span className="tableSub">{Math.round(r.reached/r.villages*100)}%</span>:null}</td><td className="num">{r.leads}</td><td className="num">{r.registered}</td><td className="num">{r.commissioned}</td></tr>)}
-  </tbody></table></div></section>
+  </tbody></table></div></section>}
 
   <section className="adminPanel campPanel"><h2><MapPin size={18}/>Villages ({shown.length.toLocaleString('en-IN')})</h2><p className="muted">In the directory: {byDistrict.map(([d,n])=>`${d} ${n.toLocaleString('en-IN')}`).join(' · ')} · total {villages.length.toLocaleString('en-IN')}</p>{villages.length?null:<p className="muted">The village directory is empty. Import the LGD village list (lgdirectory.gov.in → Download Directory → Villages, State Gujarat, District Gir Somnath / Amreli / Bhavnagar) to get every village in English and Gujarati. Villages typed on leads and camps are also added here.</p>}
    <div className="adminTableWrap"><table className="adminTable"><thead><tr><th>Village</th><th>Taluka</th><th className="num">Households</th><th className="num">Camps</th><th className="num">Venues</th><th className="num">Leads</th><th className="num">Registered</th><th className="num">Commissioned</th></tr></thead><tbody>
