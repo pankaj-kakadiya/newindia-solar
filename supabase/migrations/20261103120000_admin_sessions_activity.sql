@@ -7,6 +7,19 @@
 -- Settings live in admin_security_settings (single row) and are edited from Access → Session security.
 
 create schema if not exists nis_security;
+revoke all on schema nis_security from public,anon,authenticated;
+grant usage on schema nis_security to authenticated;
+
+-- Works with or without the earlier complete_admin_mfa_flow update. If that update has not been applied,
+-- this placeholder keeps today's behaviour (no database-level authenticator check); applying that update
+-- later replaces it with the real check.
+do $do$
+begin
+  if to_regprocedure('nis_security.admin_mfa_satisfied()') is null then
+    execute 'create function nis_security.admin_mfa_satisfied() returns boolean language sql stable security definer set search_path='''' as ''select true''';
+    execute 'revoke all on function nis_security.admin_mfa_satisfied() from public,anon,authenticated';
+  end if;
+end $do$;
 
 create table if not exists public.admin_security_settings(
   id smallint primary key default 1 check(id=1),
@@ -100,6 +113,42 @@ as $$
 $$;
 revoke all on function nis_security.admin_session_status(),nis_security.admin_session_ready() from public,anon,authenticated;
 grant execute on function nis_security.admin_session_ready() to authenticated;
+
+-- Every admin permission check also requires a live, valid session (idle, replaced, expired, revoked
+-- sessions are refused). Same definitions as complete_admin_mfa_flow, so applying either order works.
+create or replace function public.is_admin()
+returns boolean language sql stable security definer set search_path=''
+as $$
+  select nis_security.admin_session_ready() and exists(
+    select 1 from public.profiles p where p.id=auth.uid() and p.role::text='admin' and p.staff_status='active');
+$$;
+create or replace function public.is_staff_or_admin()
+returns boolean language sql stable security definer set search_path=''
+as $$
+  select nis_security.admin_session_ready() and exists(
+    select 1 from public.profiles p where p.id=auth.uid() and p.role::text in ('admin','staff') and p.staff_status='active');
+$$;
+create or replace function public.has_admin_permission(p_module text,p_action text default 'view')
+returns boolean language plpgsql stable security definer set search_path=''
+as $$
+declare v_role text; v_admin_role text; v_status text; v_override boolean; v_result boolean:=false;
+begin
+  if not nis_security.admin_session_ready() then return false; end if;
+  select role::text,admin_role,staff_status into v_role,v_admin_role,v_status from public.profiles where id=auth.uid();
+  if v_status is distinct from 'active' then return false; end if;
+  if v_role='admin' then return true; end if;
+  if v_role is distinct from 'staff' then return false; end if;
+  select allowed into v_override from public.admin_user_permissions
+  where user_id=auth.uid() and module_key=p_module and action_key=p_action
+    and (expires_at is null or expires_at>now());
+  if found then return v_override; end if;
+  select case p_action when 'view' then can_view when 'create' then can_create
+    when 'edit' then can_edit when 'delete' then can_delete when 'approve' then can_approve
+    when 'export' then can_export else false end into v_result
+  from public.admin_role_permissions where role_key=coalesce(v_admin_role,'general') and module_key=p_module;
+  return coalesce(v_result,false);
+end;
+$$;
 
 create or replace function nis_security.actor()
 returns table(user_id uuid,user_email text,user_name text)
