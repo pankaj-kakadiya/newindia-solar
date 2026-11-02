@@ -13,15 +13,22 @@ type Cached<T>={at:number;value:T}
 let sldcCache:Cached<SldcLive&{observed_at:string}>|null=null
 let weatherCache:Cached<any[]>|null=null
 
-async function fetchText(url:string,ms=8000){
+// SLDC's firewall turns away unknown bots, so ask the way a browser does.
+const BROWSER_HEADERS={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36','Accept':'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8','Accept-Language':'en-IN,en;q=0.9'}
+
+async function fetchText(url:string,ms=10000){
  const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),ms)
- try{const r=await fetch(url,{signal:ctrl.signal,headers:{'User-Agent':'NewIndiaSolar-Dashboard/1.0 (+https://newindiasolar.com)'},cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.text()}finally{clearTimeout(t)}
+ try{const r=await fetch(url,{signal:ctrl.signal,headers:BROWSER_HEADERS,cache:'no-store',redirect:'follow'});if(!r.ok)throw new Error(`${new URL(url).host} answered HTTP ${r.status}`);return await r.text()}
+ catch(e:any){if(e?.name==='AbortError')throw new Error(`${new URL(url).host} did not answer within ${ms/1000}s`);throw new Error(e?.cause?.code?`${new URL(url).host}: ${e.cause.code}`:String(e?.message||e))}
+ finally{clearTimeout(t)}
 }
 
 async function sldc(){
  if(sldcCache&&Date.now()-sldcCache.at<120_000)return sldcCache.value
- const html=await fetchText('https://www.sldcguj.com/')
+ let html=''
+ try{html=await fetchText('https://www.sldcguj.com/')}catch(first){try{html=await fetchText('https://sldcguj.com/')}catch{throw first}}
  const live=parseSldcHome(html)
+ if(live.demand_mw==null&&live.frequency_hz==null)throw new Error('SLDC page opened but the live figures were not on it')
  // Five-minute buckets keep one stored reading per metric per interval, however many people are viewing.
  const bucket=new Date(Math.floor(Date.now()/300_000)*300_000).toISOString()
  const value={...live,observed_at:bucket}
@@ -41,6 +48,10 @@ async function weather(){
 }
 
 export async function GET(request:NextRequest){
+ try{return await handle(request)}catch(e:any){return NextResponse.json({error:`Live data failed: ${e?.message||e}`},{status:500,headers:{'Cache-Control':'no-store'}})}
+}
+
+async function handle(request:NextRequest){
  const cronSecret=process.env.ENERGY_CRON_SECRET
  const isCron=Boolean(cronSecret)&&request.headers.get('x-energy-cron')===cronSecret
  let db:any=null

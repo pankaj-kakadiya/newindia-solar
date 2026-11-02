@@ -67,7 +67,7 @@ export type SldcLive = { frequency_hz: number | null; demand_mw: number | null; 
 
 /** Reads Grid Frequency, Gujarat Catered (MW) and DAM Rate from the SLDC Gujarat home page HTML. */
 export function parseSldcHome(html: string): SldcLive {
-  const text = String(html || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ')
+  const text = String(html || '').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ')
   const pick = (label: RegExp) => { const m = text.match(label); return m ? num(m[1]) : null }
   const f = pick(/Grid Frequency\s*:\s*([\d.]+)\s*Hz/i)
   const d = pick(/Gujarat Catered\s*:\s*([\d,.]+)\s*MW/i)

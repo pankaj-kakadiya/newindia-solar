@@ -10,7 +10,7 @@ const cspParts=[
  "img-src 'self' data: blob: https:",
  "font-src 'self' data: https:",
  "media-src 'self' blob: https:",
- "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.razorpay.com https://checkout.razorpay.com https://graph.facebook.com https://www.facebook.com https://connect.facebook.net https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://www.google.co.in https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com",
+ "connect-src 'self' https://api.open-meteo.com https://*.supabase.co wss://*.supabase.co https://*.razorpay.com https://checkout.razorpay.com https://graph.facebook.com https://www.facebook.com https://connect.facebook.net https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://www.google.co.in https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com",
  "frame-src 'self' https://*.razorpay.com https://checkout.razorpay.com https://www.googletagmanager.com https://td.doubleclick.net https://www.facebook.com",
  "worker-src 'self' blob:",
  "manifest-src 'self'"
