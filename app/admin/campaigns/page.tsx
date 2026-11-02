@@ -2,15 +2,17 @@
 
 import {ChangeEvent,useEffect,useMemo,useState} from 'react'
 import * as XLSX from 'xlsx'
-import {ArrowRight,Calculator,CalendarClock,Check,Download,Landmark,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
+import {ArrowRight,Calculator,CalendarClock,Check,ClipboardList,Download,Landmark,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import {canAdmin} from '../../../lib/adminAccess'
 import {PlaceFields,VenueFields} from '../../../components/admin/campaign/PlaceFields'
 import PlacesTab from '../../../components/admin/campaign/PlacesTab'
+import {LeadProcessPanel,ProcessChip,ProcessTab} from '../../../components/admin/campaign/ProcessSteps'
+import {INSTALL_STEPS,setStepDone} from '../../../lib/installation-process'
 import {findVillage,type VillageRow} from '../../../lib/gujarat-places'
 import {CAMPAIGN_DISTRICTS,CAMPAIGN_METRICS,CAMPAIGN_STAGES,SURYA_GHAR_RULES,calcSuryaGharSubsidy,leadsFromSheetRows,metricActual,normalizeMobile,reachedStage,stageLabel,whatsappLink} from '../../../lib/surya-ghar-campaign'
 
-type Tab='overview'|'leads'|'camps'|'places'|'targets'|'calculator'
+type Tab='overview'|'leads'|'process'|'camps'|'places'|'targets'|'calculator'
 const money=(n:any)=>`₹${Math.round(Number(n||0)).toLocaleString('en-IN')}`
 const day=(v:any)=>v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const dateInput=(v:any)=>v?String(v).slice(0,10):''
@@ -20,7 +22,7 @@ const catLabel=(c:string)=>c==='sc'?'SC':c==='st'?'ST':'General'
 const campStatus:Record<string,string>={planned:'Planned',announced:'Announced',completed:'Completed',cancelled:'Cancelled'}
 const PRE_EVENT=[['sarpanch','Sarpanch / talati meeting done'],['vendor','Partner vendor price locked in writing'],['bank','Bank loan officer confirmed'],['whatsapp','WhatsApp invite posted in village groups'],['posters','Posters at dairy, ration shop, temple'],['rickshaw','Loudspeaker rickshaw round (day before)']]
 const KIT=[['demo','Demo kit: panel, inverter, ACDB + DCDB'],['pamphlets','300 pamphlets + banner'],['gr','5 printed copies of the GR'],['devices','2 phones/laptops with data + power bank'],['sound','Mic, speaker, seating, water']]
-const blankLead=(camp?:any)=>({full_name:'',mobile:'',village:camp?.village||'',taluka:camp?.taluka||'',district:camp?.district||'Amreli',camp_id:camp?.id||'',consumer_number:'',category:'general',avg_monthly_units:'',system_kw:'2.18',portal_registered:false,portal_application_no:'',loan_needed:false,bank_name:'',quoted_price:'',stage:'lead',survey_date:'',install_date:'',commission_date:'',central_subsidy_received:false,state_subsidy_received:false,next_follow_up_at:'',assigned_to:'',lost_reason:'',notes:''})
+const blankLead=(camp?:any)=>({full_name:'',mobile:'',village:camp?.village||'',taluka:camp?.taluka||'',district:camp?.district||'Amreli',camp_id:camp?.id||'',consumer_number:'',category:'general',avg_monthly_units:'',system_kw:'2.18',portal_registered:false,portal_application_no:'',loan_needed:false,bank_name:'',quoted_price:'',stage:'lead',survey_date:'',install_date:'',commission_date:'',central_subsidy_received:false,state_subsidy_received:false,next_follow_up_at:'',assigned_to:'',lost_reason:'',notes:'',process:{}})
 const blankCamp=(n:number)=>({camp_code:`C${String(n).padStart(2,'0')}`,camp_date:'',village:'',taluka:'',district:'Amreli',venue:'',venue_id:'',new_type:'',new_name:'',status:'planned',sarpanch_name:'',sarpanch_phone:'',partner_vendor:'',bank_partner:'',attendance:'',checklist:{},notes:''})
 // Supabase returns at most 1,000 rows per request: page through larger tables.
 async function fetchAll(table:string,order:string,ascending=true){const out:any[]=[];for(let from=0;from<50000;from+=1000){const {data,error}=await supabase.from(table).select('*').order(order,{ascending}).order('id',{ascending:true}).range(from,from+999);if(error)return {data:out,error};out.push(...(data||[]));if(!data||data.length<1000)break}return {data:out,error:null as any}}
@@ -32,13 +34,13 @@ export default function SuryaGharCampaign(){
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState('')
  const [q,setQ]=useState(''),[fDistrict,setFDistrict]=useState('all'),[fCamp,setFCamp]=useState('all'),[fStage,setFStage]=useState('all'),[dueOnly,setDueOnly]=useState(false)
  const [lead,setLead]=useState<any>(null),[activities,setActivities]=useState<any[]>([]),[note,setNote]=useState(''),[camp,setCamp]=useState<any>(null)
- const [villages,setVillages]=useState<VillageRow[]>([]),[venues,setVenues]=useState<any[]>([]),[placesReady,setPlacesReady]=useState(true)
+ const [villages,setVillages]=useState<VillageRow[]>([]),[venues,setVenues]=useState<any[]>([]),[placesReady,setPlacesReady]=useState(true),[processReady,setProcessReady]=useState(true)
  const [calcKw,setCalcKw]=useState('2.18'),[calcCat,setCalcCat]=useState<'general'|'sc'|'st'>('general')
  const can=(a:'create'|'edit'|'delete'|'export')=>canAdmin(access,'campaigns',a)
 
  async function load(){
   setLoading(true);setErr('')
-  const [l,c,t,s,a,gv,ve]=await Promise.all([
+  const [l,c,t,s,a,gv,ve,pr]=await Promise.all([
    fetchAll('campaign_leads','created_at',false),
    supabase.from('campaign_camps').select('*').order('camp_date',{ascending:false,nullsFirst:false}).limit(500),
    supabase.from('campaign_targets').select('*').order('sort_order').order('created_at'),
@@ -46,10 +48,11 @@ export default function SuryaGharCampaign(){
    supabase.rpc('get_my_admin_access'),
    fetchAll('geo_villages','name_en'),
    fetchAll('campaign_venues','name'),
+   supabase.from('campaign_leads').select('process').limit(1),
   ])
   const first=l.error||c.error||t.error
   if(first)setErr(/does not exist|schema cache/i.test(first.message)?'Campaign tables are not set up yet. Apply the Surya Ghar campaign database migration, then refresh.':first.message)
-  setPlacesReady(!gv.error&&!ve.error);setVillages(gv.data||[]);setVenues(ve.data||[])
+  setPlacesReady(!gv.error&&!ve.error);setProcessReady(!pr.error);setVillages(gv.data||[]);setVenues(ve.data||[])
   setLeads(l.data||[]);setCamps(c.data||[]);setTargets(t.data||[]);setStaff(s.data||[]);setAccess(a.data||null);setLoading(false)
  }
  useEffect(()=>{load()},[])
@@ -84,7 +87,7 @@ export default function SuryaGharCampaign(){
   if(!lead.full_name.trim()){setErr('Household name is required.');return}
   if(lead.mobile&&!mobile){setErr('Mobile must be a valid 10-digit Indian number.');return}
   const num=(v:any)=>v===''||v==null?null:Number(v)
-  const payload={full_name:lead.full_name.trim(),mobile,village:lead.village||null,taluka:lead.taluka||null,district:lead.district,camp_id:lead.camp_id||null,consumer_number:lead.consumer_number?.trim()||null,category:lead.category,avg_monthly_units:num(lead.avg_monthly_units),system_kw:num(lead.system_kw),portal_registered:Boolean(lead.portal_registered)||reachedStage(lead.stage,'registered'),portal_application_no:lead.portal_application_no||null,loan_needed:Boolean(lead.loan_needed),bank_name:lead.bank_name||null,quoted_price:num(lead.quoted_price),stage:lead.stage,survey_date:lead.survey_date||null,install_date:lead.install_date||null,commission_date:lead.commission_date||null,central_subsidy_received:Boolean(lead.central_subsidy_received),state_subsidy_received:Boolean(lead.state_subsidy_received),next_follow_up_at:followIso(lead.next_follow_up_at),assigned_to:lead.assigned_to||null,lost_reason:lead.stage==='lost'?lead.lost_reason||null:null,notes:lead.notes||null}
+  const payload={full_name:lead.full_name.trim(),mobile,village:lead.village||null,taluka:lead.taluka||null,district:lead.district,camp_id:lead.camp_id||null,consumer_number:lead.consumer_number?.trim()||null,category:lead.category,avg_monthly_units:num(lead.avg_monthly_units),system_kw:num(lead.system_kw),portal_registered:Boolean(lead.portal_registered)||reachedStage(lead.stage,'registered'),portal_application_no:lead.portal_application_no||null,loan_needed:Boolean(lead.loan_needed),bank_name:lead.bank_name||null,quoted_price:num(lead.quoted_price),stage:lead.stage,survey_date:lead.survey_date||null,install_date:lead.install_date||null,commission_date:lead.commission_date||null,central_subsidy_received:Boolean(lead.central_subsidy_received),state_subsidy_received:Boolean(lead.state_subsidy_received),next_follow_up_at:followIso(lead.next_follow_up_at),assigned_to:lead.assigned_to||null,lost_reason:lead.stage==='lost'?lead.lost_reason||null:null,notes:lead.notes||null,...(processReady?{process:lead.process||{}}:{})}
   setSaving(true)
   const res=lead.id?await supabase.from('campaign_leads').update(payload).eq('id',lead.id).select().single():await supabase.from('campaign_leads').insert(payload).select().single()
   setSaving(false)
@@ -96,6 +99,25 @@ export default function SuryaGharCampaign(){
  async function quickStage(id:string,stage:string){const patch:any={stage};if(reachedStage(stage,'registered'))patch.portal_registered=true;const {error}=await supabase.from('campaign_leads').update(patch).eq('id',id);if(error)setErr(error.message);else load()}
  async function logActivity(leadId:string,type:string,message:string){const {data:{user}}=await supabase.auth.getUser();return supabase.from('campaign_lead_activities').insert({lead_id:leadId,activity_type:type,message,created_by:user?.id||null})}
  async function addNote(){if(!lead?.id||!note.trim())return;const {error}=await logActivity(lead.id,'note',note.trim());if(error){setErr(error.message);return}setNote('');openLead(lead)}
+ // ---- installation process: saved straight away for a saved lead
+ async function patchLead(patch:any,activity?:string){
+  setLead((x:any)=>x?{...x,...patch}:x)
+  if(!lead?.id)return
+  const {error}=await supabase.from('campaign_leads').update(patch).eq('id',lead.id)
+  if(error){setErr(error.message);return}
+  setLeads(ls=>ls.map(l=>l.id===lead.id?{...l,...patch}:l))
+  if(activity){await logActivity(lead.id,'process',activity);const {data}=await supabase.from('campaign_lead_activities').select('*').eq('lead_id',lead.id).order('created_at',{ascending:false}).limit(100);setActivities(data||[])}
+ }
+ const stepRecord=(key:string,changes:any)=>({...(lead?.process||{}),[key]:{...(lead?.process?.[key]||{}),...changes}})
+ function processChecks(key:string,checks:Record<string,boolean>){void patchLead({process:stepRecord(key,{checks})})}
+ function processNote(key:string,note:string){void patchLead({process:stepRecord(key,{note:note.trim()||null})})}
+ function processDone(key:string,date:string|null){
+  if(!lead)return
+  const s=INSTALL_STEPS.find(x=>x.key===key)!
+  const patch=setStepDone(lead,key,date)
+  void patchLead(patch,date?`Step ${s.n} done: ${s.title}`:`Step ${s.n} marked not done: ${s.title}`)
+  if(date&&lead.id)flash(`Step ${s.n} done.${patch.stage&&patch.stage!==lead.stage?` Stage is now ${stageLabel(patch.stage)}.`:''}`)
+ }
  function whatsapp(l:any){const link=whatsappLink(l.mobile,waText(l));if(!link)return;window.open(link,'_blank','noopener');if(l.id&&(can('create')||can('edit')))void logActivity(l.id,'whatsapp','WhatsApp follow-up opened')}
 
  async function importSheet(e:ChangeEvent<HTMLInputElement>){
@@ -173,6 +195,7 @@ export default function SuryaGharCampaign(){
   <div className="reportsTabs" role="tablist">
    <button role="tab" aria-selected={tab==='overview'} className={tab==='overview'?'active':''} onClick={()=>setTab('overview')}><LayoutDashboard size={16}/>Overview</button>
    <button role="tab" aria-selected={tab==='leads'} className={tab==='leads'?'active':''} onClick={()=>setTab('leads')}><Users size={16}/>Leads ({leads.length})</button>
+   <button role="tab" aria-selected={tab==='process'} className={tab==='process'?'active':''} onClick={()=>setTab('process')}><ClipboardList size={16}/>Installation process</button>
    <button role="tab" aria-selected={tab==='camps'} className={tab==='camps'?'active':''} onClick={()=>setTab('camps')}><Tent size={16}/>Village camps ({camps.length})</button>
    <button role="tab" aria-selected={tab==='places'} className={tab==='places'?'active':''} onClick={()=>setTab('places')}><Landmark size={16}/>Villages & venues</button>
    <button role="tab" aria-selected={tab==='targets'} className={tab==='targets'?'active':''} onClick={()=>setTab('targets')}><Target size={16}/>Targets</button>
@@ -207,12 +230,14 @@ export default function SuryaGharCampaign(){
      <td>{l.village||'—'}<span className="tableSub">{campById[l.camp_id]?.camp_code||'No camp'} · {l.district}</span></td>
      <td>{l.system_kw?`${l.system_kw} kW`:'—'}<span className="tableSub">{catLabel(l.category)}{s&&!s.stateEligible?' · no state top-up':''}</span></td>
      <td className="num">{s?money(s.householdPays):'—'}</td>
-     <td>{can('edit')?<select aria-label={`Stage for ${l.full_name}`} className="stageSelect" value={l.stage} onChange={e=>quickStage(l.id,e.target.value)}>{CAMPAIGN_STAGES.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select>:stageLabel(l.stage)}</td>
+     <td>{can('edit')?<select aria-label={`Stage for ${l.full_name}`} className="stageSelect" value={l.stage} onChange={e=>quickStage(l.id,e.target.value)}>{CAMPAIGN_STAGES.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select>:stageLabel(l.stage)}{processReady&&<ProcessChip lead={l}/>}</td>
      <td><span className={isDue(l)?'followDue':''}>{day(l.next_follow_up_at)}</span></td>
      <td className="campRowActions">{l.mobile&&<a className="iconBtn" href={`tel:+91${l.mobile}`} aria-label={`Call ${l.full_name}`}><Phone size={16}/></a>}{l.mobile&&<button className="iconBtn" onClick={()=>whatsapp(l)} aria-label={`WhatsApp ${l.full_name}`}><MessageCircle size={16}/></button>}<button className="iconBtn" onClick={()=>openLead(l)} aria-label={`Open ${l.full_name}`}><ArrowRight size={16}/></button></td>
     </tr>}):<tr><td colSpan={7} className="emptyCell">{leads.length?'No leads match these filters.':'No leads yet. Add one, or import the Excel lead tracker.'}</td></tr>}
    </tbody></table></div></section>
   </>}
+
+  {tab==='process'&&(processReady?<ProcessTab leads={leads} openLead={openLead} campCode={id=>campById[id]?.camp_code||'No camp'}/>:<section className="adminPanel campPanel"><p className="muted">The 9-step installation process needs the campaign_installation_process database update. Run it in Supabase, then refresh.</p></section>)}
 
   {tab==='camps'&&<>
    <section className="campToolbar"><p className="muted campToolbarNote">One row per village camp. Leads link to a camp by its Camp ID.</p><div className="campToolbarActions">{can('create')&&<button className="adminBtn" onClick={()=>setCamp(blankCamp(camps.length+1))}><Plus size={16}/>Add camp</button>}</div></section>
@@ -283,6 +308,8 @@ export default function SuryaGharCampaign(){
      <label className="campCheck"><input type="checkbox" checked={Boolean(lead.central_subsidy_received)} onChange={e=>setLead((x:any)=>({...x,central_subsidy_received:e.target.checked}))}/>Central subsidy received</label>
      <label className="campCheck"><input type="checkbox" checked={Boolean(lead.state_subsidy_received)} onChange={e=>setLead((x:any)=>({...x,state_subsidy_received:e.target.checked}))}/>State subsidy received</label>
     </div>{lead.stage==='lost'&&<label className="rfqWideLabel"><span>Why lost</span><input value={lead.lost_reason||''} onChange={e=>setLead((x:any)=>({...x,lost_reason:e.target.value}))}/></label>}{lead.commission_date&&lead.commission_date<SURYA_GHAR_RULES.grDate&&<p className="campWarn">Commissioned before 22-10-2026: no Gujarat state top-up for this system.</p>}</section>
+
+    <section className="rfqDrawerSection procSection"><h3><ClipboardList size={16}/>Installation process (9 steps)</h3>{processReady?<LeadProcessPanel key={lead.id||'new'} lead={lead} canEdit={lead.id?can('edit'):can('create')} onChecks={processChecks} onNote={processNote} onDone={processDone}/>:<p className="muted">Run the campaign_installation_process database update in Supabase to track the 9 steps here.</p>}{!lead.id&&processReady&&<p className="muted">Steps you tick now are saved with the lead.</p>}</section>
 
     <section className="rfqDrawerSection"><h3><MessageCircle size={16}/>Notes & activity</h3><label className="rfqWideLabel"><span>Notes</span><textarea rows={3} value={lead.notes||''} onChange={e=>setLead((x:any)=>({...x,notes:e.target.value}))}/></label>{lead.id?<><div className="rfqAddNote"><input aria-label="Add a note" placeholder="Call note, visit update, next action…" value={note} onChange={e=>setNote(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addNote()}}}/><button onClick={addNote}>Add</button></div><div className="rfqTimeline">{activities.length?activities.map(a=><div key={a.id}><span></span><section><b>{String(a.activity_type).replaceAll('_',' ')}</b><p>{a.message}</p><small>{new Date(a.created_at).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}{a.created_by&&staffName(a.created_by)?` · ${staffName(a.created_by)}`:''}</small></section></div>):<p className="muted">No activity yet.</p>}</div></>:<p className="muted">Save the lead to start its activity log.</p>}</section>
    </div>
