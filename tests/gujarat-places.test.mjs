@@ -49,3 +49,17 @@ test('a single-district sheet without a district column uses the chosen district
  const {villages}=villagesFromSheetRows([{'Taluka':'Una','Village':'Delvada','Gujarati name':'દેલવાડા','Households':'1,250','Population':'6400'}],'Gir Somnath')
  assert.deepEqual(villages,[{district:'Gir Somnath',taluka:'Una',name_en:'Delvada',name_gu:'દેલવાડા',lgd_code:null,census_code:null,households:1250,population:6400}])
 })
+
+test('LGD sub-district spellings, city wards and same-name villages all import',()=>{
+ assert.equal(canonicalTaluka('Gir Somnath','Gir Gadhda'),'Gir Gadhada')
+ assert.equal(canonicalTaluka('Gir Somnath','Veraval City'),'Veraval')
+ assert.equal(canonicalTaluka('Bhavnagar','Bhavnagar City (East)'),'Bhavnagar')
+ const {villages,skipped}=villagesFromSheetRows([
+  {'District':'Gir Somnath','Taluka':'Gir Gadhda','Village Name (In English)':'Dron','Village Name (In Local)':'Dron','Village Code':'516300'},
+  {'District':'Gir Somnath','Taluka':'Talala','Village Name (In English)':'Bamanasa','Village Name (In Local)':'બામણાસા','Village Code':'516100'},
+  {'District':'Gir Somnath','Taluka':'Talala','Village Name (In English)':'Bamanasa','Village Code':'516101'},
+  {'District':'Gir Somnath','Taluka':'Talala','Village Name (In English)':'Bamanasa','Village Code':'516101'},
+ ])
+ assert.equal(skipped,1)
+ assert.deepEqual(villages.map(v=>[v.taluka,v.name_en,v.name_gu]),[['Gir Gadhada','Dron',null],['Talala','Bamanasa','બામણાસા'],['Talala','Bamanasa (516101)',null]])
+})
