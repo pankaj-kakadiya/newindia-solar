@@ -55,3 +55,38 @@
 .campSmallDrawer{max-width:640px}
 .campSmallDrawer .rfqDrawerSection{margin:16px}
 .campV1 .campToolbar .rfqSearch{min-width:220px}
+
+/* Solar Market Data dashboard */
+.solarV1 .solarInline{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#253645}
+.solarV1 .solarInline select,.solarV1 .solarInline input{min-height:40px}
+.solarV1 .solarNote{font-size:.9rem}
+.solarV1 .solarImport{display:grid;gap:12px}
+.solarV1 .solarImport textarea{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:.85rem;border:1px solid #d6e0e8;border-radius:10px;padding:10px}
+.solarV1 .campHint.ok{color:#357f19}
+.solarV1 .solarCampaignGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.solarV1 .solarCard{border:1px solid #dfe9e3;border-radius:14px;padding:14px;background:#fbfdfb;display:grid;gap:6px}
+.solarV1 .solarCard>b{font-size:1.05rem;color:#123727}
+.solarV1 .solarCardRow{display:flex;justify-content:space-between;gap:8px;font-size:.92rem;color:#4b5d68}
+.solarV1 .solarCardRow strong{color:#14212b;font-variant-numeric:tabular-nums}
+.solarV1 .solarOurs{margin-top:6px;padding-top:8px;border-top:1px dashed #d6e0e8;font-size:.88rem;color:#253645}
+.solarV1 .solarOurs span{display:block;font-size:.75rem;letter-spacing:.04em;text-transform:uppercase;color:#357f19;font-weight:700}
+.solarV1 .solarFoot{font-size:.85rem;margin-top:10px}
+.solarV1 .solarFilters{margin-bottom:10px}
+.solarV1 .solarTable td,.solarV1 .solarTable th{white-space:nowrap}
+.solarV1 .num{text-align:right;font-variant-numeric:tabular-nums}
+.solarV1 .solarBarCell{display:flex;align-items:center;gap:8px;min-width:170px}
+.solarV1 .solarBarCell .campBar{flex:1;margin:0}
+.solarV1 .solarBarCell span{min-width:64px;text-align:right;font-variant-numeric:tabular-nums}
+.solarV1 .solarPending i{background:#d98b1c}
+.solarV1 .solarHighlight{background:#f3f9ef}
+.solarV1 .solarScroll{max-height:420px;overflow:auto}
+.solarV1 .solarPitch{margin-top:12px;padding:12px 14px;border-radius:12px;background:#fff8e6;color:#4a3a10}
+.solarV1 .solarChart{width:100%;height:auto;display:block}
+.solarV1 .solarGrid{stroke:#e5ebf0;stroke-width:1}
+.solarV1 .solarAxis{fill:#6b7b86;font-size:12px}
+.solarV1 .solarLine{fill:none;stroke:#357f19;stroke-width:2.5;stroke-linejoin:round}
+.solarV1 .solarDot{fill:#357f19}
+.solarV1 .solarLabel{fill:#14212b;font-size:13px;font-weight:700}
+.solarV1 .reportsTabs{display:flex;gap:6px;margin:14px 0}
+.solarV1 .reportsTabs button{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #dfe9e3;border-radius:10px;background:#fff;cursor:pointer}
+.solarV1 .reportsTabs button.active{background:#123727;color:#fff}
