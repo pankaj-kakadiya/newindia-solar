@@ -2,17 +2,19 @@
 
 import {ChangeEvent,useEffect,useMemo,useState} from 'react'
 import * as XLSX from 'xlsx'
-import {ArrowRight,Calculator,CalendarClock,Check,ClipboardList,Download,Landmark,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
+import {ArrowRight,Building2,Calculator,CalendarClock,Check,ClipboardList,Download,Landmark,LayoutDashboard,MapPin,MessageCircle,Phone,Plus,RefreshCw,Save,Search,Tent,Target,Trash2,Upload,Users,X} from 'lucide-react'
 import {supabase} from '../../../lib/supabase'
 import {canAdmin} from '../../../lib/adminAccess'
 import {PlaceFields,VenueFields} from '../../../components/admin/campaign/PlaceFields'
 import PlacesTab from '../../../components/admin/campaign/PlacesTab'
+import VendorsTab from '../../../components/admin/campaign/VendorsTab'
+import {installsIn,vendorStatusLabel} from '../../../lib/campaign-vendors'
 import {LeadProcessPanel,ProcessChip,ProcessTab} from '../../../components/admin/campaign/ProcessSteps'
 import {INSTALL_STEPS,setStepDone} from '../../../lib/installation-process'
 import {findVillage,type VillageRow} from '../../../lib/gujarat-places'
 import {CAMPAIGN_DISTRICTS,CAMPAIGN_METRICS,CAMPAIGN_STAGES,SURYA_GHAR_RULES,calcSuryaGharSubsidy,leadsFromSheetRows,metricActual,normalizeMobile,reachedStage,stageLabel,whatsappLink} from '../../../lib/surya-ghar-campaign'
 
-type Tab='overview'|'leads'|'process'|'camps'|'places'|'targets'|'calculator'
+type Tab='overview'|'leads'|'process'|'vendors'|'camps'|'places'|'targets'|'calculator'
 const money=(n:any)=>`₹${Math.round(Number(n||0)).toLocaleString('en-IN')}`
 const day=(v:any)=>v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const dateInput=(v:any)=>v?String(v).slice(0,10):''
@@ -34,13 +36,13 @@ export default function SuryaGharCampaign(){
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState('')
  const [q,setQ]=useState(''),[fDistrict,setFDistrict]=useState('all'),[fCamp,setFCamp]=useState('all'),[fStage,setFStage]=useState('all'),[dueOnly,setDueOnly]=useState(false)
  const [lead,setLead]=useState<any>(null),[activities,setActivities]=useState<any[]>([]),[note,setNote]=useState(''),[camp,setCamp]=useState<any>(null)
- const [villages,setVillages]=useState<VillageRow[]>([]),[venues,setVenues]=useState<any[]>([]),[placesReady,setPlacesReady]=useState(true),[processReady,setProcessReady]=useState(true)
+ const [villages,setVillages]=useState<VillageRow[]>([]),[venues,setVenues]=useState<any[]>([]),[placesReady,setPlacesReady]=useState(true),[processReady,setProcessReady]=useState(true),[vendors,setVendors]=useState<any[]>([]),[vendorsReady,setVendorsReady]=useState(true)
  const [calcKw,setCalcKw]=useState('2.18'),[calcCat,setCalcCat]=useState<'general'|'sc'|'st'>('general')
  const can=(a:'create'|'edit'|'delete'|'export')=>canAdmin(access,'campaigns',a)
 
  async function load(){
   setLoading(true);setErr('')
-  const [l,c,t,s,a,gv,ve,pr]=await Promise.all([
+  const [l,c,t,s,a,gv,ve,pr,vd]=await Promise.all([
    fetchAll('campaign_leads','created_at',false),
    supabase.from('campaign_camps').select('*').order('camp_date',{ascending:false,nullsFirst:false}).limit(500),
    supabase.from('campaign_targets').select('*').order('sort_order').order('created_at'),
@@ -49,10 +51,11 @@ export default function SuryaGharCampaign(){
    fetchAll('geo_villages','name_en'),
    fetchAll('campaign_venues','name'),
    supabase.from('campaign_leads').select('process').limit(1),
+   fetchAll('campaign_vendors','name'),
   ])
   const first=l.error||c.error||t.error
   if(first)setErr(/does not exist|schema cache/i.test(first.message)?'Campaign tables are not set up yet. Apply the Surya Ghar campaign database migration, then refresh.':first.message)
-  setPlacesReady(!gv.error&&!ve.error);setProcessReady(!pr.error);setVillages(gv.data||[]);setVenues(ve.data||[])
+  setPlacesReady(!gv.error&&!ve.error);setProcessReady(!pr.error);setVendorsReady(!vd.error);setVendors(vd.data||[]);setVillages(gv.data||[]);setVenues(ve.data||[])
   setLeads(l.data||[]);setCamps(c.data||[]);setTargets(t.data||[]);setStaff(s.data||[]);setAccess(a.data||null);setLoading(false)
  }
  useEffect(()=>{load()},[])
@@ -87,7 +90,7 @@ export default function SuryaGharCampaign(){
   if(!lead.full_name.trim()){setErr('Household name is required.');return}
   if(lead.mobile&&!mobile){setErr('Mobile must be a valid 10-digit Indian number.');return}
   const num=(v:any)=>v===''||v==null?null:Number(v)
-  const payload={full_name:lead.full_name.trim(),mobile,village:lead.village||null,taluka:lead.taluka||null,district:lead.district,camp_id:lead.camp_id||null,consumer_number:lead.consumer_number?.trim()||null,category:lead.category,avg_monthly_units:num(lead.avg_monthly_units),system_kw:num(lead.system_kw),portal_registered:Boolean(lead.portal_registered)||reachedStage(lead.stage,'registered'),portal_application_no:lead.portal_application_no||null,loan_needed:Boolean(lead.loan_needed),bank_name:lead.bank_name||null,quoted_price:num(lead.quoted_price),stage:lead.stage,survey_date:lead.survey_date||null,install_date:lead.install_date||null,commission_date:lead.commission_date||null,central_subsidy_received:Boolean(lead.central_subsidy_received),state_subsidy_received:Boolean(lead.state_subsidy_received),next_follow_up_at:followIso(lead.next_follow_up_at),assigned_to:lead.assigned_to||null,lost_reason:lead.stage==='lost'?lead.lost_reason||null:null,notes:lead.notes||null,...(processReady?{process:lead.process||{}}:{})}
+  const payload={full_name:lead.full_name.trim(),mobile,village:lead.village||null,taluka:lead.taluka||null,district:lead.district,camp_id:lead.camp_id||null,consumer_number:lead.consumer_number?.trim()||null,category:lead.category,avg_monthly_units:num(lead.avg_monthly_units),system_kw:num(lead.system_kw),portal_registered:Boolean(lead.portal_registered)||reachedStage(lead.stage,'registered'),portal_application_no:lead.portal_application_no||null,loan_needed:Boolean(lead.loan_needed),bank_name:lead.bank_name||null,quoted_price:num(lead.quoted_price),stage:lead.stage,survey_date:lead.survey_date||null,install_date:lead.install_date||null,commission_date:lead.commission_date||null,central_subsidy_received:Boolean(lead.central_subsidy_received),state_subsidy_received:Boolean(lead.state_subsidy_received),next_follow_up_at:followIso(lead.next_follow_up_at),assigned_to:lead.assigned_to||null,lost_reason:lead.stage==='lost'?lead.lost_reason||null:null,notes:lead.notes||null,...(processReady?{process:lead.process||{}}:{}),...(vendorsReady?{vendor_id:lead.vendor_id||null}:{})}
   setSaving(true)
   const res=lead.id?await supabase.from('campaign_leads').update(payload).eq('id',lead.id).select().single():await supabase.from('campaign_leads').insert(payload).select().single()
   setSaving(false)
@@ -196,6 +199,7 @@ export default function SuryaGharCampaign(){
    <button role="tab" aria-selected={tab==='overview'} className={tab==='overview'?'active':''} onClick={()=>setTab('overview')}><LayoutDashboard size={16}/>Overview</button>
    <button role="tab" aria-selected={tab==='leads'} className={tab==='leads'?'active':''} onClick={()=>setTab('leads')}><Users size={16}/>Leads ({leads.length})</button>
    <button role="tab" aria-selected={tab==='process'} className={tab==='process'?'active':''} onClick={()=>setTab('process')}><ClipboardList size={16}/>Installation process</button>
+   <button role="tab" aria-selected={tab==='vendors'} className={tab==='vendors'?'active':''} onClick={()=>setTab('vendors')}><Building2 size={16}/>Vendors{vendors.length?` (${vendors.length.toLocaleString('en-IN')})`:''}</button>
    <button role="tab" aria-selected={tab==='camps'} className={tab==='camps'?'active':''} onClick={()=>setTab('camps')}><Tent size={16}/>Village camps ({camps.length})</button>
    <button role="tab" aria-selected={tab==='places'} className={tab==='places'?'active':''} onClick={()=>setTab('places')}><Landmark size={16}/>Villages & venues</button>
    <button role="tab" aria-selected={tab==='targets'} className={tab==='targets'?'active':''} onClick={()=>setTab('targets')}><Target size={16}/>Targets</button>
@@ -238,6 +242,8 @@ export default function SuryaGharCampaign(){
   </>}
 
   {tab==='process'&&(processReady?<ProcessTab leads={leads} openLead={openLead} campCode={id=>campById[id]?.camp_code||'No camp'}/>:<section className="adminPanel campPanel"><p className="muted">The 9-step installation process needs the campaign_installation_process database update. Run it in Supabase, then refresh.</p></section>)}
+
+  {tab==='vendors'&&<VendorsTab vendors={vendors} leads={leads} can={can} reload={load} setErr={setErr} flash={flash} openLead={openLead} ready={vendorsReady}/>}
 
   {tab==='camps'&&<>
    <section className="campToolbar"><p className="muted campToolbarNote">One row per village camp. Leads link to a camp by its Camp ID.</p><div className="campToolbarActions">{can('create')&&<button className="adminBtn" onClick={()=>setCamp(blankCamp(camps.length+1))}><Plus size={16}/>Add camp</button>}</div></section>
@@ -299,6 +305,7 @@ export default function SuryaGharCampaign(){
     <section className="rfqDrawerSection"><h3><ArrowRight size={16}/>Pipeline</h3><div className="rfqFormGrid">
      <label><span>Stage</span><select value={lead.stage} onChange={e=>setLead((x:any)=>({...x,stage:e.target.value}))}>{CAMPAIGN_STAGES.map(s=><option key={s.key} value={s.key}>{s.label}</option>)}</select></label>
      <label><span>Owner</span><select value={lead.assigned_to} onChange={e=>setLead((x:any)=>({...x,assigned_to:e.target.value}))}><option value="">Unassigned</option>{staff.map(s=><option key={s.id} value={s.id}>{s.full_name||s.company_name||'Staff'}</option>)}</select></label>
+     {vendorsReady&&<label><span>Installation vendor</span><select value={lead.vendor_id||''} onChange={e=>setLead((x:any)=>({...x,vendor_id:e.target.value}))}><option value="">Not assigned</option>{(()=>{const ours=vendors.filter(v=>['active','approved','shortlisted'].includes(v.status));const local=vendors.filter(v=>!ours.includes(v)&&v.status!=='blocked'&&installsIn(v,lead.district)>0).sort((a,b)=>installsIn(b,lead.district)-installsIn(a,lead.district)).slice(0,40);const cur=vendors.find(v=>v.id===lead.vendor_id);return <>{ours.length>0&&<optgroup label="Our vendors">{ours.map(v=><option key={v.id} value={v.id}>{v.name} · {vendorStatusLabel(v.status)}</option>)}</optgroup>}{local.length>0&&<optgroup label={`Most installations in ${lead.district}`}>{local.map(v=><option key={v.id} value={v.id}>{v.name} · {installsIn(v,lead.district)} installed</option>)}</optgroup>}{cur&&!ours.includes(cur)&&!local.includes(cur)&&<option value={cur.id}>{cur.name}</option>}</>})()}</select></label>}
      <label className="campCheck"><input type="checkbox" checked={Boolean(lead.portal_registered)||reachedStage(lead.stage,'registered')} onChange={e=>setLead((x:any)=>({...x,portal_registered:e.target.checked}))}/>Registered on portal</label>
      <label><span>Portal application no.</span><input value={lead.portal_application_no||''} onChange={e=>setLead((x:any)=>({...x,portal_application_no:e.target.value}))}/></label>
      <label><span>Next follow-up</span><input type="date" value={lead.next_follow_up_at} onChange={e=>setLead((x:any)=>({...x,next_follow_up_at:e.target.value}))}/></label>
