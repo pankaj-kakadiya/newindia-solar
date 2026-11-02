@@ -37,6 +37,7 @@ import {
   Users,
   Warehouse,
   X,
+  Zap,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { AdminAccess, adminRoleLabels, canAdmin } from "../../lib/adminAccess";
@@ -124,6 +125,12 @@ const navGroups: NavGroup[] = [
         href: "/admin/campaigns",
         label: "Surya Ghar Campaign",
         icon: Sun,
+        module: "campaigns",
+      },
+      {
+        href: "/admin/solar-data",
+        label: "Solar Market Data",
+        icon: Zap,
         module: "campaigns",
       },
       {
